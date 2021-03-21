@@ -1,7 +1,11 @@
 package com.jz.zeus.excel;
 
+import cn.hutool.core.collection.CollectionUtil;
+import com.alibaba.excel.support.ExcelTypeEnum;
 import lombok.Data;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -14,21 +18,47 @@ public class ExcelInfo {
     /**
      * excel 名称
      */
-    private String excelName;
+    private String name;
 
     /**
-     * 标签页名称列表
+     * Excel的文件格式
      */
-    private List<String> sheetNames;
+    private ExcelTypeEnum suffix = ExcelTypeEnum.XLSX;
 
     /**
-     * 需要写入的列（其表头和对应数据都会写入Excel），值为对应表头名
+     * Excel密码
      */
-    private List<String> includeColumnNames;
+    private String password;
 
     /**
-     * 不需要写入的列（其表头和对应数据不会写入Excel），值为对应表头名
+     * 是否在内存中操作
      */
-    private List<String> excludeColumnNames;
+    private boolean inMemory;
+
+    /**
+     * sheet信息
+     */
+    private List<SheetInfo> sheetInfos;
+
+    public void addSheetInfo(SheetInfo sheetInfo) {
+        if (CollectionUtil.isEmpty(sheetInfos)) {
+            sheetInfos = new ArrayList<SheetInfo>();
+        }
+        sheetInfos.add(sheetInfo);
+    }
+
+    public void removeSheetInfo(String sheetName) {
+        if (CollectionUtil.isEmpty(sheetInfos)) {
+            return;
+        }
+        Iterator<SheetInfo> iterator = sheetInfos.iterator();
+        while (iterator.hasNext()) {
+            SheetInfo sheetInfo = iterator.next();
+            if (sheetName.equals(sheetInfo.getName())) {
+                iterator.remove();
+                return;
+            }
+        }
+    }
 
 }
