@@ -20,15 +20,15 @@ import java.util.List;
  * @Author JZ
  * @Date 2021/3/1 11:13
  */
-public class DropDownBoxSheetWriteHandler extends AbstractSheetWriteHandler {
+public class DropDownBoxWriteHandler extends AbstractSheetWriteHandler {
 
     private List<DropDownBoxInfo> infoList;
 
-    public DropDownBoxSheetWriteHandler() {
+    public DropDownBoxWriteHandler() {
 
     }
 
-    public DropDownBoxSheetWriteHandler(DropDownBoxInfo dropDownBoxInfo) {
+    public DropDownBoxWriteHandler(DropDownBoxInfo dropDownBoxInfo) {
         infoList = new ArrayList<>();
         infoList.add(dropDownBoxInfo);
     }
