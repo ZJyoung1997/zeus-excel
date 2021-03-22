@@ -15,9 +15,9 @@ import java.util.Collection;
 @Data
 public class CellErrorInfo {
 
-    private int rowIndex;
+    private Integer rowIndex;
 
-    private int columnIndex;
+    private Integer columnIndex;
 
     private String headName;
 
@@ -27,18 +27,18 @@ public class CellErrorInfo {
         this(rowIndex, null, headName);
     }
 
-    public CellErrorInfo(int rowIndex, Integer columnIndex) {
-        this(rowIndex, columnIndex, null);
+    public CellErrorInfo(int rowIndex, int columnIndex) {
+        this(rowIndex, Integer.valueOf(columnIndex), null);
     }
 
     public CellErrorInfo(int rowIndex, Integer columnIndex, String headName) {
         Assert.isFalse(columnIndex == null && StrUtil.isBlank(headName),
                 "ColumnIndex and HeadName can't both be empty");
         Assert.isTrue(rowIndex >= 0, "RowIndex has to be greater than or equal to 0");
-        this.rowIndex = rowIndex;
+        this.rowIndex = Integer.valueOf(rowIndex);
         if (columnIndex != null) {
             Assert.isTrue(columnIndex >= 0, "ColumnIndex has to be greater than or equal to 0");
-            this.columnIndex = columnIndex.intValue();
+            this.columnIndex = columnIndex;
         }
         if (StrUtil.isNotBlank(headName)) {
             this.headName = headName;

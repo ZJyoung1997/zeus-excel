@@ -81,8 +81,8 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
      * 可调用 ConverterUtils.convertToStringMap(headMap, context) 方法将表头转化为对应map
      * @return 正常 true、异常 false
      */
-    public boolean headCheck(Map<Integer, CellData> headMap, AnalysisContext context) {
-        return true;
+    protected List<CellErrorInfo> headCheck(Map<Integer, CellData> headMap, AnalysisContext context) {
+        return Collections.emptyList();
     }
 
     @Override
@@ -105,8 +105,10 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
     }
 
     @Override
-    public void invokeHead(Map<Integer, CellData> map, AnalysisContext analysisContext) {
-        if (!headCheck(map, analysisContext)) {
+    public void invokeHead(Map<Integer, CellData> headMap, AnalysisContext analysisContext) {
+        List<CellErrorInfo> cellErrorInfoList = headCheck(headMap, analysisContext);
+        if (CollUtil.isNotEmpty(cellErrorInfoList)) {
+            addRowErrorInfo(cellErrorInfoList);
             headError = false;
         }
     }
@@ -142,6 +144,10 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
                     }
                     cellErrorInfos.addAll(value);
                 });
+    }
+
+    public boolean hasError() {
+        return CollUtil.isNotEmpty(rowErrorInfoMap);
     }
 
     @Override
