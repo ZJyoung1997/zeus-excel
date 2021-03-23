@@ -1,10 +1,14 @@
 package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.write.style.column.LongestMatchColumnWidthStyleStrategy;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.write.handler.CellErrorInfoCommentHandler;
+import com.jz.zeus.excel.write.handler.DefaultHeadStyleHandler;
+import com.jz.zeus.excel.write.handler.DropDownHandler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -19,15 +23,26 @@ public class ExcelTest {
     }
 
     public static void read() {
-        String fileName = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//        String fileName = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+        String fileName = "C:\\Users\\User\\Desktop\\254.xlsx";
         EasyExcel.read(fileName, DemoData.class, new DemoExcelReadListener(1))
                 .sheet("模板").doRead();
     }
 
     public static void write() {
-        String fileName = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-        EasyExcel.write(fileName, DemoData.class).sheet("模板")
-                .registerWriteHandler(new CellErrorInfoCommentHandler((List<CellErrorInfo>) null))
+//        String fileName = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+        String fileName = "C:\\Users\\User\\Desktop\\254.xlsx";
+        List<CellErrorInfo> cellErrorInfoList = new ArrayList<>();
+        cellErrorInfoList.add(new CellErrorInfo(1, 1, "格式错误"));
+        cellErrorInfoList.add(new CellErrorInfo(4, "媒体CODE", "关系错误"));
+        cellErrorInfoList.add(new CellErrorInfo(2, "FUNC", "格式错误")
+                .addErrorMsg("数值放假看电视了积分卡积分错误"));
+
+        EasyExcel.write(fileName).sheet("模板").head(DemoData.class)
+                .registerWriteHandler(new DefaultHeadStyleHandler())
+                .registerWriteHandler(new CellErrorInfoCommentHandler(cellErrorInfoList))
+                .registerWriteHandler(new DropDownHandler())
+//                .excludeColumnFiledNames(Arrays.asList("dest"))
                 .doWrite(getDataList());
     }
 

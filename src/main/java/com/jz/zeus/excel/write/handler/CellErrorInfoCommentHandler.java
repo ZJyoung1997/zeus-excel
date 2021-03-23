@@ -8,9 +8,8 @@ import com.alibaba.excel.write.handler.AbstractCellWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.jz.zeus.excel.CellErrorInfo;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Comment;
-import org.apache.poi.ss.usermodel.Drawing;
+import lombok.Setter;
+import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
@@ -25,6 +24,12 @@ import java.util.stream.Collectors;
  * @Date 2021/3/22 18:53
  */
 public class CellErrorInfoCommentHandler extends AbstractCellWriteHandler {
+
+    @Setter
+    private String commentRowPrefix = "- ";
+
+    @Setter
+    private String commentRowSuffix = "";
 
     List<String> headList = new ArrayList<>();
 
@@ -43,30 +48,41 @@ public class CellErrorInfoCommentHandler extends AbstractCellWriteHandler {
 
     @Override
     public void afterCellDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, List<CellData> cellDataList, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
-        if (isHead) {
-            headList.add(cell.getColumnIndex(), cell.getStringCellValue());
-        }
-        if (!rowErrorInfoMap.containsKey(cell.getRowIndex())) {
+        if (CollUtil.isEmpty(rowErrorInfoMap)) {
             return;
         }
-        List<CellErrorInfo> cellErrorInfoList = rowErrorInfoMap.get(cell.getRowIndex());
+        int rowIndex = cell.getRowIndex();
+        int columnIndex = cell.getColumnIndex();
+        if (Boolean.TRUE.equals(isHead)) {
+            headList.add(columnIndex, cell.getStringCellValue());
+        }
+        if (!rowErrorInfoMap.containsKey(rowIndex)) {
+            return;
+        }
+        List<CellErrorInfo> cellErrorInfoList = rowErrorInfoMap.get(rowIndex);
         Collection<String> commentList = null;
         for (CellErrorInfo errorInfo : cellErrorInfoList) {
-            if (errorInfo.getColumnIndex() != null && cell.getColumnIndex() == errorInfo.getColumnIndex().intValue()) {
-                commentList = errorInfo.getErrorMsg();
+            if (errorInfo.getColumnIndex() != null && columnIndex == errorInfo.getColumnIndex().intValue()) {
+                commentList = errorInfo.getErrorMsgs();
                 break;
             } else if (StrUtil.isNotBlank(errorInfo.getHeadName())
-                    && errorInfo.getHeadName().equals(headList.get(cell.getColumnIndex()))) {
-                commentList = errorInfo.getErrorMsg();
+                    && errorInfo.getHeadName().equals(headList.get(columnIndex))) {
+                commentList = errorInfo.getErrorMsgs();
                 break;
             }
         }
         if (CollUtil.isEmpty(commentList)) {
             return;
         }
-        Drawing<?> drawing = writeSheetHolder.getSheet().createDrawingPatriarch();
-        Comment comment = drawing.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, cell.getColumnIndex(), cell.getRowIndex(), cell.getColumnIndex()+2, cell.getRowIndex()+2));
-        comment.setString(new XSSFRichTextString(CollUtil.join(commentList, "\n")));
+        Sheet sheet = writeSheetHolder.getSheet();
+        CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
+        cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        cellStyle.setFillForegroundColor(IndexedColors.RED.index);
+        cell.setCellStyle(cellStyle);
+
+        Drawing<?> drawing = sheet.createDrawingPatriarch();
+        Comment comment = drawing.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, columnIndex, rowIndex, columnIndex+2, rowIndex+2));
+        comment.setString(new XSSFRichTextString(CollUtil.join(commentList, "\n", commentRowPrefix, commentRowSuffix)));
         cell.setCellComment(comment);
     }
 

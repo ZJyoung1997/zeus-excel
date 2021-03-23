@@ -21,17 +21,25 @@ public class CellErrorInfo {
 
     private String headName;
 
-    private Collection<String> errorMsg = new ArrayList<>();
+    private Collection<String> errorMsgs = new ArrayList<>();
 
     public CellErrorInfo(int rowIndex, String headName) {
-        this(rowIndex, null, headName);
+        this(rowIndex, null, headName, null);
+    }
+
+    public CellErrorInfo(int rowIndex, String headName, String errorMsg) {
+        this(rowIndex, null, headName, errorMsg);
     }
 
     public CellErrorInfo(int rowIndex, int columnIndex) {
-        this(rowIndex, Integer.valueOf(columnIndex), null);
+        this(rowIndex, Integer.valueOf(columnIndex), null, null);
     }
 
-    public CellErrorInfo(int rowIndex, Integer columnIndex, String headName) {
+    public CellErrorInfo(int rowIndex, int columnIndex, String errorMsg) {
+        this(rowIndex, Integer.valueOf(columnIndex), null, errorMsg);
+    }
+
+    public CellErrorInfo(int rowIndex, Integer columnIndex, String headName, String errorMsg) {
         Assert.isFalse(columnIndex == null && StrUtil.isBlank(headName),
                 "ColumnIndex and HeadName can't both be empty");
         Assert.isTrue(rowIndex >= 0, "RowIndex has to be greater than or equal to 0");
@@ -43,16 +51,20 @@ public class CellErrorInfo {
         if (StrUtil.isNotBlank(headName)) {
             this.headName = headName;
         }
-    }
-
-    public void addErrorMsg(String msg) {
-        if (StrUtil.isNotBlank(msg)) {
-            errorMsg.add(msg);
+        if (StrUtil.isNotBlank(errorMsg)) {
+            errorMsgs.add(errorMsg);
         }
     }
 
+    public CellErrorInfo addErrorMsg(String msg) {
+        if (StrUtil.isNotBlank(msg)) {
+            errorMsgs.add(msg);
+        }
+        return this;
+    }
+
     public boolean hasError() {
-        return CollUtil.isNotEmpty(errorMsg);
+        return CollUtil.isNotEmpty(errorMsgs);
     }
 
 }

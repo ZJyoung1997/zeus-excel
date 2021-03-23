@@ -16,25 +16,21 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 @Data
 public class DemoData {
 
-    @HeadStyle(fillPatternType = FillPatternType.NO_FILL,
-            borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
-            borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
+//    @HeadStyle(fillPatternType = FillPatternType.NO_FILL,
+//            borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
+//            borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
     @HeadFontStyle(fontName = "黑体", color = 10, bold = false)
-    @ContentStyle
-    @ExcelProperty(value = "媒体CODE", index = 2)
+    @ExcelProperty(value = "媒体CODE")
     private String mateCode;
 
-    @HeadStyle(fillPatternType = FillPatternType.NO_FILL,
-            borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
-            borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
-    @ExcelProperty(value = "SRC", index = 1)
+    @ExcelProperty(value = "SRC")
     private String src;
 
     @ContentFontStyle(fontName = "宋体", fontHeightInPoints = 14)
-    @ExcelProperty(value = "DEST", index = 0)
+    @ExcelProperty(value = "DEST")
     private String dest;
 
-    @ExcelProperty(value = "FUNC", index = 3)
+    @ExcelProperty(value = "FUNC")
     private String func;
 
 }

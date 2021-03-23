@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.DataValidationHelper;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 
@@ -38,7 +39,8 @@ public class DropDownBoxHandler extends AbstractSheetWriteHandler {
         if (CollUtil.isEmpty(infoList)) {
             return;
         }
-        DataValidationHelper helper = writeSheetHolder.getSheet().getDataValidationHelper();
+        Sheet sheet = writeSheetHolder.getSheet();
+        DataValidationHelper helper = sheet.getDataValidationHelper();
         infoList.forEach(info -> {
             DataValidationConstraint constraint = helper.createExplicitListConstraint(info.contents);
             DataValidation dataValidation = helper.createValidation(constraint,
@@ -49,7 +51,7 @@ public class DropDownBoxHandler extends AbstractSheetWriteHandler {
             } else {
                 dataValidation.setSuppressDropDownArrow(false);
             }
-            writeSheetHolder.getSheet().addValidationData(dataValidation);
+            sheet.addValidationData(dataValidation);
         });
     }
 
@@ -64,14 +66,30 @@ public class DropDownBoxHandler extends AbstractSheetWriteHandler {
     @NoArgsConstructor
     @AllArgsConstructor
     public static class DropDownBoxInfo {
+
+        /**
+         * 起始行
+         */
         private int firstRow;
 
+        /**
+         * 截止行
+         */
         private int lastRow;
 
+        /**
+         * 起始列
+         */
         private int firstCol;
 
+        /**
+         * 截止列
+         */
         private int lastCol;
 
+        /**
+         * 下拉框中选项
+         */
         private String[] contents;
 
         public DropDownBoxInfo(int row, int column, String... contents) {
