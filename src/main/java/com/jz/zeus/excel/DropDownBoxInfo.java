@@ -2,7 +2,6 @@ package com.jz.zeus.excel;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
-import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,11 +20,11 @@ public class DropDownBoxInfo {
 
     private Integer rowIndex;
 
-    private Integer rowNum;
+    private Integer rowNum = 100;
 
     private Integer columnIndex;
 
-    private Integer columnNum;
+    private Integer columnNum = 100;
 
     private String headName;
 
@@ -51,6 +50,14 @@ public class DropDownBoxInfo {
         this.headName = headName;
         this.rowNum = rowNum;
         this.options = Arrays.asList(options);
+    }
+
+    public boolean isRow() {
+        return rowIndex != null && columnIndex == null && StrUtil.isBlank(headName);
+    }
+
+    public boolean isColumn() {
+        return rowIndex == null && (columnIndex != null || StrUtil.isNotBlank(headName));
     }
 
 }

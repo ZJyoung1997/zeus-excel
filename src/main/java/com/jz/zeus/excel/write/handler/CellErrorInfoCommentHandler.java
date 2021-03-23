@@ -31,7 +31,7 @@ public class CellErrorInfoCommentHandler extends AbstractCellWriteHandler {
     @Setter
     private String commentRowSuffix = "";
 
-    List<String> headList = new ArrayList<>();
+    List<String> headList =
 
     private Map<Integer, List<CellErrorInfo>> rowErrorInfoMap;
 
