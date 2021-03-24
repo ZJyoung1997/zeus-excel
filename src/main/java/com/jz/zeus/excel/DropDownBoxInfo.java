@@ -17,9 +17,9 @@ import java.util.List;
 @Setter
 public class DropDownBoxInfo {
 
-    private static final int DEFAULT_ROW_NUM = 100;
+    private static final Integer DEFAULT_ROW_NUM = 100;
 
-    private static final int DEFAULT_COLUMN_NUM = 100;
+    private static final Integer DEFAULT_COLUMN_NUM = 100;
 
     private Integer rowIndex;
 
