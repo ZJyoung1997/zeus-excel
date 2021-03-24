@@ -2,12 +2,9 @@ package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ContentFontStyle;
-import com.alibaba.excel.annotation.write.style.ContentStyle;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
-import com.alibaba.excel.annotation.write.style.HeadStyle;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import org.apache.poi.ss.usermodel.BorderStyle;
-import org.apache.poi.ss.usermodel.FillPatternType;
 
 /**
  * @Author JZ
@@ -23,6 +20,7 @@ public class DemoData {
     @ExcelProperty(value = "媒体CODE")
     private String mateCode;
 
+    @NotNull(message = "src 不能为null")
     @ExcelProperty(value = "SRC")
     private String src;
 
