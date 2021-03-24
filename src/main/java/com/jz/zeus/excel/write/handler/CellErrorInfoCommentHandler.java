@@ -4,7 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.Head;
-import com.alibaba.excel.write.handler.AbstractCellWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.jz.zeus.excel.CellErrorInfo;
@@ -13,7 +12,6 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -23,15 +21,13 @@ import java.util.stream.Collectors;
  * @Author JZ
  * @Date 2021/3/22 18:53
  */
-public class CellErrorInfoCommentHandler extends AbstractCellWriteHandler {
+public class CellErrorInfoCommentHandler extends AbstractZeusCellWriteHandler {
 
     @Setter
     private String commentRowPrefix = "- ";
 
     @Setter
     private String commentRowSuffix = "";
-
-    List<String> headList =
 
     private Map<Integer, List<CellErrorInfo>> rowErrorInfoMap;
 
@@ -51,22 +47,22 @@ public class CellErrorInfoCommentHandler extends AbstractCellWriteHandler {
         if (CollUtil.isEmpty(rowErrorInfoMap)) {
             return;
         }
+        if (Boolean.TRUE.equals(isHead)) {
+            loadExcelHead(writeSheetHolder, cell);
+        }
         int rowIndex = cell.getRowIndex();
         int columnIndex = cell.getColumnIndex();
-        if (Boolean.TRUE.equals(isHead)) {
-            headList.add(columnIndex, cell.getStringCellValue());
-        }
         if (!rowErrorInfoMap.containsKey(rowIndex)) {
             return;
         }
         List<CellErrorInfo> cellErrorInfoList = rowErrorInfoMap.get(rowIndex);
         Collection<String> commentList = null;
         for (CellErrorInfo errorInfo : cellErrorInfoList) {
-            if (errorInfo.getColumnIndex() != null && columnIndex == errorInfo.getColumnIndex().intValue()) {
+            if (errorInfo.getColumnIndex() != null && columnIndex == errorInfo.getColumnIndex()) {
                 commentList = errorInfo.getErrorMsgs();
                 break;
             } else if (StrUtil.isNotBlank(errorInfo.getHeadName())
-                    && errorInfo.getHeadName().equals(headList.get(columnIndex))) {
+                    && errorInfo.getHeadName().equals(getHeadName(writeSheetHolder, columnIndex))) {
                 commentList = errorInfo.getErrorMsgs();
                 break;
             }

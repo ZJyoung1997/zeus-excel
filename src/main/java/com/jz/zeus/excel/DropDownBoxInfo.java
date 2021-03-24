@@ -3,10 +3,10 @@ package com.jz.zeus.excel;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -15,12 +15,15 @@ import java.util.List;
  */
 @Getter
 @Setter
-@NoArgsConstructor
 public class DropDownBoxInfo {
+
+    private static final int DEFAULT_ROW_NUM = 100;
+
+    private static final int DEFAULT_COLUMN_NUM = 100;
 
     private Integer rowIndex;
 
-    private Integer rowNum = 100;
+    private Integer rowNum;
 
     private Integer columnIndex;
 
@@ -30,6 +33,8 @@ public class DropDownBoxInfo {
 
     private List<String> options;
 
+    private DropDownBoxInfo() {}
+
     public DropDownBoxInfo(String headName, String... options) {
         this(headName, null, options);
     }
@@ -37,8 +42,8 @@ public class DropDownBoxInfo {
     public DropDownBoxInfo(String headName, Integer rowNum, String... options) {
         Assert.isTrue(StrUtil.isNotBlank(headName), "HeadName can't be empty");
         this.headName = headName;
-        this.rowNum = rowNum;
-        this.options = Arrays.asList(options);
+        this.rowNum = rowNum == null ? DEFAULT_ROW_NUM : rowNum;
+        this.options = options == null ? Collections.emptyList() : Arrays.asList(options);
     }
 
     public DropDownBoxInfo(Integer columnIndex, String... options) {
@@ -47,17 +52,40 @@ public class DropDownBoxInfo {
 
     public DropDownBoxInfo(Integer columnIndex, Integer rowNum, String... options) {
         Assert.isTrue(columnIndex != null, "ColumnIndex can't be null");
-        this.headName = headName;
-        this.rowNum = rowNum;
-        this.options = Arrays.asList(options);
+        this.columnIndex = columnIndex;
+        this.rowNum = rowNum == null ? DEFAULT_ROW_NUM : rowNum;
+        this.options = options == null ? Collections.emptyList() : Arrays.asList(options);
     }
 
-    public boolean isRow() {
-        return rowIndex != null && columnIndex == null && StrUtil.isBlank(headName);
+    public static DropDownBoxInfo getRowDropDownBoxInfo(Integer rowIndex, String... options) {
+        return getRowDropDownBoxInfo(rowIndex, null, options);
     }
 
-    public boolean isColumn() {
-        return rowIndex == null && (columnIndex != null || StrUtil.isNotBlank(headName));
+    public static DropDownBoxInfo getRowDropDownBoxInfo(Integer rowIndex, Integer columnNum, String... options) {
+        Assert.isTrue(rowIndex != null, "RowIndex can't be null");
+        DropDownBoxInfo info = new DropDownBoxInfo();
+        info.setRowIndex(rowIndex);
+        info.setColumnNum(columnNum == null ? DEFAULT_COLUMN_NUM : columnNum);
+        info.setOptions(options == null ? Collections.emptyList() : Arrays.asList(options));
+        return info;
+    }
+
+    public static DropDownBoxInfo getInstance(Integer rowIndex, Integer columnIndex, String... options) {
+        Assert.isTrue(rowIndex != null && columnIndex != null, "RowIndex and ColumnIndex can't both be null");
+        DropDownBoxInfo info = new DropDownBoxInfo();
+        info.setRowIndex(rowIndex);
+        info.setColumnIndex(columnIndex);
+        info.setOptions(options == null ? Collections.emptyList() : Arrays.asList(options));
+        return info;
+    }
+
+    public static DropDownBoxInfo getInstance(Integer rowIndex, String headName, String... options) {
+        Assert.isTrue(rowIndex != null && StrUtil.isNotBlank(headName), "RowIndex and HeadName can't both be empty");
+        DropDownBoxInfo info = new DropDownBoxInfo();
+        info.setRowIndex(rowIndex);
+        info.setHeadName(headName);
+        info.setOptions(options == null ? Collections.emptyList() : Arrays.asList(options));
+        return info;
     }
 
 }
