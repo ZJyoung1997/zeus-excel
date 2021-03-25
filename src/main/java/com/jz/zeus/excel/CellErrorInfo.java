@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @Author JZ
@@ -59,6 +60,13 @@ public class CellErrorInfo {
     public CellErrorInfo addErrorMsg(String msg) {
         if (StrUtil.isNotBlank(msg)) {
             errorMsgs.add(msg);
+        }
+        return this;
+    }
+
+    public CellErrorInfo addErrorMsg(List<String> msgs) {
+        if (CollUtil.isNotEmpty(msgs)) {
+            errorMsgs.addAll(msgs);
         }
         return this;
     }

@@ -6,7 +6,7 @@ import jakarta.validation.Validator;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.HibernateValidator;
 
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author:JZ
@@ -20,14 +20,31 @@ public class ValidatorUtils {
             .addProperty("hibernate.validator.fail_fast", "true")
             .buildValidatorFactory().getValidator();
 
-    public <T> void validate(T bean) {
+    /**
+     * 校验bean中是否符合注解中的条件
+     * @param bean 需校验对象
+     * @param <T>
+     * @return 错误信息，key 校验失败字段名、value 错误信息
+     */
+    public <T> Map<String, List<String>> validate(T bean) {
         if (bean == null) {
-            return;
+            return Collections.emptyMap();
         }
         Set<ConstraintViolation<T>> constraintViolations = validator.validate(bean);
+        if (constraintViolations == null) {
+            return Collections.emptyMap();
+        }
+        Map<String, List<String>> errorMessageMap = new HashMap<>();
         constraintViolations.forEach(violation -> {
-            violation.getMessage();
+            String fieldName = violation.getPropertyPath().toString();
+            List<String> errorMessages = errorMessageMap.get(fieldName);
+            if (errorMessages == null) {
+                errorMessages = new ArrayList<>();
+                errorMessageMap.put(fieldName, errorMessages);
+            }
+            errorMessages.add(violation.getMessage());
         });
+        return errorMessageMap;
     }
 
 }

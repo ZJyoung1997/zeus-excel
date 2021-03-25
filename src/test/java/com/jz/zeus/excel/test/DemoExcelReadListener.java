@@ -9,21 +9,16 @@ import com.jz.zeus.excel.read.listener.AbstractExcelReadListener;
  */
 public class DemoExcelReadListener extends AbstractExcelReadListener<DemoData> {
 
-    public DemoExcelReadListener(boolean lastSave) {
-        this.lastSave = lastSave;
+    public DemoExcelReadListener(Boolean lastHandleData) {
+        super(lastHandleData);
     }
 
-    public DemoExcelReadListener(int batchSaveNum) {
-        this.batchSaveNum = batchSaveNum;
-    }
-
-    public DemoExcelReadListener(boolean lastSave, int batchSaveNum) {
-        this.lastSave = lastSave;
-        this.batchSaveNum = batchSaveNum;
+    public DemoExcelReadListener(Integer batchSaveNum) {
+        super(batchSaveNum);
     }
 
     @Override
-    protected void save(AnalysisContext analysisContext) {
+    protected void dataHandle(AnalysisContext analysisContext, Integer currentRowIndex) {
         System.out.println("加载数据：" + dataList);
     }
 

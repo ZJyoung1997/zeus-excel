@@ -4,14 +4,17 @@ import cn.hutool.core.collection.CollUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.CellExtra;
+import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.read.listener.ReadListener;
+import com.alibaba.excel.read.metadata.holder.ReadRowHolder;
+import com.alibaba.excel.read.metadata.property.ExcelReadHeadProperty;
 import com.jz.zeus.excel.CellErrorInfo;
+import com.jz.zeus.excel.util.ValidatorUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @Author JZ
@@ -21,6 +24,12 @@ import java.util.stream.Collectors;
 public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
 
     /**
+     * 开启hibernate注解校验
+     * true 开启、false 关闭
+     */
+    protected boolean enabledAnnotationValidation = true;
+
+    /**
      * 表头是否有误
      * false 正常、true 表头错误
      */
@@ -28,11 +37,11 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
     protected boolean headError = false;
 
     /**
-     * 为true时，所有数据加载到 dataList 且执行完 verify() 方法后对数据进行保存，
+     * 为true时，所有数据加载到 dataList 且执行完 verify() 方法后对数据进行处理，
      * 这意味着 batchSaveNum 将无效
      */
     @Setter
-    protected boolean lastSave = false;
+    protected boolean lastHandleData = false;
 
     /**
      * 批量保存数量
@@ -44,35 +53,49 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
      * 错误信息，可以是表头或数据的错误信息
      * key 为行索引，value 为单元格错误信息
      */
-    public Map<Integer, List<CellErrorInfo>> rowErrorInfoMap;
+    @Getter
+    protected List<CellErrorInfo> rowErrorInfoList;
+
+    /**
+     * T 中字段名与列索引映射
+     * key T 中字段名、value 列索引
+     */
+    protected Map<String, Integer> fieldColumnIndexMap;
 
     /**
      * Excel 中读取到的数据
      */
     protected List<T> dataList = new ArrayList<>();
 
-    public AbstractExcelReadListener(boolean lastSave) {
-        this.lastSave = lastSave;
+    public AbstractExcelReadListener(boolean lastHandleData) {
+        this(lastHandleData, null, null);
     }
 
     public AbstractExcelReadListener(int batchSaveNum) {
-        this.batchSaveNum = batchSaveNum;
+        this(null, null, batchSaveNum);
     }
 
-    public AbstractExcelReadListener(boolean lastSave, int batchSaveNum) {
-        this.lastSave = lastSave;
-        this.batchSaveNum = batchSaveNum;
+    public AbstractExcelReadListener(Boolean lastHandleData, Boolean enabledAnnotationValidation, Integer batchSaveNum) {
+        if (lastHandleData != null) {
+            this.lastHandleData = lastHandleData;
+        }
+        if (enabledAnnotationValidation != null) {
+            this.enabledAnnotationValidation = enabledAnnotationValidation;
+        }
+        if (batchSaveNum != null) {
+            this.batchSaveNum = batchSaveNum;
+        }
     }
 
     /**
      * 保存 dataList 中的数据
      */
-    protected abstract void save(AnalysisContext analysisContext);
+    protected abstract void dataHandle(AnalysisContext analysisContext, Integer currentRowIndex);
 
     /**
      * 校验 dataList 中的数据
      */
-    protected List<CellErrorInfo> verify(AnalysisContext analysisContext) {
+    protected List<CellErrorInfo> verify(AnalysisContext analysisContext, Integer currentRowIndex) {
         return Collections.emptyList();
     };
 
@@ -87,10 +110,12 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
 
     @Override
     public void invoke(T data, AnalysisContext analysisContext) {
+        annotationValidation(data, analysisContext.readRowHolder());
         dataList.add(data);
-        if (!lastSave && dataList.size() >= batchSaveNum) {
-            addRowErrorInfo(verify(analysisContext));
-            save(analysisContext);
+        if (!lastHandleData && dataList.size() >= batchSaveNum) {
+            Integer currentRowIndex = analysisContext.readRowHolder().getRowIndex();
+            addRowErrorInfo(verify(analysisContext, currentRowIndex));
+            dataHandle(analysisContext, currentRowIndex);
             dataList.clear();
         }
     }
@@ -98,8 +123,9 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
         if (dataList.size() > 0) {
-            addRowErrorInfo(verify(analysisContext));
-            save(analysisContext);
+            Integer currentRowIndex = analysisContext.readRowHolder().getRowIndex();
+            addRowErrorInfo(verify(analysisContext, currentRowIndex));
+            dataHandle(analysisContext, currentRowIndex);
             dataList.clear();
         }
     }
@@ -111,6 +137,16 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
             addRowErrorInfo(cellErrorInfoList);
             headError = false;
         }
+        ExcelReadHeadProperty excelHeadPropertyData = analysisContext.readSheetHolder().excelReadHeadProperty();
+        Map<Integer, Head> headMapData = excelHeadPropertyData.getHeadMap();
+        if (CollUtil.isEmpty(headMapData)) {
+            fieldColumnIndexMap = Collections.emptyMap();
+            return;
+        }
+        fieldColumnIndexMap = new HashMap<>();
+        headMapData.values().forEach(head -> {
+            fieldColumnIndexMap.put(head.getFieldName(), head.getColumnIndex());
+        });
     }
 
     /**
@@ -126,34 +162,41 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
         return true;
     }
 
-    protected void addRowErrorInfo(List<CellErrorInfo> cellErrorInfoList) {
-        if (CollUtil.isEmpty(cellErrorInfoList)) {
-            return;
-        }
-        if (CollUtil.isEmpty(rowErrorInfoMap)) {
-            rowErrorInfoMap = cellErrorInfoList.stream()
-                    .collect(Collectors.groupingBy(CellErrorInfo::getRowIndex));
-            return;
-        }
-        cellErrorInfoList.stream().collect(Collectors.groupingBy(CellErrorInfo::getRowIndex))
-                .forEach((rowIndex, value) -> {
-                    List<CellErrorInfo> cellErrorInfos = rowErrorInfoMap.get(rowIndex);
-                    if (CollUtil.isEmpty(cellErrorInfos)) {
-                        cellErrorInfos = new ArrayList<>();
-                        rowErrorInfoMap.put(rowIndex, cellErrorInfos);
-                    }
-                    cellErrorInfos.addAll(value);
-                });
-    }
-
-    public boolean hasError() {
-        return CollUtil.isNotEmpty(rowErrorInfoMap);
-    }
-
     @Override
     public void onException(Exception e, AnalysisContext analysisContext) {}
 
     @Override
     public void extra(CellExtra cellExtra, AnalysisContext analysisContext) {}
+
+    protected void addRowErrorInfo(List<CellErrorInfo> cellErrorInfos) {
+        if (CollUtil.isEmpty(cellErrorInfos)) {
+            return;
+        }
+        if (CollUtil.isEmpty(rowErrorInfoList)) {
+            rowErrorInfoList = new ArrayList<>();
+        }
+        rowErrorInfoList.addAll(cellErrorInfos);
+    }
+
+    protected void annotationValidation(T data, ReadRowHolder readRowHolder) {
+        if (!enabledAnnotationValidation) {
+            return;
+        }
+        Map<String, List<String>> errorMessageMap = ValidatorUtils.validate(data);
+        if (CollUtil.isEmpty(errorMessageMap)) {
+            return;
+        }
+        List<CellErrorInfo> errorMesInfoList = new ArrayList<>();
+        errorMessageMap.forEach((fieldName, errorMessages) -> {
+            errorMesInfoList.add(new CellErrorInfo(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName))
+                                .addErrorMsg(errorMessages));
+
+        });
+        addRowErrorInfo(errorMesInfoList);
+    }
+
+    public boolean hasError() {
+        return CollUtil.isNotEmpty(rowErrorInfoList);
+    }
 
 }

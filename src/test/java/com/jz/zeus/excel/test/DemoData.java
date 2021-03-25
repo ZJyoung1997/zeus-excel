@@ -3,6 +3,7 @@ package com.jz.zeus.excel.test;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ContentFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
+import com.jz.zeus.excel.validation.IsLong;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
@@ -20,7 +21,7 @@ public class DemoData {
     @ExcelProperty(value = "媒体CODE")
     private String mateCode;
 
-    @NotNull(message = "src 不能为null")
+    @IsLong
     @ExcelProperty(value = "SRC")
     private String src;
 

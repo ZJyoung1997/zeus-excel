@@ -10,7 +10,8 @@ public class ValidatorTest {
 
     public static void main(String[] args) {
         DemoData demoData = new DemoData();
-        ValidatorUtils.validate(demoData);
+        demoData.setSrc("02645");
+        System.out.println(ValidatorUtils.validate(demoData));
     }
 
 }
