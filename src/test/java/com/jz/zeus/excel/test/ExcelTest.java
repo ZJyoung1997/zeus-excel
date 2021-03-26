@@ -1,20 +1,19 @@
 package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
-import com.alibaba.excel.util.FileUtils;
-import com.alibaba.excel.util.IoUtils;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
 import com.jz.zeus.excel.read.listener.AbstractExcelReadListener;
-import com.jz.zeus.excel.write.handler.CellErrorInfoCommentHandler;
+import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.handler.DefaultHeadStyleHandler;
-import com.jz.zeus.excel.write.handler.DropDownBoxHandler;
+import com.jz.zeus.excel.write.handler.DropDownBoxSheetHandler;
+import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import lombok.SneakyThrows;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -25,17 +24,19 @@ import java.util.List;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-//        String path = "C:\\Users\\Administrator\\Desktop\\";
-        String path = "C:\\Users\\User\\Desktop\\";
+//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
-        write(new FileOutputStream(path+"254.xlsx"), null);
+        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, getDropDownBoxInfo(), Arrays.asList("src"));
 
-        byte[] excelBytes = IoUtils.toByteArray(new FileInputStream(path+"254.xlsx"));
+//        write(new FileOutputStream(path), null);
 
-        AbstractExcelReadListener readListener = new DemoExcelReadListener(1);
-        read(new ByteArrayInputStream(excelBytes), readListener);
+        AbstractExcelReadListener readListener = new DemoExcelReadListener(5);
+//        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
-//        fill(new FileOutputStream(path+"25884.xlsx"), new ByteArrayInputStream(excelBytes), readListener.getRowErrorInfoList());
+//        read(new FileInputStream(path), readListener);
+//        ExcelUtils.addErrorInfo(path, path, "模板", readListener.getErrorInfoList());
+
         System.out.println("end");
     }
 
@@ -49,17 +50,10 @@ public class ExcelTest {
 
     @SneakyThrows
     public static void write(OutputStream outputStream, List<CellErrorInfo> cellErrorInfoList) {
-        List<DropDownBoxInfo> dropDownBoxInfoList = new ArrayList<>();
-        dropDownBoxInfoList.add(new DropDownBoxInfo("SRC", "是", "否"));
-        dropDownBoxInfoList.add(new DropDownBoxInfo(1,"可以", "不可以"));
-        dropDownBoxInfoList.add(DropDownBoxInfo.getRowDropDownBoxInfo(2, "中", "不中"));
-        dropDownBoxInfoList.add(DropDownBoxInfo.getInstance(3, "媒体CODE", "不中"));
-
         EasyExcel.write(outputStream)
                 .sheet("模板").head(DemoData.class)
                 .registerWriteHandler(new DefaultHeadStyleHandler())
-                .registerWriteHandler(new CellErrorInfoCommentHandler(cellErrorInfoList))
-                .registerWriteHandler(new DropDownBoxHandler(dropDownBoxInfoList))
+                .registerWriteHandler(new DropDownBoxSheetHandler(getDropDownBoxInfo()))
 //                .excludeColumnFiledNames(Arrays.asList("dest"))
 //                .doWrite(Collections.emptyList());
                 .doWrite(getDataList());
@@ -68,22 +62,23 @@ public class ExcelTest {
 
     @SneakyThrows
     public static void fill(OutputStream outputStream, InputStream inputStream, List<CellErrorInfo> cellErrorInfoList) {
+
+        EasyExcel.write(outputStream)
+                .withTemplate(inputStream)
+                .sheet("模板")
+                .registerWriteHandler(new ErrorInfoCommentHandler(cellErrorInfoList))
+                .doWrite(Collections.emptyList());
+        inputStream.close();
+        outputStream.close();
+    }
+
+    public static List<DropDownBoxInfo> getDropDownBoxInfo() {
         List<DropDownBoxInfo> dropDownBoxInfoList = new ArrayList<>();
         dropDownBoxInfoList.add(new DropDownBoxInfo("SRC", "是", "否"));
         dropDownBoxInfoList.add(new DropDownBoxInfo(1,"可以", "不可以"));
         dropDownBoxInfoList.add(DropDownBoxInfo.getRowDropDownBoxInfo(2, "中", "不中"));
         dropDownBoxInfoList.add(DropDownBoxInfo.getInstance(3, "媒体CODE", "不中"));
-
-        EasyExcel.write(outputStream)
-                .withTemplate(inputStream)
-                .sheet("模板")
-                .registerWriteHandler(new DefaultHeadStyleHandler())
-                .registerWriteHandler(new CellErrorInfoCommentHandler(cellErrorInfoList))
-                .registerWriteHandler(new DropDownBoxHandler(dropDownBoxInfoList))
-//                .excludeColumnFiledNames(Arrays.asList("dest"))
-                .doWrite(Collections.emptyList());
-        inputStream.close();
-        outputStream.close();
+        return dropDownBoxInfoList;
     }
 
     public static List<CellErrorInfo> getCellErrorInfo() {

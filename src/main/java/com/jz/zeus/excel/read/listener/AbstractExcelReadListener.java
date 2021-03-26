@@ -34,7 +34,7 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
      * false 正常、true 表头错误
      */
     @Getter
-    protected boolean headError = false;
+    protected boolean headError;
 
     /**
      * 为true时，所有数据加载到 dataList 且执行完 verify() 方法后对数据进行处理，
@@ -54,13 +54,19 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
      * key 为行索引，value 为单元格错误信息
      */
     @Getter
-    protected List<CellErrorInfo> rowErrorInfoList;
+    protected List<CellErrorInfo> errorInfoList;
 
     /**
      * T 中字段名与列索引映射
      * key T 中字段名、value 列索引
      */
     protected Map<String, Integer> fieldColumnIndexMap;
+
+    /**
+     * 表头与列索引映射
+     * key 表头、value 表头对应列索引
+     */
+    protected Map<String, Integer> headNameIndexMap;
 
     /**
      * Excel 中读取到的数据
@@ -95,18 +101,14 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
     /**
      * 校验 dataList 中的数据
      */
-    protected List<CellErrorInfo> verify(AnalysisContext analysisContext, Integer currentRowIndex) {
-        return Collections.emptyList();
-    };
+    protected void verify(AnalysisContext analysisContext, Integer currentRowIndex) {};
 
     /**
      * 校验表头是否正常
      * 可调用 ConverterUtils.convertToStringMap(headMap, context) 方法将表头转化为对应map
      * @return 正常 true、异常 false
      */
-    protected List<CellErrorInfo> headCheck(Map<Integer, CellData> headMap, AnalysisContext context) {
-        return Collections.emptyList();
-    }
+    protected void headCheck(Map<Integer, CellData> headMap, AnalysisContext context) {}
 
     @Override
     public void invoke(T data, AnalysisContext analysisContext) {
@@ -114,7 +116,7 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
         dataList.add(data);
         if (!lastHandleData && dataList.size() >= batchSaveNum) {
             Integer currentRowIndex = analysisContext.readRowHolder().getRowIndex();
-            addRowErrorInfo(verify(analysisContext, currentRowIndex));
+            verify(analysisContext, currentRowIndex);
             dataHandle(analysisContext, currentRowIndex);
             dataList.clear();
         }
@@ -124,7 +126,7 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
         if (dataList.size() > 0) {
             Integer currentRowIndex = analysisContext.readRowHolder().getRowIndex();
-            addRowErrorInfo(verify(analysisContext, currentRowIndex));
+            verify(analysisContext, currentRowIndex);
             dataHandle(analysisContext, currentRowIndex);
             dataList.clear();
         }
@@ -132,10 +134,10 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
 
     @Override
     public void invokeHead(Map<Integer, CellData> headMap, AnalysisContext analysisContext) {
-        List<CellErrorInfo> cellErrorInfoList = headCheck(headMap, analysisContext);
-        if (CollUtil.isNotEmpty(cellErrorInfoList)) {
-            addRowErrorInfo(cellErrorInfoList);
-            headError = false;
+        headError = false;
+        headCheck(headMap, analysisContext);
+        if (CollUtil.isNotEmpty(this.errorInfoList)) {
+            headError = true;
         }
         ExcelReadHeadProperty excelHeadPropertyData = analysisContext.readSheetHolder().excelReadHeadProperty();
         Map<Integer, Head> headMapData = excelHeadPropertyData.getHeadMap();
@@ -144,8 +146,13 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
             return;
         }
         fieldColumnIndexMap = new HashMap<>();
+        headNameIndexMap = new HashMap<>();
         headMapData.values().forEach(head -> {
-            fieldColumnIndexMap.put(head.getFieldName(), head.getColumnIndex());
+            Integer columnIndex = head.getColumnIndex();
+            fieldColumnIndexMap.put(head.getFieldName(), columnIndex);
+            head.getHeadNameList().forEach(headName -> {
+                headNameIndexMap.put(headName, columnIndex);
+            });
         });
     }
 
@@ -168,14 +175,22 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
     @Override
     public void extra(CellExtra cellExtra, AnalysisContext analysisContext) {}
 
-    protected void addRowErrorInfo(List<CellErrorInfo> cellErrorInfos) {
+    protected void addErrorInfo(Integer rowIndex, String headName, String... errorMessages) {
+        Integer columnIndex = headNameIndexMap.get(headName);
+        if (columnIndex == null) {
+            return;
+        }
+        errorInfoList.add(new CellErrorInfo(rowIndex, columnIndex, errorMessages));
+    }
+
+    protected void addErrorInfo(List<CellErrorInfo> cellErrorInfos) {
         if (CollUtil.isEmpty(cellErrorInfos)) {
             return;
         }
-        if (CollUtil.isEmpty(rowErrorInfoList)) {
-            rowErrorInfoList = new ArrayList<>();
+        if (CollUtil.isEmpty(errorInfoList)) {
+            this.errorInfoList = new ArrayList<>();
         }
-        rowErrorInfoList.addAll(cellErrorInfos);
+        this.errorInfoList.addAll(cellErrorInfos);
     }
 
     protected void annotationValidation(T data, ReadRowHolder readRowHolder) {
@@ -192,11 +207,11 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
                                 .addErrorMsg(errorMessages));
 
         });
-        addRowErrorInfo(errorMesInfoList);
+        addErrorInfo(errorMesInfoList);
     }
 
     public boolean hasError() {
-        return CollUtil.isNotEmpty(rowErrorInfoList);
+        return CollUtil.isNotEmpty(errorInfoList);
     }
 
 }
