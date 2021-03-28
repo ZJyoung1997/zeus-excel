@@ -50,12 +50,11 @@ public class CellErrorInfo {
         Assert.isFalse(columnIndex == null && StrUtil.isBlank(headName),
                 "ColumnIndex and HeadName can't both be empty");
         Assert.isTrue(rowIndex >= 0, "RowIndex has to be greater than or equal to 0");
-        this.rowIndex = Integer.valueOf(rowIndex);
+        this.rowIndex = rowIndex;
         if (columnIndex != null) {
             Assert.isTrue(columnIndex >= 0, "ColumnIndex has to be greater than or equal to 0");
             this.columnIndex = columnIndex;
-        }
-        if (StrUtil.isNotBlank(headName)) {
+        } else {
             this.headName = headName;
         }
         if (ArrayUtil.isNotEmpty(errorMsgs)) {

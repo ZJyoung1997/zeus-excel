@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.read.listener;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.CellExtra;
@@ -27,30 +28,37 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
      * 开启hibernate注解校验
      * true 开启、false 关闭
      */
-    protected boolean enabledAnnotationValidation = true;
+    private boolean enabledAnnotationValidation = true;
 
     /**
      * 表头是否有误
      * false 正常、true 表头错误
      */
     @Getter
-    protected boolean headError;
+    private boolean headError;
 
     /**
      * 为true时，所有数据加载到 dataList 且执行完 verify() 方法后对数据进行处理，
      * 这意味着 batchSaveNum 将无效
      */
     @Setter
-    protected boolean lastHandleData = false;
+    private boolean lastHandleData = false;
 
     /**
      * 批量保存数量
      */
     @Setter
-    protected int batchSaveNum = 500;
+    private int batchSaveNum = 500;
 
     /**
-     * 错误信息，可以是表头或数据的错误信息
+     * 表头错误信息
+     */
+    @Setter
+    @Getter
+    private String headErrorMsg;
+
+    /**
+     * 数据的错误信息（不包含表头错误信息）
      * key 为行索引，value 为单元格错误信息
      */
     @Getter
@@ -60,13 +68,13 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
      * T 中字段名与列索引映射
      * key T 中字段名、value 列索引
      */
-    protected Map<String, Integer> fieldColumnIndexMap;
+    private Map<String, Integer> fieldColumnIndexMap;
 
     /**
      * 表头与列索引映射
      * key 表头、value 表头对应列索引
      */
-    protected Map<String, Integer> headNameIndexMap;
+    private Map<String, Integer> headNameIndexMap;
 
     /**
      * Excel 中读取到的数据
@@ -136,7 +144,7 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
     public void invokeHead(Map<Integer, CellData> headMap, AnalysisContext analysisContext) {
         headError = false;
         headCheck(headMap, analysisContext);
-        if (CollUtil.isNotEmpty(this.errorInfoList)) {
+        if (StrUtil.isNotBlank(this.headErrorMsg)) {
             headError = true;
         }
         ExcelReadHeadProperty excelHeadPropertyData = analysisContext.readSheetHolder().excelReadHeadProperty();
@@ -210,7 +218,19 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
         addErrorInfo(errorMesInfoList);
     }
 
-    public boolean hasError() {
+    /**
+     * 判断是否存在表头错误
+     * @return true 存在表头错误、false 不存在表头错误
+     */
+    public boolean hasHeadError() {
+        return this.headError;
+    }
+
+    /**
+     * 判断是否存在数据错误
+     * @return true 存在数据错误、false 不存在数据错误
+     */
+    public boolean hasDataError() {
         return CollUtil.isNotEmpty(errorInfoList);
     }
 

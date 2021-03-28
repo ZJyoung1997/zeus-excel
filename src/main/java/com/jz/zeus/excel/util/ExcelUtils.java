@@ -150,7 +150,9 @@ public class ExcelUtils {
                 .head(dataClass)
                 .registerReadListener(readListener)
                 .doRead();
-        addErrorInfo(outputStream, excelBytes, sheetName, readListener.getErrorInfoList());
+        if (!readListener.hasDataError()) {
+            addErrorInfo(outputStream, excelBytes, sheetName, readListener.getErrorInfoList());
+        }
     }
 
     /**
