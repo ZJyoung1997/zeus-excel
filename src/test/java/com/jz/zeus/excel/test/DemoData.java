@@ -17,7 +17,7 @@ public class DemoData {
 //            borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
 //            borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
     @HeadFontStyle(fontName = "黑体", color = 10, bold = false)
-    @ExcelProperty(value = "媒体CODE")
+    @ExcelProperty(value = {"媒体CODE", "第二行表头"})
     private String mateCode;
 
     @IsLong

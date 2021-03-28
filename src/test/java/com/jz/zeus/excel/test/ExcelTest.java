@@ -24,15 +24,15 @@ import java.util.List;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
-        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, getDropDownBoxInfo(), Arrays.asList("src"));
+//        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, getDropDownBoxInfo(), Arrays.asList("src"));
 
-//        write(new FileOutputStream(path), null);
+//        write(new FileOutputStream(path), getCellErrorInfo());
 
         AbstractExcelReadListener readListener = new DemoExcelReadListener(5);
-//        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
+        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
 //        read(new FileInputStream(path), readListener);
 //        ExcelUtils.addErrorInfo(path, path, "模板", readListener.getErrorInfoList());
@@ -53,6 +53,7 @@ public class ExcelTest {
         EasyExcel.write(outputStream)
                 .sheet("模板").head(DemoData.class)
                 .registerWriteHandler(new DefaultHeadStyleHandler())
+                .registerWriteHandler(new ErrorInfoCommentHandler(cellErrorInfoList))
                 .registerWriteHandler(new DropDownBoxSheetHandler(getDropDownBoxInfo()))
 //                .excludeColumnFiledNames(Arrays.asList("dest"))
 //                .doWrite(Collections.emptyList());

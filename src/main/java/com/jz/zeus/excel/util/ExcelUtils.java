@@ -36,8 +36,8 @@ public class ExcelUtils {
      * @param <T>
      */
     public <T> void createTemplate(OutputStream outputStream, String sheetName, List<String> headList, List<DropDownBoxInfo> dropDownBoxInfoList) {
-        List<List<String>> heads = new ArrayList<>(1);
-        heads.add(headList);
+        List<List<String>> heads = new ArrayList<>(headList.size());
+        headList.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
         EasyExcel.write(outputStream)
                 .sheet(sheetName)
                 .head(heads)
@@ -50,31 +50,17 @@ public class ExcelUtils {
      * 创建一个有表头的空Excel
      * @param outputStream             Excel的输出流
      * @param sheetName                sheet名，可以为null
-     * @param dataClass                表示表头信息的class
+     * @param headClass                表示表头信息的class
      * @param dropDownBoxInfoList      下拉框配置信息
      * @param excludeColumnFiledNames   不需要包含的表头，可以为null
      * @param <T>
      */
-    public <T> void createTemplate(OutputStream outputStream, String sheetName, Class<T> dataClass, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
-        createTemplate(outputStream, sheetName, dataClass, null, dropDownBoxInfoList, excludeColumnFiledNames);
-    }
-
-    /**
-     * 创建一个有表头的空Excel
-     * @param outputStream             Excel的输出流
-     * @param sheetName                sheet名，可以为null
-     * @param dataClass                表示表头信息的class
-     * @param headRowNum               表示表头行数
-     * @param dropDownBoxInfoList      下拉框配置信息
-     * @param excludeColumnFiledNames   不需要包含的表头，可以为null
-     * @param <T>
-     */
-    public <T> void createTemplate(OutputStream outputStream, String sheetName, Class<T> dataClass, Integer headRowNum, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+    public <T> void createTemplate(OutputStream outputStream, String sheetName, Class<T> headClass, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
         EasyExcel.write(outputStream)
                 .sheet(sheetName)
-                .head(dataClass)
+                .head(headClass)
                 .registerWriteHandler(new DefaultHeadStyleHandler())
-                .registerWriteHandler(new DropDownBoxSheetHandler(headRowNum, dropDownBoxInfoList))
+                .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
                 .excludeColumnFiledNames(excludeColumnFiledNames)
                 .doWrite(Collections.emptyList());
     }
@@ -88,8 +74,8 @@ public class ExcelUtils {
      * @param <T>
      */
     public <T> void createTemplate(String excelName, String sheetName, List<String> headList, List<DropDownBoxInfo> dropDownBoxInfoList) {
-        List<List<String>> heads = new ArrayList<>(1);
-        heads.add(headList);
+        List<List<String>> heads = new ArrayList<>(headList.size());
+        headList.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
         EasyExcel.write(excelName)
                 .sheet(sheetName)
                 .head(heads)
@@ -102,31 +88,17 @@ public class ExcelUtils {
      * 创建一个有表头的空Excel
      * @param excelName                Excel全路径名
      * @param sheetName                sheet名，可以为null
-     * @param dataClass                表示表头信息的class
+     * @param headClass                表示表头信息的class
      * @param dropDownBoxInfoList      下拉框配置信息
      * @param excludeColumnFiledNames   不需要包含的表头，可以为null
      * @param <T>
      */
-    public <T> void createTemplate(String excelName, String sheetName, Class<T> dataClass, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
-        createTemplate(excelName, sheetName, dataClass, null, dropDownBoxInfoList, excludeColumnFiledNames);
-    }
-
-    /**
-     * 创建一个有表头的空Excel
-     * @param excelName                Excel全路径名
-     * @param sheetName                sheet名，可以为null
-     * @param dataClass                表示表头信息的class
-     * @param headRowNum               表示表头行数
-     * @param dropDownBoxInfoList      下拉框配置信息
-     * @param excludeColumnFiledNames   不需要包含的表头，可以为null
-     * @param <T>
-     */
-    public <T> void createTemplate(String excelName, String sheetName, Class<T> dataClass, Integer headRowNum, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+    public <T> void createTemplate(String excelName, String sheetName, Class<T> headClass, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
         EasyExcel.write(excelName)
                 .sheet(sheetName)
-                .head(dataClass)
+                .head(headClass)
                 .registerWriteHandler(new DefaultHeadStyleHandler())
-                .registerWriteHandler(new DropDownBoxSheetHandler(headRowNum, dropDownBoxInfoList))
+                .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
                 .excludeColumnFiledNames(excludeColumnFiledNames)
                 .doWrite(Collections.emptyList());
     }
@@ -150,36 +122,34 @@ public class ExcelUtils {
                 .head(dataClass)
                 .registerReadListener(readListener)
                 .doRead();
-        if (!readListener.hasDataError()) {
-            addErrorInfo(outputStream, excelBytes, sheetName, readListener.getErrorInfoList());
-        }
+        addErrorInfo(outputStream, excelBytes, sheetName, readListener.getErrorInfoList());
     }
 
     /**
      *
      * @param resultExcelName
-     * @param templateExcelName
+     * @param sourceExcelName
      * @param errorInfos
      */
     @SneakyThrows
-    public void addErrorInfo(String resultExcelName, String templateExcelName, String sheetName, List<CellErrorInfo> errorInfos) {
-        if (resultExcelName.equals(templateExcelName)) {
-            byte[] excelBytes = IoUtils.toByteArray(new FileInputStream(templateExcelName));
+    public void addErrorInfo(String resultExcelName, String sourceExcelName, String sheetName, List<CellErrorInfo> errorInfos) {
+        if (resultExcelName.equals(sourceExcelName)) {
+            byte[] excelBytes = IoUtils.toByteArray(new FileInputStream(sourceExcelName));
             addErrorInfo(new FileOutputStream(resultExcelName), excelBytes, sheetName, errorInfos);
         } else {
-            addErrorInfo(new FileOutputStream(resultExcelName), new FileInputStream(templateExcelName), sheetName, errorInfos);
+            addErrorInfo(new FileOutputStream(resultExcelName), new FileInputStream(sourceExcelName), sheetName, errorInfos);
         }
     }
 
     /**
      * @param resultOutputStream    要写入的Excel的输出流
-     * @param templateInputStream   模板Excel的输入流
+     * @param sourceInputStream     模板Excel的输入流
      * @param errorInfos            错误信息
      */
     @SneakyThrows
-    public void addErrorInfo(OutputStream resultOutputStream, InputStream templateInputStream, String sheetName, List<CellErrorInfo> errorInfos) {
+    public void addErrorInfo(OutputStream resultOutputStream, InputStream sourceInputStream, String sheetName, List<CellErrorInfo> errorInfos) {
         EasyExcel.write(resultOutputStream)
-                .withTemplate(templateInputStream)
+                .withTemplate(sourceInputStream)
                 .sheet(sheetName)
                 .registerWriteHandler(new ErrorInfoCommentHandler(errorInfos))
                 .doWrite(Collections.emptyList());
@@ -187,14 +157,17 @@ public class ExcelUtils {
 
     /**
      * @param resultOutputStream    要写入的Excel的输出流
-     * @param templateExcelBytes    模板Excel的字节数组
+     * @param sourceExcelBytes      需要添加错误信息的Excel的字节数组
+     * @param sheetName             需要添加错误信息的sheet名称
+     * @param headClass             表头信息类
      * @param errorInfos            错误信息
      */
     @SneakyThrows
-    public void addErrorInfo(OutputStream resultOutputStream, byte[] templateExcelBytes, String sheetName, List<CellErrorInfo> errorInfos) {
+    public void addErrorInfo(OutputStream resultOutputStream, byte[] sourceExcelBytes, String sheetName, Class<?> headClass, List<CellErrorInfo> errorInfos) {
         EasyExcel.write(resultOutputStream)
-                .withTemplate(new ByteArrayInputStream(templateExcelBytes))
+                .withTemplate(new ByteArrayInputStream(sourceExcelBytes))
                 .sheet(sheetName)
+                .head(headClass)
                 .registerWriteHandler(new ErrorInfoCommentHandler(errorInfos))
                 .doWrite(Collections.emptyList());
     }

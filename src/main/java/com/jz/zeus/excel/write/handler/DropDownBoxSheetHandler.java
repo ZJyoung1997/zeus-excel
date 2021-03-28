@@ -19,13 +19,6 @@ import java.util.List;
  */
 public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
 
-    private static final Integer DEFAULT_HEAD_ROW_NUM = 1;
-
-    /**
-     * 表头行数
-     */
-    private Integer headRowNum;
-
     /**
      * 下拉框信息
      */
@@ -36,9 +29,7 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
     }
 
     public DropDownBoxSheetHandler(Integer headRowNum, List<DropDownBoxInfo> dropDownBoxInfoList) {
-        if (headRowNum == null) {
-            this.headRowNum = DEFAULT_HEAD_ROW_NUM;
-        }
+        super(headRowNum);
         this.dropDownBoxInfoList = dropDownBoxInfoList;
     }
 
@@ -47,7 +38,11 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
         if (CollUtil.isEmpty(dropDownBoxInfoList)) {
             return;
         }
+
+        initHeadRowNum(writeSheetHolder);
         initHeadNameIndexMap(writeSheetHolder);
+
+        Integer headRowNum = getHeadRowNum();
         Sheet sheet = writeSheetHolder.getSheet();
         dropDownBoxInfoList.forEach(boxInfo -> {
             Integer rowIndex = boxInfo.getRowIndex();
