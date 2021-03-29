@@ -1,5 +1,6 @@
 package com.jz.zeus.excel.test;
 
+import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ContentFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
@@ -17,7 +18,7 @@ public class DemoData {
 //            borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
 //            borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
     @HeadFontStyle(fontName = "黑体", color = 10, bold = false)
-    @ExcelProperty(value = {"媒体CODE", "第二行表头"})
+    @ExcelProperty(value = {"媒体CODE"})
     private String mateCode;
 
     @IsLong

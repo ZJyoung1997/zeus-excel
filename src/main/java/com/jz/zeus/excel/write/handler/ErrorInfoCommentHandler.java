@@ -1,7 +1,6 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
-import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.jz.zeus.excel.CellErrorInfo;
@@ -38,6 +37,10 @@ public class ErrorInfoCommentHandler extends AbstractZeusSheetWriteHandler {
         this(null, errorInfoList);
     }
 
+    /**
+     * @param headRowNum     仅对用表头名作为列坐标时有影响，有误会导致加载不到对应表头，导致对应单元格无法添加错误信息
+     * @param errorInfoList
+     */
     public ErrorInfoCommentHandler(Integer headRowNum, List<CellErrorInfo> errorInfoList) {
         super(headRowNum);
         if (CollUtil.isNotEmpty(errorInfoList)) {
@@ -51,11 +54,7 @@ public class ErrorInfoCommentHandler extends AbstractZeusSheetWriteHandler {
         if (CollUtil.isEmpty(rowErrorInfoMap)) {
             return;
         }
-        initHeadRowNum(writeSheetHolder);
-
-        Integer headRowNum = getHeadRowNum();
         Sheet sheet = writeSheetHolder.getCachedSheet();
-        Map<Integer, Head> headMap = writeSheetHolder.getExcelWriteHeadProperty().getHeadMap();
         initHeadNameIndexMap(writeSheetHolder);
         rowErrorInfoMap.forEach((rowIndex, errorInfos) -> {
             Row row = sheet.getRow(rowIndex);
