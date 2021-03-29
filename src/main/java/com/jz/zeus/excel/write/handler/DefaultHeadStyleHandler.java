@@ -6,6 +6,7 @@ import com.alibaba.excel.write.handler.AbstractCellWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.jz.zeus.excel.util.StringUtils;
+import com.jz.zeus.excel.write.property.StyleProperty;
 import org.apache.poi.ss.usermodel.*;
 
 import java.util.List;
@@ -18,20 +19,12 @@ public class DefaultHeadStyleHandler extends AbstractCellWriteHandler {
 
     private static final int MAX_COLUMN_WIDTH = 255*256;
 
-    private static final int DEFAULT_HEAD_FONT_SIZE = 18;
-
-    private int fontSize;
+    /**
+     * 表头单元格样式，下标对应列索引
+     */
+    private List<StyleProperty> headStyles;
 
     public DefaultHeadStyleHandler() {
-        this(DEFAULT_HEAD_FONT_SIZE);
-    }
-
-    public DefaultHeadStyleHandler(Integer fontSize) {
-        if (fontSize == null) {
-            this.fontSize = DEFAULT_HEAD_FONT_SIZE;
-        } else {
-            this.fontSize = fontSize;
-        }
     }
 
 
@@ -40,32 +33,24 @@ public class DefaultHeadStyleHandler extends AbstractCellWriteHandler {
         if (!Boolean.TRUE.equals(isHead)) {
             return;
         }
+        StyleProperty cellStyleProperty = StyleProperty.getDefaultHeadProperty();
         Sheet sheet = writeSheetHolder.getSheet();
-
-        sheet.setColumnWidth(cell.getColumnIndex(), columnWidth(cell.getStringCellValue()));
+        sheet.setColumnWidth(cell.getColumnIndex(),
+                columnWidth(cell.getStringCellValue(), cellStyleProperty.getFontSize()));
 
         Workbook workbook = sheet.getWorkbook();
         CellStyle cellStyle = workbook.createCellStyle();
-        cellStyle.setFillPattern(FillPatternType.NO_FILL);
-        cellStyle.setBorderLeft(BorderStyle.NONE);
-        cellStyle.setBorderRight(BorderStyle.NONE);
-        cellStyle.setBorderTop(BorderStyle.NONE);
-        cellStyle.setBorderBottom(BorderStyle.NONE);
-        cellStyle.setAlignment(HorizontalAlignment.CENTER);
-        cellStyle.setVerticalAlignment(VerticalAlignment.CENTER);
-        cell.setCellStyle(cellStyle);
 
-        Font font = workbook.createFont();
-        font.setFontHeightInPoints((short) fontSize);
-        font.setBold(false);
-        font.setFontName("黑体");
-        cellStyle.setFont(font);
+        cellStyleProperty.setCellStyle(workbook.createCellStyle());
+        cell.setCellStyle(cellStyleProperty.setCellStyle(cellStyle));
+
+        cellStyle.setFont(cellStyleProperty.setFontStyle(workbook.createFont()));
     }
 
     /**
      * 根据表头计算列宽
      */
-    private int columnWidth(String value) {
+    private int columnWidth(String value, int fontSize) {
         int chineseNum = StringUtils.chineseNum(value);
         int dataLength = (int) (value.length() - chineseNum + chineseNum * 1.4);
         int columnWidth = dataLength * 36 * fontSize;

@@ -26,15 +26,15 @@ import java.util.List;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, getDropDownBoxInfo(), null);
 
-//        write(new FileOutputStream(path), getCellErrorInfo());
+        write(new FileOutputStream(path), getCellErrorInfo());
 
         AbstractExcelReadListener readListener = new DemoExcelReadListener(5);
-        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class, null);
+//        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class, null);
 
 //        read(new FileInputStream(path), readListener);
 //        ExcelUtils.addErrorInfo(path, path, "模板", readListener.getErrorInfoList());
