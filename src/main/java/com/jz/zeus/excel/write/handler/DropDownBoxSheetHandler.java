@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.ArrayUtil;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.jz.zeus.excel.DropDownBoxInfo;
@@ -11,6 +12,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -75,6 +77,21 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
             dataValidation.setSuppressDropDownArrow(false);
         }
         sheet.addValidationData(dataValidation);
+    }
+
+    public void addDropDownBoxInfo(DropDownBoxInfo dropDownBoxInfo) {
+        if (dropDownBoxInfo != null) {
+            dropDownBoxInfoList.add(dropDownBoxInfo);
+        }
+    }
+
+    public void addDropDownBoxInfo(Integer[] columnIndexs, String... options) {
+        if (ArrayUtil.isNotEmpty(columnIndexs) && ArrayUtil.isNotEmpty(options)) {
+            List<String> optionList = Arrays.asList(options);
+            for (int i = 0; i < columnIndexs.length; i++) {
+                dropDownBoxInfoList.add(new DropDownBoxInfo(columnIndexs[i], optionList));
+            }
+        }
     }
 
 }

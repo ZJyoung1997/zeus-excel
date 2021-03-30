@@ -39,6 +39,11 @@ public class DropDownBoxInfo {
         this(headName, null, options);
     }
 
+
+    public DropDownBoxInfo(String headName, List<String> options) {
+        this(headName, null, options);
+    }
+
     public DropDownBoxInfo(String headName, Integer rowNum, String... options) {
         Assert.isTrue(StrUtil.isNotBlank(headName), "HeadName can't be empty");
         this.headName = headName;
@@ -46,7 +51,18 @@ public class DropDownBoxInfo {
         this.options = options == null ? Collections.emptyList() : Arrays.asList(options);
     }
 
+    public DropDownBoxInfo(String headName, Integer rowNum, List<String> options) {
+        Assert.isTrue(StrUtil.isNotBlank(headName), "HeadName can't be empty");
+        this.headName = headName;
+        this.rowNum = rowNum == null ? DEFAULT_ROW_NUM : rowNum;
+        this.options = options;
+    }
+
     public DropDownBoxInfo(Integer columnIndex, String... options) {
+        this(columnIndex, null, options);
+    }
+
+    public DropDownBoxInfo(Integer columnIndex, List<String> options) {
         this(columnIndex, null, options);
     }
 
@@ -55,6 +71,13 @@ public class DropDownBoxInfo {
         this.columnIndex = columnIndex;
         this.rowNum = rowNum == null ? DEFAULT_ROW_NUM : rowNum;
         this.options = options == null ? Collections.emptyList() : Arrays.asList(options);
+    }
+
+    public DropDownBoxInfo(Integer columnIndex, Integer rowNum, List<String> options) {
+        Assert.isTrue(columnIndex != null, "ColumnIndex can't be null");
+        this.columnIndex = columnIndex;
+        this.rowNum = rowNum == null ? DEFAULT_ROW_NUM : rowNum;
+        this.options = options;
     }
 
     public static DropDownBoxInfo getRowDropDownBoxInfo(Integer rowIndex, String... options) {
