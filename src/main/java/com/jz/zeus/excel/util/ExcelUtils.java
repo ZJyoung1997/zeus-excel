@@ -10,7 +10,7 @@ import com.alibaba.excel.util.IoUtils;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
 import com.jz.zeus.excel.read.listener.AbstractExcelReadListener;
-import com.jz.zeus.excel.write.handler.DefaultHeadStyleHandler;
+import com.jz.zeus.excel.write.handler.HeadStyleHandler;
 import com.jz.zeus.excel.write.handler.DropDownBoxSheetHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import lombok.SneakyThrows;
@@ -41,13 +41,14 @@ public class ExcelUtils {
      * @param dropDownBoxInfoList      下拉框配置信息
      * @param <T>
      */
-    public <T> void createTemplate(OutputStream outputStream, String sheetName, List<String> headList, List<DropDownBoxInfo> dropDownBoxInfoList) {
+    public <T> void createTemplate(OutputStream outputStream, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
         List<List<String>> heads = new ArrayList<>(headList.size());
         headList.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
         EasyExcel.write(outputStream)
+                .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(heads)
-                .registerWriteHandler(new DefaultHeadStyleHandler())
+                .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
                 .doWrite(Collections.emptyList());
     }
@@ -61,11 +62,12 @@ public class ExcelUtils {
      * @param excludeColumnFiledNames   不需要包含的表头，可以为null
      * @param <T>
      */
-    public <T> void createTemplate(OutputStream outputStream, String sheetName, Class<T> headClass, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+    public <T> void createTemplate(OutputStream outputStream, String sheetName, Class<T> headClass, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
         EasyExcel.write(outputStream)
+                .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(headClass)
-                .registerWriteHandler(new DefaultHeadStyleHandler())
+                .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
                 .excludeColumnFiledNames(excludeColumnFiledNames)
                 .doWrite(Collections.emptyList());
@@ -79,13 +81,14 @@ public class ExcelUtils {
      * @param dropDownBoxInfoList      下拉框配置信息
      * @param <T>
      */
-    public <T> void createTemplate(String excelName, String sheetName, List<String> headList, List<DropDownBoxInfo> dropDownBoxInfoList) {
+    public <T> void createTemplate(String excelName, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
         List<List<String>> heads = new ArrayList<>(headList.size());
         headList.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
         EasyExcel.write(excelName)
+                .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(heads)
-                .registerWriteHandler(new DefaultHeadStyleHandler())
+                .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
                 .doWrite(Collections.emptyList());
     }
@@ -101,9 +104,10 @@ public class ExcelUtils {
      */
     public <T> void createTemplate(String excelName, String sheetName, Class<T> headClass, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
         EasyExcel.write(excelName)
+                .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(headClass)
-                .registerWriteHandler(new DefaultHeadStyleHandler())
+                .registerWriteHandler(new HeadStyleHandler())
                 .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
                 .excludeColumnFiledNames(excludeColumnFiledNames)
                 .doWrite(Collections.emptyList());

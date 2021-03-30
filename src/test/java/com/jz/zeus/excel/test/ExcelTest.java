@@ -2,20 +2,26 @@ package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.ReadListener;
+import com.alibaba.excel.write.builder.ExcelWriterBuilder;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
+import com.jz.zeus.excel.constant.Constants;
 import com.jz.zeus.excel.read.listener.AbstractExcelReadListener;
 import com.jz.zeus.excel.util.ExcelUtils;
-import com.jz.zeus.excel.write.handler.DefaultHeadStyleHandler;
+import com.jz.zeus.excel.write.handler.HeadStyleHandler;
 import com.jz.zeus.excel.write.handler.DropDownBoxSheetHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
+import com.jz.zeus.excel.write.property.CellStyleProperty;
 import lombok.SneakyThrows;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,12 +32,16 @@ import java.util.List;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
-//        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, getDropDownBoxInfo(), null);
+        CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
+        styleProperty.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        styleProperty.setFillForegroundColor(IndexedColors.RED.index);
+        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
+//        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(styleProperty), null, null);
 
-        write(new FileOutputStream(path), getCellErrorInfo());
+//        write(new FileOutputStream(path), getCellErrorInfo());
 
         AbstractExcelReadListener readListener = new DemoExcelReadListener(5);
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class, null);
@@ -54,7 +64,7 @@ public class ExcelTest {
     public static void write(OutputStream outputStream, List<CellErrorInfo> cellErrorInfoList) {
         EasyExcel.write(outputStream)
                 .sheet("模板").head(DemoData.class)
-                .registerWriteHandler(new DefaultHeadStyleHandler())
+                .registerWriteHandler(new HeadStyleHandler())
                 .registerWriteHandler(new ErrorInfoCommentHandler(cellErrorInfoList))
                 .registerWriteHandler(new DropDownBoxSheetHandler(getDropDownBoxInfo()))
 //                .excludeColumnFiledNames(Arrays.asList("dest"))

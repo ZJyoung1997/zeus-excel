@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.write.property;
 
 import cn.hutool.core.util.StrUtil;
+import com.jz.zeus.excel.constant.Constants;
 import lombok.Data;
 import org.apache.poi.ss.usermodel.*;
 
@@ -9,12 +10,32 @@ import org.apache.poi.ss.usermodel.*;
  * @date:2021/3/29
  */
 @Data
-public class StyleProperty {
+public class CellStyleProperty {
+
+    /**
+     * 宽度
+     */
+    private Integer width;
+
+    /**
+     * 高度
+     */
+    private Integer height;
 
     /**
      * 填充类型
      */
     private FillPatternType fillPattern;
+
+    /**
+     * 前景色
+     */
+    private Short fillForegroundColor;
+
+    /**
+     * 背景色
+     */
+    private Short fillBackgroundColor;
 
     /**
      * 左边框样式
@@ -61,26 +82,34 @@ public class StyleProperty {
      */
     private String fontName;
 
+    public void setWidth(Integer width) {
+        if (width != null && width > Constants.MAX_COLUMN_WIDTH) {
+            this.width = Constants.MAX_COLUMN_WIDTH;
+        } else {
+            this.width = width;
+        }
+    }
+
     /**
      * 返回默认表头样式
      */
-    public static StyleProperty getDefaultHeadProperty() {
-        StyleProperty styleProperty = new StyleProperty();
-        styleProperty.setFillPattern(FillPatternType.NO_FILL);
-        styleProperty.setBorderLeft(BorderStyle.NONE);
-        styleProperty.setBorderRight(BorderStyle.NONE);
-        styleProperty.setBorderTop(BorderStyle.NONE);
-        styleProperty.setBorderBottom(BorderStyle.NONE);
-        styleProperty.setHorizontalAlignment(HorizontalAlignment.CENTER);
-        styleProperty.setVerticalAlignment(VerticalAlignment.CENTER);
+    public static CellStyleProperty getDefaultHeadProperty() {
+        CellStyleProperty cellStyleProperty = new CellStyleProperty();
+        cellStyleProperty.setFillPattern(FillPatternType.NO_FILL);
+        cellStyleProperty.setBorderLeft(BorderStyle.NONE);
+        cellStyleProperty.setBorderRight(BorderStyle.NONE);
+        cellStyleProperty.setBorderTop(BorderStyle.NONE);
+        cellStyleProperty.setBorderBottom(BorderStyle.NONE);
+        cellStyleProperty.setHorizontalAlignment(HorizontalAlignment.CENTER);
+        cellStyleProperty.setVerticalAlignment(VerticalAlignment.CENTER);
 
-        styleProperty.setFontSize(18);
-        styleProperty.setIsBold(false);
-        styleProperty.setFontName("黑体");
-        return styleProperty;
+        cellStyleProperty.setFontSize(18);
+        cellStyleProperty.setIsBold(false);
+        cellStyleProperty.setFontName("黑体");
+        return cellStyleProperty;
     }
 
-    public Font setFontStyle(Font font) {
+    public void setFontStyle(Font font) {
         if (fontSize != null) {
             font.setFontHeightInPoints(Short.parseShort(fontSize.toString()));
         }
@@ -90,12 +119,18 @@ public class StyleProperty {
         if (StrUtil.isNotBlank(fontName)) {
             font.setFontName(fontName);
         }
-        return font;
+        return;
     }
 
     public CellStyle setCellStyle(CellStyle cellStyle) {
         if (fillPattern != null) {
             cellStyle.setFillPattern(fillPattern);
+        }
+        if (fillForegroundColor != null) {
+            cellStyle.setFillForegroundColor(fillForegroundColor);
+        }
+        if (fillBackgroundColor != null) {
+            cellStyle.setFillBackgroundColor(fillBackgroundColor);
         }
         if (borderLeft != null) {
             cellStyle.setBorderLeft(borderLeft);
