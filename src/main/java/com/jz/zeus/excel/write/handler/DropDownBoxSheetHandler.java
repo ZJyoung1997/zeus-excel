@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -81,12 +82,18 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
 
     public void addDropDownBoxInfo(DropDownBoxInfo dropDownBoxInfo) {
         if (dropDownBoxInfo != null) {
+            if (CollUtil.isEmpty(dropDownBoxInfoList)) {
+                dropDownBoxInfoList = new ArrayList<>();
+            }
             dropDownBoxInfoList.add(dropDownBoxInfo);
         }
     }
 
     public void addDropDownBoxInfo(Integer[] columnIndexs, String... options) {
         if (ArrayUtil.isNotEmpty(columnIndexs) && ArrayUtil.isNotEmpty(options)) {
+            if (CollUtil.isEmpty(dropDownBoxInfoList)) {
+                dropDownBoxInfoList = new ArrayList<>();
+            }
             List<String> optionList = Arrays.asList(options);
             for (int i = 0; i < columnIndexs.length; i++) {
                 dropDownBoxInfoList.add(new DropDownBoxInfo(columnIndexs[i], optionList));
