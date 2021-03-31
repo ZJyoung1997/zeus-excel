@@ -15,13 +15,16 @@ import com.jz.zeus.excel.write.handler.DropDownBoxSheetHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 import org.hibernate.validator.internal.util.ConcurrentReferenceHashMap;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.lang.reflect.Field;
+import java.net.URLEncoder;
 import java.util.*;
 
 /**
@@ -32,6 +35,43 @@ import java.util.*;
 public class ExcelUtils {
 
     private static final Map<Class, List<List<String>>> CLASS_HEAD_CACHE_MAP = new ConcurrentReferenceHashMap<>();
+
+    /**
+     * 将生成的Excel直接写入response
+     * @param response
+     * @param excelName                 Excel名
+     * @param sheetName                 sheet名，可以为 null
+     * @param headClass                 表示表头信息的 class
+     * @param dropDownBoxInfoList       下拉框配置信息
+     * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
+     */
+    @SneakyThrows
+    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, Class<T> headClass, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("utf-8");
+        // 这里URLEncoder.encode可以防止中文乱码
+        String fileName = URLEncoder.encode(excelName, "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+        createTemplate(response.getOutputStream(), sheetName, headClass, headStyleHandler, dropDownBoxInfoList, excludeColumnFiledNames);
+    }
+
+    /**
+     * 将生成的Excel直接写入response
+     * @param response
+     * @param excelName                Excel名
+     * @param sheetName                sheet名，可以为null
+     * @param headList                 表头
+     * @param dropDownBoxInfoList      下拉框配置信息
+     */
+    @SneakyThrows
+    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
+        response.setContentType("application/vnd.ms-excel");
+        response.setCharacterEncoding("utf-8");
+        // 这里URLEncoder.encode可以防止中文乱码
+        String fileName = URLEncoder.encode(excelName, "UTF-8").replaceAll("\\+", "%20");
+        response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
+        createTemplate(response.getOutputStream(), sheetName, headList, headStyleHandler, dropDownBoxInfoList);
+    }
 
     /**
      * 创建一个有表头的空Excel
@@ -55,11 +95,11 @@ public class ExcelUtils {
 
     /**
      * 创建一个有表头的空Excel
-     * @param outputStream             Excel的输出流
-     * @param sheetName                sheet名，可以为null
-     * @param headClass                表示表头信息的class
-     * @param dropDownBoxInfoList      下拉框配置信息
-     * @param excludeColumnFiledNames   不需要包含的表头，可以为null
+     * @param outputStream              Excel的输出流
+     * @param sheetName                 sheet名，可以为 null
+     * @param headClass                 表示表头信息的 class
+     * @param dropDownBoxInfoList       下拉框配置信息
+     * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
      * @param <T>
      */
     public <T> void createTemplate(OutputStream outputStream, String sheetName, Class<T> headClass, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
