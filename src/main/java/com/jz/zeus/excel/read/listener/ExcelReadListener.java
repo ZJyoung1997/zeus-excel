@@ -46,7 +46,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      * 批量保存数量
      */
     @Setter
-    private int batchSaveNum = 500;
+    private int batchHandleNum = 500;
 
     /**
      * 表头错误信息
@@ -85,19 +85,19 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         this(lastHandleData, null, null);
     }
 
-    public ExcelReadListener(Integer batchSaveNum) {
-        this(null, null, batchSaveNum);
+    public ExcelReadListener(Integer batchHandleNum) {
+        this(null, null, batchHandleNum);
     }
 
-    public ExcelReadListener(Boolean lastHandleData, Boolean enabledAnnotationValidation, Integer batchSaveNum) {
+    public ExcelReadListener(Boolean lastHandleData, Boolean enabledAnnotationValidation, Integer batchHandleNum) {
         if (lastHandleData != null) {
             this.lastHandleData = lastHandleData;
         }
         if (enabledAnnotationValidation != null) {
             this.enabledAnnotationValidation = enabledAnnotationValidation;
         }
-        if (batchSaveNum != null) {
-            this.batchSaveNum = batchSaveNum;
+        if (batchHandleNum != null) {
+            this.batchHandleNum = batchHandleNum;
         }
     }
 
@@ -127,7 +127,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     public void invoke(T data, AnalysisContext analysisContext) {
         annotationValidation(data, analysisContext.readRowHolder());
         dataList.add(data);
-        if (!lastHandleData && dataList.size() >= batchSaveNum) {
+        if (!lastHandleData && dataList.size() >= batchHandleNum) {
             Integer currentRowIndex = analysisContext.readRowHolder().getRowIndex();
             verify(analysisContext, currentRowIndex);
             dataHandle(analysisContext, currentRowIndex);
