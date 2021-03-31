@@ -1,10 +1,12 @@
 package com.jz.zeus.excel;
 
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -78,6 +80,30 @@ public class DropDownBoxInfo {
         this.columnIndex = columnIndex;
         this.rowNum = rowNum == null ? DEFAULT_ROW_NUM : rowNum;
         this.options = options;
+    }
+
+    public static List<DropDownBoxInfo> getCommonHeadBoxInfo(String[] headNames, String... options) {
+        if (ArrayUtil.isEmpty(headNames) || ArrayUtil.isEmpty(options)) {
+            return new ArrayList<>(0);
+        }
+        List<DropDownBoxInfo> dropDownBoxInfoList = new ArrayList<>();
+        List<String> optionList = Arrays.asList(options);
+        for(int i = 0; i < headNames.length; ++i) {
+            dropDownBoxInfoList.add(new DropDownBoxInfo(headNames[i], optionList));
+        }
+        return dropDownBoxInfoList;
+    }
+
+    public static List<DropDownBoxInfo> getCommonHeadBoxInfo(Integer[] columnIndexs, String... options) {
+        if (ArrayUtil.isEmpty(columnIndexs) || ArrayUtil.isEmpty(options)) {
+            return new ArrayList<>(0);
+        }
+        List<DropDownBoxInfo> dropDownBoxInfoList = new ArrayList<>();
+        List<String> optionList = Arrays.asList(options);
+        for(int i = 0; i < columnIndexs.length; ++i) {
+            dropDownBoxInfoList.add(new DropDownBoxInfo(columnIndexs[i], optionList));
+        }
+        return dropDownBoxInfoList;
     }
 
     public static DropDownBoxInfo getRowDropDownBoxInfo(Integer rowIndex, String... options) {
