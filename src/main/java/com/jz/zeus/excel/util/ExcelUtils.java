@@ -9,7 +9,7 @@ import com.alibaba.excel.util.ClassUtils;
 import com.alibaba.excel.util.IoUtils;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
-import com.jz.zeus.excel.read.listener.AbstractExcelReadListener;
+import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.write.handler.DropDownBoxSheetHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import com.jz.zeus.excel.write.handler.HeadStyleHandler;
@@ -157,7 +157,7 @@ public class ExcelUtils {
      * @param <T>
      */
     @SneakyThrows
-    public <T> void readAndWriteErrorMsg(AbstractExcelReadListener<T> readListener, String excelName, String sheetName, Class<T> headClass, List<String> excludeColumnFiledNames) {
+    public <T> void readAndWriteErrorMsg(ExcelReadListener<T> readListener, String excelName, String sheetName, Class<T> headClass, List<String> excludeColumnFiledNames) {
         byte[] excelBytes = IoUtils.toByteArray(new FileInputStream(excelName));
         readAndWriteErrorMsg(readListener, excelBytes, new FileOutputStream(excelName), sheetName, headClass);
     }
@@ -172,7 +172,7 @@ public class ExcelUtils {
      * @param <T>
      */
     @SneakyThrows
-    public <T> void readAndWriteErrorMsg(AbstractExcelReadListener<T> readListener, byte[] excelBytes, OutputStream outputStream, String sheetName, Class<T> headClass) {
+    public <T> void readAndWriteErrorMsg(ExcelReadListener<T> readListener, byte[] excelBytes, OutputStream outputStream, String sheetName, Class<T> headClass) {
         EasyExcel.read(new ByteArrayInputStream(excelBytes))
                 .sheet(sheetName)
                 .head(headClass)
