@@ -10,12 +10,11 @@ import com.alibaba.excel.util.IoUtils;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
 import com.jz.zeus.excel.read.listener.AbstractExcelReadListener;
-import com.jz.zeus.excel.write.handler.HeadStyleHandler;
 import com.jz.zeus.excel.write.handler.DropDownBoxSheetHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
+import com.jz.zeus.excel.write.handler.HeadStyleHandler;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import org.apache.poi.ss.formula.functions.T;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
@@ -46,7 +45,7 @@ public class ExcelUtils {
      * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
      */
     @SneakyThrows
-    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, Class<T> headClass, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, Class<?> headClass, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
         // 这里URLEncoder.encode可以防止中文乱码
@@ -79,9 +78,8 @@ public class ExcelUtils {
      * @param sheetName                sheet名，可以为null
      * @param headList                 表头
      * @param dropDownBoxInfoList      下拉框配置信息
-     * @param <T>
      */
-    public <T> void createTemplate(OutputStream outputStream, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
+    public void createTemplate(OutputStream outputStream, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
         List<List<String>> heads = new ArrayList<>(headList.size());
         headList.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
         EasyExcel.write(outputStream)
@@ -100,9 +98,8 @@ public class ExcelUtils {
      * @param headClass                 表示表头信息的 class
      * @param dropDownBoxInfoList       下拉框配置信息
      * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
-     * @param <T>
      */
-    public <T> void createTemplate(OutputStream outputStream, String sheetName, Class<T> headClass, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+    public void createTemplate(OutputStream outputStream, String sheetName, Class<?> headClass, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
         EasyExcel.write(outputStream)
                 .useDefaultStyle(false)
                 .sheet(sheetName)
@@ -119,9 +116,8 @@ public class ExcelUtils {
      * @param sheetName                sheet名，可以为null
      * @param headList                 表头
      * @param dropDownBoxInfoList      下拉框配置信息
-     * @param <T>
      */
-    public <T> void createTemplate(String excelName, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
+    public void createTemplate(String excelName, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
         List<List<String>> heads = new ArrayList<>(headList.size());
         headList.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
         EasyExcel.write(excelName)
@@ -140,9 +136,8 @@ public class ExcelUtils {
      * @param headClass                表示表头信息的class
      * @param dropDownBoxInfoList      下拉框配置信息
      * @param excludeColumnFiledNames  不需要读取的字段名，字段名对应 dataClass 中的字段名，并非表头名
-     * @param <T>
      */
-    public <T> void createTemplate(String excelName, String sheetName, Class<T> headClass, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+    public void createTemplate(String excelName, String sheetName, Class<?> headClass, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
         EasyExcel.write(excelName)
                 .useDefaultStyle(false)
                 .sheet(sheetName)
