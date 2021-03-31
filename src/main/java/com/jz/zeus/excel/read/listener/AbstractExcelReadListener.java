@@ -102,6 +102,11 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
     }
 
     /**
+     * 所有数据处理完毕之后触发的操作
+     */
+    protected abstract void doAfterAllDataHandle(AnalysisContext analysisContext);
+
+    /**
      * 保存 dataList 中的数据
      */
     protected abstract void dataHandle(AnalysisContext analysisContext, Integer currentRowIndex);
@@ -109,14 +114,14 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
     /**
      * 校验 dataList 中的数据
      */
-    protected void verify(AnalysisContext analysisContext, Integer currentRowIndex) {};
+    protected abstract void verify(AnalysisContext analysisContext, Integer currentRowIndex);
 
     /**
      * 校验表头是否正常
      * 可调用 ConverterUtils.convertToStringMap(headMap, context) 方法将表头转化为对应map
      * @return 正常 true、异常 false
      */
-    protected void headCheck(Map<Integer, CellData> headMap, AnalysisContext context) {}
+    protected abstract void headCheck(Map<Integer, CellData> headMap, AnalysisContext context);
 
     @Override
     public void invoke(T data, AnalysisContext analysisContext) {
@@ -138,6 +143,7 @@ public abstract class AbstractExcelReadListener<T> implements ReadListener<T> {
             dataHandle(analysisContext, currentRowIndex);
             dataList.clear();
         }
+        doAfterAllDataHandle(analysisContext);
     }
 
     @Override
