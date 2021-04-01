@@ -13,10 +13,7 @@ import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -26,8 +23,8 @@ import java.util.*;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
         styleProperty.setFillPattern(FillPatternType.SOLID_FOREGROUND);
@@ -36,12 +33,12 @@ public class ExcelTest {
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(styleProperty), null, null);
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
-        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
+//        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
 
 //        write(new FileOutputStream(path), getCellErrorInfo());
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
-//        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class, null);
+        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
 //        read(new FileInputStream(path), readListener);
 //        ExcelUtils.addErrorInfo(path, path, "模板", readListener.getErrorInfoList());
@@ -121,7 +118,7 @@ public class ExcelTest {
         List<DemoData> dataList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             DemoData demoData = new DemoData();
-            demoData.setMateCode("mateCode" + i);
+            demoData.setId(Long.valueOf(i));
             demoData.setDest("dest" + i);
             demoData.setSrc("src" + i);
             demoData.setFunc("func" + i);

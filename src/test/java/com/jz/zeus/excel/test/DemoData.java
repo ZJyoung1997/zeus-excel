@@ -18,8 +18,8 @@ public class DemoData {
 //            borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
 //            borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
     @HeadFontStyle(fontName = "黑体", color = 10, bold = false)
-    @ExcelProperty(value = {"媒体CODE"})
-    private String mateCode;
+    @ExcelProperty(value = {"ID"})
+    private Long id;
 
     @IsLong
     @ExcelProperty(value = "SRC")

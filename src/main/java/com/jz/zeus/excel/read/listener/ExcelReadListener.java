@@ -3,6 +3,7 @@ package com.jz.zeus.excel.read.listener;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.exception.ExcelDataConvertException;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.CellExtra;
 import com.alibaba.excel.metadata.Head;
@@ -15,6 +16,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @Author JZ
@@ -57,10 +59,10 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
 
     /**
      * 数据的错误信息（不包含表头错误信息）
-     * key 为行索引，value 为单元格错误信息
+     * key 为行索引，value 为该行中单元格的错误信息
      */
     @Getter
-    protected List<CellErrorInfo> errorInfoList;
+    private Map<Integer, List<CellErrorInfo>> errorInfoMap;
 
     /**
      * T 中字段名与列索引映射
@@ -184,29 +186,70 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     }
 
     @Override
-    public void onException(Exception e, AnalysisContext analysisContext) {}
+    public void onException(Exception e, AnalysisContext analysisContext) {
+        if (e instanceof ExcelDataConvertException) {
+            ExcelDataConvertException dataConvertException = (ExcelDataConvertException) e;
+            addErrorInfo(dataConvertException.getRowIndex(), dataConvertException.getColumnIndex(), "数据类型错误");
+        }
+    }
 
     @Override
     public void extra(CellExtra cellExtra, AnalysisContext analysisContext) {}
 
-    protected void addErrorInfo(Integer rowIndex, String headName, String... errorMessages) {
-        Integer columnIndex = headNameIndexMap.get(headName);
-        if (columnIndex == null) {
+    protected void addErrorInfo(Integer rowIndex, Integer columnIndex, String... errorMessage) {
+        if (rowIndex == null || columnIndex == null) {
             return;
         }
-        errorInfoList.add(new CellErrorInfo(rowIndex, columnIndex, errorMessages));
+        if (this.errorInfoMap == null) {
+            this.errorInfoMap = new HashMap<>();
+        }
+        List<CellErrorInfo> rowErrorInfoList = errorInfoMap.get(rowIndex);
+        if (rowErrorInfoList == null) {
+            rowErrorInfoList = new ArrayList<>();
+            this.errorInfoMap.put(rowIndex, rowErrorInfoList);
+        }
+        rowErrorInfoList.add(new CellErrorInfo(rowIndex, columnIndex, errorMessage));
+    }
+
+    protected void addErrorInfo(Integer rowIndex, String headName, String... errorMessages) {
+        Integer columnIndex;
+        if (rowIndex == null || (columnIndex = headNameIndexMap.get(headName)) == null) {
+            return;
+        }
+        if (this.errorInfoMap == null) {
+            this.errorInfoMap = new HashMap<>();
+        }
+        List<CellErrorInfo> rowErrorInfoList = errorInfoMap.get(rowIndex);
+        if (rowErrorInfoList == null) {
+            rowErrorInfoList = new ArrayList<>();
+            this.errorInfoMap.put(rowIndex, rowErrorInfoList);
+        }
+        rowErrorInfoList.add(new CellErrorInfo(rowIndex, columnIndex, errorMessages));
     }
 
     protected void addErrorInfo(List<CellErrorInfo> cellErrorInfos) {
         if (CollUtil.isEmpty(cellErrorInfos)) {
             return;
         }
-        if (CollUtil.isEmpty(errorInfoList)) {
-            this.errorInfoList = new ArrayList<>();
+        Map<Integer, List<CellErrorInfo>> tempMap = cellErrorInfos.stream()
+                .collect(Collectors.groupingBy(CellErrorInfo::getRowIndex));
+        if (this.errorInfoMap == null) {
+            this.errorInfoMap = tempMap;
+        } else {
+            tempMap.forEach((rowIndex, errorInfos) -> {
+                List<CellErrorInfo> cellErrorInfoList = this.errorInfoMap.get(rowIndex);
+                if (cellErrorInfoList == null) {
+                    this.errorInfoMap.put(rowIndex, errorInfos);
+                } else {
+                    cellErrorInfoList.addAll(errorInfos);
+                }
+            });
         }
-        this.errorInfoList.addAll(cellErrorInfos);
     }
 
+    /**
+     * 对数据进行 hibernate 注解校验
+     */
     protected void annotationValidation(T data, ReadRowHolder readRowHolder) {
         if (!enabledAnnotationValidation) {
             return;
@@ -237,7 +280,18 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      * @return true 存在数据错误、false 不存在数据错误
      */
     public boolean hasDataError() {
-        return CollUtil.isNotEmpty(errorInfoList);
+        return CollUtil.isNotEmpty(this.errorInfoMap);
+    }
+
+    /**
+     * 判断当前时刻，行索引为 rowIndex 的行是否存在数据错误
+     * @param rowIndex  行索引
+     */
+    public boolean hasDataErrorOnRow(Integer rowIndex) {
+        if (!hasDataError()) {
+            return true;
+        }
+        return CollUtil.isNotEmpty(this.errorInfoMap.get(rowIndex));
     }
 
 }
