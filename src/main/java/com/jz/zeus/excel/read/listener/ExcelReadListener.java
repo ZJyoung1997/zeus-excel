@@ -38,13 +38,6 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     private boolean headError = false;
 
     /**
-     * 为true时，所有数据加载到 dataList 且执行完 verify() 方法后对数据进行处理，
-     * 这意味着 batchSaveNum 将无效
-     */
-    @Setter
-    private boolean lastHandleData = false;
-
-    /**
      * 批量保存数量
      */
     @Setter
@@ -64,6 +57,8 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     @Getter
     private Map<Integer, List<CellErrorInfo>> errorInfoMap;
 
+    private List<CellErrorInfo> cellErrorInfoList;
+
     /**
      * T 中字段名与列索引映射
      * key T 中字段名、value 列索引
@@ -78,23 +73,21 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
 
     /**
      * Excel 中读取到的数据
+     * key 行索引，value 读取到的数据
      */
-    protected List<T> dataList = new ArrayList<>();
+    private Map<Integer, T> dataMap = new HashMap<>();
 
     public ExcelReadListener() {}
 
-    public ExcelReadListener(Boolean lastHandleData) {
-        this(lastHandleData, null, null);
+    public ExcelReadListener(Boolean enabledAnnotationValidation) {
+        this(enabledAnnotationValidation, null);
     }
 
     public ExcelReadListener(Integer batchHandleNum) {
-        this(null, null, batchHandleNum);
+        this(null, batchHandleNum);
     }
 
-    public ExcelReadListener(Boolean lastHandleData, Boolean enabledAnnotationValidation, Integer batchHandleNum) {
-        if (lastHandleData != null) {
-            this.lastHandleData = lastHandleData;
-        }
+    public ExcelReadListener(Boolean enabledAnnotationValidation, Integer batchHandleNum) {
         if (enabledAnnotationValidation != null) {
             this.enabledAnnotationValidation = enabledAnnotationValidation;
         }
@@ -104,19 +97,24 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     }
 
     /**
-     * 所有数据处理完毕之后触发的操作
+     * 所有数据处理完毕之后触发的操作，如果想要所有数据校验完毕后在对数据进行操作
+     * 可以对 {@link #dataHandle} 进行一个空的实现
      */
     protected abstract void doAfterAllDataHandle(AnalysisContext analysisContext);
 
     /**
-     * 保存 dataList 中的数据
+     * 对读取到的数据进行处理
+     * @param dataMap           key 为行索引，value 为 Excel中该行数据
+     * @param analysisContext
      */
-    protected abstract void dataHandle(AnalysisContext analysisContext, Integer currentRowIndex);
+    protected abstract void dataHandle(Map<Integer, T> dataMap, AnalysisContext analysisContext);
 
     /**
-     * 校验 dataList 中的数据
+     * 校验读取到的数据
+     * @param dataMap           key 为行索引，value 为 Excel中该行数据
+     * @param analysisContext
      */
-    protected abstract void verify(AnalysisContext analysisContext, Integer currentRowIndex);
+    protected abstract void verify(Map<Integer, T> dataMap, AnalysisContext analysisContext);
 
     /**
      * 校验表头是否正常
@@ -127,23 +125,22 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
 
     @Override
     public void invoke(T data, AnalysisContext analysisContext) {
-        annotationValidation(data, analysisContext.readRowHolder());
-        dataList.add(data);
-        if (!lastHandleData && dataList.size() >= batchHandleNum) {
-            Integer currentRowIndex = analysisContext.readRowHolder().getRowIndex();
-            verify(analysisContext, currentRowIndex);
-            dataHandle(analysisContext, currentRowIndex);
-            dataList.clear();
+        ReadRowHolder readRowHolder = analysisContext.readRowHolder();
+        annotationValidation(data, readRowHolder);
+        dataMap.put(readRowHolder.getRowIndex(), data);
+        if (dataMap.size() >= batchHandleNum) {
+            verify(dataMap, analysisContext);
+            dataHandle(dataMap, analysisContext);
+            dataMap.clear();
         }
     }
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
-        if (dataList.size() > 0) {
-            Integer currentRowIndex = analysisContext.readRowHolder().getRowIndex();
-            verify(analysisContext, currentRowIndex);
-            dataHandle(analysisContext, currentRowIndex);
-            dataList.clear();
+        if (dataMap.size() > 0) {
+            verify(dataMap, analysisContext);
+            dataHandle(dataMap, analysisContext);
+            dataMap.clear();
         }
         doAfterAllDataHandle(analysisContext);
     }
@@ -292,6 +289,20 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             return true;
         }
         return CollUtil.isNotEmpty(this.errorInfoMap.get(rowIndex));
+    }
+
+    public List<CellErrorInfo> getErrorInfoList() {
+        if (CollUtil.isEmpty(this.errorInfoMap)) {
+            return Collections.emptyList();
+        }
+        if (cellErrorInfoList != null) {
+            return cellErrorInfoList;
+        }
+        cellErrorInfoList = new ArrayList<>();
+        this.errorInfoMap.values().forEach(errorInfos -> {
+            cellErrorInfoList.addAll(errorInfos);
+        });
+        return cellErrorInfoList;
     }
 
 }
