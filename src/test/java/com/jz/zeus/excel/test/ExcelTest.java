@@ -6,9 +6,8 @@ import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.util.ExcelUtils;
-import com.jz.zeus.excel.write.handler.HeadStyleHandler;
-import com.jz.zeus.excel.write.handler.DropDownBoxSheetHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
+import com.jz.zeus.excel.write.handler.HeadStyleHandler;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -18,10 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author JZ
@@ -36,8 +32,11 @@ public class ExcelTest {
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
         styleProperty.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         styleProperty.setFillForegroundColor(IndexedColors.RED.index);
-        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
+//        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(styleProperty), null, null);
+
+//        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
+        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
 
 //        write(new FileOutputStream(path), getCellErrorInfo());
 
@@ -61,12 +60,15 @@ public class ExcelTest {
     @SneakyThrows
     public static void write(OutputStream outputStream, List<CellErrorInfo> cellErrorInfoList) {
         EasyExcel.write(outputStream)
-                .sheet("模板").head(DemoData.class)
+                .sheet("模板")
+                .head(getHead())
+//                .head(DemoData.class)
                 .registerWriteHandler(new HeadStyleHandler())
-                .registerWriteHandler(new ErrorInfoCommentHandler(cellErrorInfoList))
-                .registerWriteHandler(new DropDownBoxSheetHandler(getDropDownBoxInfo()))
+//                .registerWriteHandler(new ErrorInfoCommentHandler(cellErrorInfoList))
+//                .registerWriteHandler(new DropDownBoxSheetHandler(getDropDownBoxInfo()))
 //                .excludeColumnFiledNames(Arrays.asList("dest"))
 //                .doWrite(Collections.emptyList());
+//                .doWrite(getDataList());
                 .doWrite(getDataList());
         outputStream.close();
     }
@@ -81,6 +83,20 @@ public class ExcelTest {
                 .doWrite(Collections.emptyList());
         inputStream.close();
         outputStream.close();
+    }
+
+    public static List<List<String>> getHead() {
+        List<List<String>> list = new ArrayList<List<String>>();
+        List<String> head0 = new ArrayList<String>();
+        head0.add("字符串");
+        List<String> head1 = new ArrayList<String>();
+        head1.add("数字");
+        List<String> head2 = new ArrayList<String>();
+        head2.add("dest");
+        list.add(head0);
+        list.add(head1);
+        list.add(head2);
+        return list;
     }
 
     public static List<DropDownBoxInfo> getDropDownBoxInfo() {
@@ -110,6 +126,23 @@ public class ExcelTest {
             demoData.setSrc("src" + i);
             demoData.setFunc("func" + i);
             dataList.add(demoData);
+        }
+        return dataList;
+    }
+
+    private static List<List<Object>> getDataList1(List<List<String>> heads) {
+        List<List<Object>> dataList = new ArrayList<>();
+        for (int rowIndex = 0; rowIndex < 10; rowIndex++) {
+            for (int j = 0; j < heads.size(); j++) {
+                List<Object> data;
+                if (rowIndex >= dataList.size()) {
+                    data = new ArrayList<>();
+                    dataList.add(rowIndex, data);
+                } else {
+                    data = dataList.get(rowIndex);
+                }
+                data.add(heads.get(j).get(0) + rowIndex);
+            }
         }
         return dataList;
     }

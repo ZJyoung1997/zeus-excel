@@ -105,7 +105,7 @@ public class CellStyleProperty {
 
         cellStyleProperty.setFontSize(18);
         cellStyleProperty.setIsBold(false);
-        cellStyleProperty.setFontName("黑体");
+        cellStyleProperty.setFontName("微软雅黑");
         return cellStyleProperty;
     }
 
