@@ -40,19 +40,11 @@ public class ExcelTest {
         ExcelReadListener readListener = new DemoExcelReadListener(5);
         ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
-//        read(new FileInputStream(path), readListener);
 //        ExcelUtils.addErrorInfo(path, path, "模板", readListener.getErrorInfoList());
 
         System.out.println("end");
     }
 
-    public static void read(InputStream inputStream, ReadListener readListener) {
-        EasyExcel.read(inputStream)
-                .sheet("模板")
-                .head(DemoData.class)
-                .registerReadListener(readListener)
-                .doRead();
-    }
 
     @SneakyThrows
     public static void write(OutputStream outputStream, List<CellErrorInfo> cellErrorInfoList) {
