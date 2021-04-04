@@ -1,7 +1,8 @@
-package com.jz.zeus.excel.test;
+package com.jz.zeus.excel.test.listener;
 
 import com.alibaba.excel.context.AnalysisContext;
 import com.jz.zeus.excel.read.listener.AbstractExcelReadListener;
+import com.jz.zeus.excel.test.DemoData;
 
 import java.util.Map;
 
@@ -21,6 +22,8 @@ public class DemoExcelReadListener extends AbstractExcelReadListener<DemoData> {
 
     @Override
     protected void dataHandle(Map<Integer, DemoData> dataMap, AnalysisContext analysisContext) {
-        System.out.println("加载数据：" + dataMap.values());
+        dataMap.forEach((key, value) -> {
+            System.out.println("加载数据：" + value.getDest());
+        });
     }
 }

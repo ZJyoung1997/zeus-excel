@@ -1,10 +1,10 @@
 package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.read.listener.ReadListener;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
+import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
 import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import com.jz.zeus.excel.write.handler.HeadStyleHandler;
@@ -33,12 +33,12 @@ public class ExcelTest {
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(styleProperty), null, null);
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
-//        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
+        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
 
 //        write(new FileOutputStream(path), getCellErrorInfo());
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
-        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
+//        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
 //        ExcelUtils.addErrorInfo(path, path, "模板", readListener.getErrorInfoList());
 

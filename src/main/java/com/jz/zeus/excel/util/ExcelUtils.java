@@ -10,6 +10,7 @@ import com.alibaba.excel.util.IoUtils;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
+import com.jz.zeus.excel.read.listener.NoModelReadListener;
 import com.jz.zeus.excel.write.handler.DropDownBoxSheetHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import com.jz.zeus.excel.write.handler.HeadStyleHandler;
@@ -74,12 +75,41 @@ public class ExcelUtils {
 
     /**
      * 创建一个有表头的空Excel
+     * @param excelName                Excel全路径名
+     * @param sheetName                sheet名，可以为null
+     * @param headList                 表头
+     * @param dropDownBoxInfoList      下拉框配置信息
+     */
+    @SneakyThrows
+    public void createTemplate(String excelName, String sheetName, List<String> headList,
+                               HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
+        createTemplate(new FileOutputStream(excelName), sheetName, headList, headStyleHandler, dropDownBoxInfoList);
+    }
+
+    /**
+     * 创建一个有表头的空Excel
+     * @param excelName                Excel全路径名
+     * @param sheetName                sheet名，可以为null
+     * @param headClass                表示表头信息的class
+     * @param dropDownBoxInfoList      下拉框配置信息
+     * @param excludeColumnFiledNames  不需要读取的字段名，字段名对应 dataClass 中的字段名，并非表头名
+     */
+    @SneakyThrows
+    public void createTemplate(String excelName, String sheetName, Class<?> headClass, HeadStyleHandler headStyleHandler,
+                               List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+        createTemplate(new FileOutputStream(excelName), sheetName, headClass, headStyleHandler,
+                dropDownBoxInfoList, excludeColumnFiledNames);
+    }
+
+    /**
+     * 创建一个有表头的空Excel
      * @param outputStream             Excel的输出流
      * @param sheetName                sheet名，可以为null
      * @param headList                 表头
      * @param dropDownBoxInfoList      下拉框配置信息
      */
-    public void createTemplate(OutputStream outputStream, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
+    public void createTemplate(OutputStream outputStream, String sheetName, List<String> headList,
+                               HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
         List<List<String>> heads = new ArrayList<>(headList.size());
         headList.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
         EasyExcel.write(outputStream)
@@ -99,51 +129,14 @@ public class ExcelUtils {
      * @param dropDownBoxInfoList       下拉框配置信息
      * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
      */
-    public void createTemplate(OutputStream outputStream, String sheetName, Class<?> headClass, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+    public void createTemplate(OutputStream outputStream, String sheetName, Class<?> headClass,
+                               HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList,
+                               List<String> excludeColumnFiledNames) {
         EasyExcel.write(outputStream)
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(headClass)
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
-                .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
-                .excludeColumnFiledNames(excludeColumnFiledNames)
-                .doWrite(Collections.emptyList());
-    }
-
-    /**
-     * 创建一个有表头的空Excel
-     * @param excelName                Excel全路径名
-     * @param sheetName                sheet名，可以为null
-     * @param headList                 表头
-     * @param dropDownBoxInfoList      下拉框配置信息
-     */
-    public void createTemplate(String excelName, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
-        List<List<String>> heads = new ArrayList<>(headList.size());
-        headList.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
-        EasyExcel.write(excelName)
-                .useDefaultStyle(false)
-                .sheet(sheetName)
-                .head(heads)
-                .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
-                .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
-                .doWrite(Collections.emptyList());
-    }
-
-    /**
-     * 创建一个有表头的空Excel
-     * @param excelName                Excel全路径名
-     * @param sheetName                sheet名，可以为null
-     * @param headClass                表示表头信息的class
-     * @param dropDownBoxInfoList      下拉框配置信息
-     * @param excludeColumnFiledNames  不需要读取的字段名，字段名对应 dataClass 中的字段名，并非表头名
-     */
-    public void createTemplate(String excelName, String sheetName, Class<?> headClass, List<DropDownBoxInfo> dropDownBoxInfoList,
-                               List<String> excludeColumnFiledNames) {
-        EasyExcel.write(excelName)
-                .useDefaultStyle(false)
-                .sheet(sheetName)
-                .head(headClass)
-                .registerWriteHandler(new HeadStyleHandler())
                 .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
                 .excludeColumnFiledNames(excludeColumnFiledNames)
                 .doWrite(Collections.emptyList());
@@ -158,7 +151,8 @@ public class ExcelUtils {
      * @param <T>
      */
     @SneakyThrows
-    public <T> void readAndWriteErrorMsg(ExcelReadListener<T> readListener, String excelName, String sheetName, Class<T> headClass) {
+    public <T> void readAndWriteErrorMsg(ExcelReadListener<T> readListener, String excelName,
+                                         String sheetName, Class<T> headClass) {
         byte[] excelBytes = IoUtils.toByteArray(new FileInputStream(excelName));
         readAndWriteErrorMsg(readListener, excelBytes, new FileOutputStream(excelName), sheetName, headClass);
     }
@@ -183,6 +177,60 @@ public class ExcelUtils {
         addErrorInfo(outputStream, excelBytes, sheetName, null, readListener.getErrorInfoList());
     }
 
+    /**
+     * 读取具有module的Excel
+     * @param readListener          Excel读取监听器
+     * @param excelName             Excel全路径名
+     * @param sheetName             需要读取的sheet名称
+     * @param headClass             Excel的module
+     * @param <T>
+     */
+    public <T> void read(ExcelReadListener<T> readListener, String excelName, String sheetName, Class<T> headClass) {
+        read(readListener, excelName, sheetName, headClass);
+    }
+
+    /**
+     * 读取具有module的Excel
+     * @param readListener          Excel读取监听器
+     * @param inputStream           Excel输入流
+     * @param sheetName            需要读取的sheet名称
+     * @param headClass            Excel的module
+     * @param <T>
+     */
+    public <T> void read(ExcelReadListener<T> readListener, InputStream inputStream, String sheetName, Class<T> headClass) {
+        EasyExcel.read(inputStream)
+                .sheet(sheetName)
+                .head(headClass)
+                .registerReadListener(readListener)
+                .doRead();
+    }
+
+    /**
+     * 当没有module时，读取Excel内容
+     * @param readListener        Excel读取监听器
+     * @param excelName           Excel全路径名
+     * @param sheetName           需要读取的sheet名称
+     * @param headRowNum          表头行数，小于等于 0 时表示没有表头
+     */
+    @SneakyThrows
+    public void read(NoModelReadListener readListener, String excelName, String sheetName, Integer headRowNum) {
+        read(readListener, new FileInputStream(excelName), sheetName, headRowNum);
+    }
+
+    /**
+     * 当没有module时，读取Excel内容
+     * @param readListener        Excel读取监听器
+     * @param inputStream         Excel输入流
+     * @param sheetName           需要读取的sheet名称
+     * @param headRowNum          表头行数，小于等于 0 时表示没有表头
+     */
+    public void read(NoModelReadListener readListener, InputStream inputStream, String sheetName, Integer headRowNum) {
+        EasyExcel.read(inputStream)
+                .sheet(sheetName)
+                .headRowNumber(headRowNum)
+                .registerReadListener(readListener)
+                .doRead();
+    }
 
     /**
      * 将数据写入Excel
@@ -233,7 +281,8 @@ public class ExcelUtils {
      */
     @SneakyThrows
     public <T> void write(String excelName, String sheetName, Class<T> headClass, List<T> dataList,
-                          List<String> excludeColumnFiledNames, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfos) {
+                          List<String> excludeColumnFiledNames, HeadStyleHandler headStyleHandler,
+                          List<DropDownBoxInfo> dropDownBoxInfos) {
         write(new FileOutputStream(excelName), sheetName, headClass, dataList, excludeColumnFiledNames, headStyleHandler, dropDownBoxInfos);
     }
 
@@ -248,7 +297,8 @@ public class ExcelUtils {
      * @param dropDownBoxInfos              下拉框信息，为 null 或 空 不会添加下拉框
      */
     public <T> void write(OutputStream outputStream, String sheetName, Class<T> headClass, List<T> dataList,
-                          List<String> excludeColumnFiledNames, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfos) {
+                          List<String> excludeColumnFiledNames, HeadStyleHandler headStyleHandler,
+                          List<DropDownBoxInfo> dropDownBoxInfos) {
         EasyExcel.write(outputStream)
                 .useDefaultStyle(false)
                 .sheet(sheetName)

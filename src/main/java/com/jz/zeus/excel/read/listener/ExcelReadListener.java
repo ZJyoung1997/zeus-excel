@@ -3,6 +3,7 @@ package com.jz.zeus.excel.read.listener;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.exception.ExcelDataConvertException;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.CellExtra;
@@ -63,13 +64,13 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      * T 中字段名与列索引映射
      * key T 中字段名、value 列索引
      */
-    private Map<String, Integer> fieldColumnIndexMap;
+    private Map<String, Integer> fieldColumnIndexMap = new HashMap<>();
 
     /**
      * 表头与列索引映射
      * key 表头、value 表头对应列索引
      */
-    private Map<String, Integer> headNameIndexMap;
+    private Map<String, Integer> headNameIndexMap = new HashMap<>();
 
     /**
      * Excel 中读取到的数据
@@ -152,21 +153,30 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         if (StrUtil.isNotBlank(this.headErrorMsg)) {
             headError = true;
         }
+
         ExcelReadHeadProperty excelHeadPropertyData = analysisContext.readSheetHolder().excelReadHeadProperty();
+        boolean isHeadClass = HeadKindEnum.CLASS.equals(excelHeadPropertyData.getHeadKind());
         Map<Integer, Head> headMapData = excelHeadPropertyData.getHeadMap();
-        if (CollUtil.isEmpty(headMapData)) {
-            fieldColumnIndexMap = Collections.emptyMap();
-            return;
-        }
-        fieldColumnIndexMap = new HashMap<>();
-        headNameIndexMap = new HashMap<>();
-        headMapData.values().forEach(head -> {
-            Integer columnIndex = head.getColumnIndex();
-            fieldColumnIndexMap.put(head.getFieldName(), columnIndex);
-            head.getHeadNameList().forEach(headName -> {
-                headNameIndexMap.put(headName, columnIndex);
+        if (CollUtil.isNotEmpty(headMapData)) {
+            headMapData.values().forEach(head -> {
+                Integer columnIndex = head.getColumnIndex();
+                if (StrUtil.isNotBlank(head.getFieldName())) {
+                    fieldColumnIndexMap.put(head.getFieldName(), columnIndex);
+                }
+                head.getHeadNameList().forEach(headName -> {
+                    headNameIndexMap.put(headName, columnIndex);
+                });
             });
-        });
+        }
+
+        if (CollUtil.isNotEmpty(headMap)) {
+            headMap.forEach((columnIndex, cellData) -> {
+                String headName = cellData.getStringValue();
+                if (!isHeadClass && !headNameIndexMap.containsKey(headName)) {
+                    headNameIndexMap.put(headName, columnIndex);
+                }
+            });
+        }
     }
 
     /**
@@ -303,6 +313,10 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             cellErrorInfoList.addAll(errorInfos);
         });
         return cellErrorInfoList;
+    }
+
+    protected Integer getHeadIndex(String headName) {
+        return headNameIndexMap.get(headName);
     }
 
 }
