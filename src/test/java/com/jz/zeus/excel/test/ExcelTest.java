@@ -4,6 +4,8 @@ import com.alibaba.excel.EasyExcel;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
+import com.jz.zeus.excel.test.data.DemoData;
+import com.jz.zeus.excel.test.data.LineOrderPDBData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
 import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
@@ -18,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class ExcelTest {
         List<CellStyleProperty> list = new ArrayList<>();
         list.add(styleProperty);
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
-        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(), null, null);
+        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", LineOrderPDBData.class, new HeadStyleHandler(), null, null);
 //        ExcelUtils.createTemplate(path, "模板", Arrays.asList("jj", "jkfk"), new HeadStyleHandler(list), null);
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);

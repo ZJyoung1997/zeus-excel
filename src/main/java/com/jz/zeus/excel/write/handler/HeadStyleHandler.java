@@ -27,6 +27,13 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
     private boolean isAutoColumnWidth = true;
 
     /**
+     * 是否开启无边框
+     * 由于 EasyExcel 使用注解设置表头样式时默认有边界，
+     * 这里为true，表头将无边框，仅在使用注解配置表头样式时生效
+     */
+    private boolean enabledNoBorder = true;
+
+    /**
      * 表头单元格样式，外层list下标对应行索引，内层下标对应列索引
      */
     private List<List<CellStyleProperty>> multiRowHeadCellStyles;
@@ -90,8 +97,13 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
     private void setCellStyle(Sheet sheet, Cell cell, Head head) {
         CellStyleProperty cellStyleProperty = CellStyleProperty.getDefaultHeadProperty();
         if (head.getHeadStyleProperty() != null) {
-            cellStyleProperty = new CellStyleProperty();
             BeanUtil.copyProperties(head.getHeadStyleProperty(), cellStyleProperty);
+            if (enabledNoBorder) {
+                cellStyleProperty.setBorderBottom(BorderStyle.NONE);
+                cellStyleProperty.setBorderTop(BorderStyle.NONE);
+                cellStyleProperty.setBorderLeft(BorderStyle.NONE);
+                cellStyleProperty.setBorderRight(BorderStyle.NONE);
+            }
         }
         if (head.getColumnWidthProperty() != null) {
             cellStyleProperty.setWidth(head.getColumnWidthProperty().getWidth());
@@ -139,6 +151,11 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
 
     public HeadStyleHandler isAutoColumnWidth(boolean isAutoColumnWidth) {
         this.isAutoColumnWidth = isAutoColumnWidth;
+        return this;
+    }
+
+    public HeadStyleHandler setEnabledNoBorder(boolean enabledNoBorder) {
+        this.enabledNoBorder = enabledNoBorder;
         return this;
     }
 

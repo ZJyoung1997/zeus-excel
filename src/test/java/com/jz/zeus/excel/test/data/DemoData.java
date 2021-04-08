@@ -1,4 +1,4 @@
-package com.jz.zeus.excel.test;
+package com.jz.zeus.excel.test.data;
 
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;

@@ -14,6 +14,8 @@ import org.apache.poi.ss.usermodel.*;
  */
 public class CellStyleProperty extends StyleProperty {
 
+    public static final short DEFAULT_FONT_SIZE = 12;
+
     /**
      * 列宽
      */
@@ -47,14 +49,15 @@ public class CellStyleProperty extends StyleProperty {
         cellStyleProperty.setBorderBottom(BorderStyle.NONE);
         cellStyleProperty.setHorizontalAlignment(HorizontalAlignment.CENTER);
         cellStyleProperty.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyleProperty.setWrapped(true);
         cellStyleProperty.setFontProperty(getDefaultFontProperty());
         return cellStyleProperty;
     }
 
     public static FontProperty getDefaultFontProperty() {
         FontProperty fontProperty = new FontProperty();
-        fontProperty.setFontHeightInPoints((short) 18);
-        fontProperty.setBold(false);
+        fontProperty.setFontHeightInPoints(DEFAULT_FONT_SIZE);
+        fontProperty.setBold(true);
         fontProperty.setFontName("微软雅黑");
         return fontProperty;
     }

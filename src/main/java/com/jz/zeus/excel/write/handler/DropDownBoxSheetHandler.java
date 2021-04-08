@@ -2,9 +2,11 @@ package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
+import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.jz.zeus.excel.DropDownBoxInfo;
+import com.jz.zeus.excel.util.ClassUtils;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
 import org.apache.poi.ss.usermodel.DataValidationHelper;
@@ -38,7 +40,15 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        if (CollUtil.isEmpty(dropDownBoxInfoList)) {
+        boolean isClass = HeadKindEnum.CLASS.equals(writeSheetHolder.getExcelWriteHeadProperty().getHeadKind());
+        List<DropDownBoxInfo> boxInfoList = new ArrayList<>();
+        if (isClass) {
+            boxInfoList.addAll(ClassUtils.getDropDownBoxInfos(writeSheetHolder.getClazz()));
+        }
+        if (CollUtil.isNotEmpty(dropDownBoxInfoList)) {
+            boxInfoList.addAll(dropDownBoxInfoList);
+        }
+        if (CollUtil.isEmpty(boxInfoList)) {
             return;
         }
 
@@ -47,7 +57,7 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
 
         Integer headRowNum = getHeadRowNum();
         Sheet sheet = writeSheetHolder.getSheet();
-        dropDownBoxInfoList.forEach(boxInfo -> {
+        boxInfoList.forEach(boxInfo -> {
             Integer rowIndex = boxInfo.getRowIndex();
             Integer columnIndex = boxInfo.getColumnIndex();
             if (columnIndex == null) {
