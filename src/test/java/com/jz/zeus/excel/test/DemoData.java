@@ -22,7 +22,7 @@ public class DemoData {
             borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
             borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
     @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)
-    @ExcelProperty(value = {"ID"})
+    @ExcelProperty(value = "订单ID（不可修改）")
     private Long id;
 
     @IsLong

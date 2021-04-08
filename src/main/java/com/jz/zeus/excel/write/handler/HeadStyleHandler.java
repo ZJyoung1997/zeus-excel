@@ -123,10 +123,18 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
      * 根据表头计算列宽
      */
     private int columnWidth(String value, int fontSize) {
-        int chineseNum = StringUtils.chineseNum(value);
-        int dataLength = (int) ((value.length() - chineseNum) + chineseNum * 2);
-        int columnWidth = dataLength * 36 * fontSize;
-        return columnWidth > Constants.MAX_COLUMN_WIDTH ? Constants.MAX_COLUMN_WIDTH : columnWidth;
+        String[] strs = value.split("\n");
+        int result = 0;
+        for (String s : strs) {
+            int chineseNum = StringUtils.chineseNum(s);
+            int dataLength = (int) ((s.length() - chineseNum) + chineseNum * 1.6);
+            int columnWidth = dataLength * 36 * fontSize;
+            columnWidth = columnWidth > Constants.MAX_COLUMN_WIDTH ? Constants.MAX_COLUMN_WIDTH : columnWidth;
+            if (columnWidth > result) {
+                result = columnWidth;
+            }
+        }
+        return result;
     }
 
     public HeadStyleHandler isAutoColumnWidth(boolean isAutoColumnWidth) {
