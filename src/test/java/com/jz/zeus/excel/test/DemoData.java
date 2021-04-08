@@ -18,7 +18,8 @@ import org.apache.poi.ss.usermodel.IndexedColors;
 @Data
 public class DemoData {
 
-    @HeadStyle(fillPatternType = FillPatternType.NO_FILL,
+    @HeadStyle(fillPatternType = FillPatternType.SOLID_FOREGROUND,
+            fillForegroundColor = 31,
             borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
             borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
     @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)
@@ -26,14 +27,9 @@ public class DemoData {
     private Long id;
 
     @IsLong
-    @HeadStyle(fillPatternType = FillPatternType.NO_FILL,
-            borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
-            borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
-    @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)
     @ExcelProperty(value = "SRC")
     private String src;
 
-    @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)
     @ContentFontStyle(fontName = "微软雅黑", fontHeightInPoints = 14)
     @ExcelProperty(value = "DEST")
     private String dest;
