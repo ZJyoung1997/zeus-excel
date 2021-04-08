@@ -64,7 +64,7 @@ public class ClassUtils {
      * @return
      */
     public List<DropDownBoxInfo> getDropDownBoxInfos(Class<?> clazz) {
-        List<FieldInfo> fieldInfos = CLASS_FIELD_INFO_CACHE.get(clazz);
+        List<FieldInfo> fieldInfos = getClassFieldInfo(clazz);
         if (CollUtil.isEmpty(fieldInfos)) {
             return new ArrayList<>();
         }

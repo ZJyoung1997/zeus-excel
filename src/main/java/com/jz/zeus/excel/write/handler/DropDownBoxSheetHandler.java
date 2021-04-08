@@ -2,6 +2,7 @@ package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
@@ -14,9 +15,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author JZ
@@ -40,20 +39,36 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        boolean isClass = HeadKindEnum.CLASS.equals(writeSheetHolder.getExcelWriteHeadProperty().getHeadKind());
+        init(writeSheetHolder);
         List<DropDownBoxInfo> boxInfoList = new ArrayList<>();
-        if (isClass) {
-            boxInfoList.addAll(ClassUtils.getDropDownBoxInfos(writeSheetHolder.getClazz()));
-        }
         if (CollUtil.isNotEmpty(dropDownBoxInfoList)) {
-            boxInfoList.addAll(dropDownBoxInfoList);
+            dropDownBoxInfoList.forEach(boxInfo -> {
+                if (boxInfo.getColumnIndex() == null && StrUtil.isNotBlank(boxInfo.getHeadName())) {
+                    boxInfo.setColumnIndex(getHeadColumnIndex(boxInfo.getHeadName()));
+                }
+                boxInfoList.add(boxInfo);
+            });
         }
+        boolean isClass = HeadKindEnum.CLASS.equals(writeSheetHolder.getExcelWriteHeadProperty().getHeadKind());
+        if (isClass) {
+            if (CollUtil.isEmpty(dropDownBoxInfoList)) {
+                boxInfoList.addAll(ClassUtils.getDropDownBoxInfos(writeSheetHolder.getClazz()));
+            } else {
+                ClassUtils.getDropDownBoxInfos(writeSheetHolder.getClazz())
+                        .forEach(boxInfo -> {
+                            if (boxInfo.getColumnIndex() == null && StrUtil.isNotBlank(boxInfo.getHeadName())) {
+                                boxInfo.setColumnIndex(getHeadColumnIndex(boxInfo.getHeadName()));
+                            }
+                            if (!dropDownBoxInfoList.stream().filter(info -> Objects.equals(boxInfo, info)).findFirst().isPresent()) {
+                                boxInfoList.add(boxInfo);
+                            }
+                        });
+            }
+        }
+
         if (CollUtil.isEmpty(boxInfoList)) {
             return;
         }
-
-        initHeadRowNum(writeSheetHolder);
-        initHeadNameIndexMap(writeSheetHolder);
 
         Integer headRowNum = getHeadRowNum();
         Sheet sheet = writeSheetHolder.getSheet();

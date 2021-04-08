@@ -55,7 +55,7 @@ public class ErrorInfoCommentHandler extends AbstractZeusSheetWriteHandler {
             return;
         }
         Sheet sheet = writeSheetHolder.getCachedSheet();
-        initHeadNameIndexMap(writeSheetHolder);
+        init(writeSheetHolder);
         rowErrorInfoMap.forEach((rowIndex, errorInfos) -> {
             Row row = sheet.getRow(rowIndex);
             if (row == null) {

@@ -37,15 +37,19 @@ public class AbstractZeusSheetWriteHandler extends AbstractSheetWriteHandler {
         this.headRowNum = headRowNum;
     }
 
+    protected void init(WriteSheetHolder writeSheetHolder) {
+        initHeadRowNum(writeSheetHolder);
+        initHeadNameIndexMap(writeSheetHolder);
+    }
 
-    protected void initHeadRowNum(WriteSheetHolder writeSheetHolder) {
+    private void initHeadRowNum(WriteSheetHolder writeSheetHolder) {
         if (headRowNum == null) {
             headRowNum = writeSheetHolder.getExcelWriteHeadProperty().getHeadRowNumber();
             headRowNum = Math.max(headRowNum, DEFAULT_HEAD_ROW_NUM);
         }
     }
 
-    protected void initHeadNameIndexMap(WriteSheetHolder writeSheetHolder) {
+    private void initHeadNameIndexMap(WriteSheetHolder writeSheetHolder) {
         int lastRowNum = writeSheetHolder.getCachedSheet().getLastRowNum();
         Map<Integer, Head> headMap = writeSheetHolder.getExcelWriteHeadProperty().getHeadMap();
         if (CollUtil.isNotEmpty(headMap)) {

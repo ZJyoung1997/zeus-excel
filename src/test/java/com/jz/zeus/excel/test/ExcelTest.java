@@ -30,14 +30,18 @@ import java.util.List;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
-
+        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+        long startTime = System.currentTimeMillis();
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
         styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
         styleProperty.setFillForegroundColor(IndexedColors.RED.index);
         List<CellStyleProperty> list = new ArrayList<>();
         list.add(styleProperty);
+
+        List<DropDownBoxInfo> dropDownBoxInfos = new ArrayList<DropDownBoxInfo>() {{
+            add(new DropDownBoxInfo("加载方式（不可修改）", "是", "否"));
+        }};
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
         ExcelUtils.createTemplate(new FileOutputStream(path), "模板", LineOrderPDBData.class, new HeadStyleHandler(), null, null);
 //        ExcelUtils.createTemplate(path, "模板", Arrays.asList("jj", "jkfk"), new HeadStyleHandler(list), null);
@@ -52,6 +56,7 @@ public class ExcelTest {
 
 //        ExcelUtils.addErrorInfo(path, path, "模板", readListener.getErrorInfoList());
 
+        System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
         System.out.println("end");
     }
 

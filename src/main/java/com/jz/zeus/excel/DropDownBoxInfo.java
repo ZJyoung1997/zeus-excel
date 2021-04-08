@@ -6,10 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author JZ
@@ -19,7 +16,7 @@ import java.util.List;
 @Setter
 public class DropDownBoxInfo {
 
-    private static final Integer DEFAULT_ROW_NUM = 100;
+    private static final Integer DEFAULT_ROW_NUM = 60000;
 
     private static final Integer DEFAULT_COLUMN_NUM = 100;
 
@@ -137,4 +134,21 @@ public class DropDownBoxInfo {
         return info;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof DropDownBoxInfo)) {
+            return false;
+        }
+        DropDownBoxInfo that = (DropDownBoxInfo) o;
+        return (Objects.equals(rowIndex, that.rowIndex) && Objects.equals(columnIndex, that.columnIndex)) ||
+                (Objects.equals(rowIndex, that.rowIndex) && Objects.equals(headName, that.headName));
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(rowIndex, rowNum, columnIndex, columnNum, headName, options);
+    }
 }
