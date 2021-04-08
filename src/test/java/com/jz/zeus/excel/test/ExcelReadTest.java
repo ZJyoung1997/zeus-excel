@@ -4,8 +4,10 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.read.listener.NoModelReadListener;
+import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
 import com.jz.zeus.excel.test.listener.TestNoModelReadListener;
+import com.jz.zeus.excel.util.ExcelUtils;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,8 +26,8 @@ public class ExcelReadTest {
 //        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
         ExcelReadListener readListener = new DemoExcelReadListener(100);
-//        ExcelReadListener readListener = new NoModelReadListener();
-        read(new FileInputStream(path), readListener);
+        ExcelUtils.read(readListener, path, null, DemoData.class);
+//        read(new FileInputStream(path), readListener);
 
         NoModelReadListener noModelReadListener = new TestNoModelReadListener();
 //        ExcelUtils.read(noModelReadListener, path, "模板", 1);

@@ -47,7 +47,7 @@ public class ExcelTest {
 //        ExcelUtils.createTemplate(path, "模板", Arrays.asList("jj", "jkfk"), new HeadStyleHandler(list), null);
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
-//        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
+        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
 
 //        write(new FileOutputStream(path), getCellErrorInfo());
 

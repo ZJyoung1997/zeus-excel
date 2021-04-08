@@ -179,8 +179,9 @@ public class ExcelUtils {
      * @param headClass             Excel的module
      * @param <T>
      */
+    @SneakyThrows
     public <T> void read(ExcelReadListener<T> readListener, String excelName, String sheetName, Class<T> headClass) {
-        read(readListener, excelName, sheetName, headClass);
+        read(readListener, new FileInputStream(excelName), sheetName, headClass);
     }
 
     /**
