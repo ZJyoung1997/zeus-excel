@@ -13,8 +13,13 @@ import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
-import java.io.*;
-import java.util.*;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @Author JZ
@@ -23,17 +28,20 @@ import java.util.*;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
-        styleProperty.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
         styleProperty.setFillForegroundColor(IndexedColors.RED.index);
+        List<CellStyleProperty> list = new ArrayList<>();
+        list.add(styleProperty);
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
-//        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(styleProperty), null, null);
+        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(list), null, null);
+//        ExcelUtils.createTemplate(path, "模板", Arrays.asList("jj", "jkfk"), new HeadStyleHandler(), null);
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
-        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
+//        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
 
 //        write(new FileOutputStream(path), getCellErrorInfo());
 

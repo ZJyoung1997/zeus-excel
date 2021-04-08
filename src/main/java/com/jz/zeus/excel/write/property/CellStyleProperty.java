@@ -1,86 +1,31 @@
 package com.jz.zeus.excel.write.property;
 
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.excel.metadata.property.FontProperty;
+import com.alibaba.excel.metadata.property.StyleProperty;
 import com.jz.zeus.excel.constant.Constants;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.poi.ss.usermodel.*;
 
 /**
  * @author:JZ
  * @date:2021/3/29
  */
-@Data
-public class CellStyleProperty {
+public class CellStyleProperty extends StyleProperty {
 
     /**
-     * 宽度
+     * 列宽
      */
+    @Getter
     private Integer width;
 
     /**
-     * 高度
+     * 字体样式配置
      */
-    private Integer height;
-
-    /**
-     * 填充类型
-     */
-    private FillPatternType fillPattern;
-
-    /**
-     * 前景色
-     */
-    private Short fillForegroundColor;
-
-    /**
-     * 背景色
-     */
-    private Short fillBackgroundColor;
-
-    /**
-     * 左边框样式
-     */
-    private BorderStyle borderLeft;
-
-    /**
-     * 右边框样式
-     */
-    private BorderStyle borderRight;
-
-    /**
-     * 上边框样式
-     */
-    private BorderStyle borderTop;
-
-    /**
-     * 下边框样式
-     */
-    private BorderStyle borderBottom;
-
-    /**
-     * 水平对齐方式
-     */
-    private HorizontalAlignment horizontalAlignment;
-
-    /**
-     * 垂直对齐方式
-     */
-    private VerticalAlignment verticalAlignment;
-
-    /**
-     * 字体尺寸，同Excel中字体尺寸单位相同
-     */
-    private Integer fontSize;
-
-    /**
-     * 字体是否加粗，true 加粗、false 不加粗
-     */
-    private Boolean isBold;
-
-    /**
-     * 字体名称
-     */
-    private String fontName;
+    @Getter
+    @Setter
+    private FontProperty fontProperty;
 
     public void setWidth(Integer width) {
         if (width != null && width > Constants.MAX_COLUMN_WIDTH) {
@@ -95,7 +40,7 @@ public class CellStyleProperty {
      */
     public static CellStyleProperty getDefaultHeadProperty() {
         CellStyleProperty cellStyleProperty = new CellStyleProperty();
-        cellStyleProperty.setFillPattern(FillPatternType.NO_FILL);
+        cellStyleProperty.setFillPatternType(FillPatternType.NO_FILL);
         cellStyleProperty.setBorderLeft(BorderStyle.NONE);
         cellStyleProperty.setBorderRight(BorderStyle.NONE);
         cellStyleProperty.setBorderTop(BorderStyle.NONE);
@@ -103,52 +48,118 @@ public class CellStyleProperty {
         cellStyleProperty.setHorizontalAlignment(HorizontalAlignment.CENTER);
         cellStyleProperty.setVerticalAlignment(VerticalAlignment.CENTER);
 
-        cellStyleProperty.setFontSize(18);
-        cellStyleProperty.setIsBold(false);
-        cellStyleProperty.setFontName("微软雅黑");
+        FontProperty fontProperty = new FontProperty();
+        fontProperty.setFontHeightInPoints((short) 18);
+        fontProperty.setBold(false);
+        fontProperty.setFontName("微软雅黑");
+
+        cellStyleProperty.setFontProperty(fontProperty);
         return cellStyleProperty;
     }
 
-    public void setFontStyle(Font font) {
-        if (fontSize != null) {
-            font.setFontHeightInPoints(Short.parseShort(fontSize.toString()));
+    public Font setFontStyle(Font font) {
+        if (this.fontProperty == null) {
+            return font;
         }
-        if (isBold != null) {
-            font.setBold(isBold);
+        if (fontProperty.getFontHeightInPoints() != null) {
+            font.setFontHeightInPoints(fontProperty.getFontHeightInPoints());
         }
-        if (StrUtil.isNotBlank(fontName)) {
-            font.setFontName(fontName);
+        if (fontProperty.getBold() != null) {
+            font.setBold(fontProperty.getBold());
         }
-        return;
+        if (StrUtil.isNotBlank(fontProperty.getFontName())) {
+            font.setFontName(fontProperty.getFontName());
+        }
+        if (fontProperty.getColor() != null) {
+            font.setColor(fontProperty.getColor());
+        }
+        if (fontProperty.getItalic() != null) {
+            font.setItalic(fontProperty.getItalic());
+        }
+        if (fontProperty.getCharset() != null) {
+            font.setCharSet(fontProperty.getCharset());
+        }
+        if (fontProperty.getUnderline() != null) {
+            font.setUnderline(fontProperty.getUnderline());
+        }
+        if (fontProperty.getTypeOffset() != null) {
+            font.setTypeOffset(fontProperty.getTypeOffset());
+        }
+        if (fontProperty.getStrikeout() != null) {
+            font.setStrikeout(fontProperty.getStrikeout());
+        }
+        return font;
+    }
+
+    public void setCellStyle(Font font, CellStyle cellStyle) {
+        setFontStyle(font);
+        setCellStyle(cellStyle);
+        cellStyle.setFont(font);
     }
 
     public CellStyle setCellStyle(CellStyle cellStyle) {
-        if (fillPattern != null) {
-            cellStyle.setFillPattern(fillPattern);
+        if (getDataFormat() != null) {
+            cellStyle.setDataFormat(getDataFormat());
         }
-        if (fillForegroundColor != null) {
-            cellStyle.setFillForegroundColor(fillForegroundColor);
+        if (getHidden() != null) {
+            cellStyle.setHidden(getHidden());
         }
-        if (fillBackgroundColor != null) {
-            cellStyle.setFillBackgroundColor(fillBackgroundColor);
+        if (getLocked() != null) {
+            cellStyle.setLocked(getLocked());
         }
-        if (borderLeft != null) {
-            cellStyle.setBorderLeft(borderLeft);
+        if (getQuotePrefix() != null) {
+            cellStyle.setQuotePrefixed(getQuotePrefix());
         }
-        if (borderRight != null) {
-            cellStyle.setBorderRight(borderRight);
+        if (getHorizontalAlignment() != null) {
+            cellStyle.setAlignment(getHorizontalAlignment());
         }
-        if (borderTop != null) {
-            cellStyle.setBorderTop(borderTop);
+        if (getWrapped() != null) {
+            cellStyle.setWrapText(getWrapped());
         }
-        if (borderBottom != null) {
-            cellStyle.setBorderBottom(borderBottom);
+        if (getVerticalAlignment() != null) {
+            cellStyle.setVerticalAlignment(getVerticalAlignment());
         }
-        if (horizontalAlignment != null) {
-            cellStyle.setAlignment(horizontalAlignment);
+        if (getRotation() != null) {
+            cellStyle.setRotation(getRotation());
         }
-        if (verticalAlignment != null) {
-            cellStyle.setVerticalAlignment(verticalAlignment);
+        if (getIndent() != null) {
+            cellStyle.setIndention(getIndent());
+        }
+        if (getBorderLeft() != null) {
+            cellStyle.setBorderLeft(getBorderLeft());
+        }
+        if (getBorderRight() != null) {
+            cellStyle.setBorderRight(getBorderRight());
+        }
+        if (getBorderTop() != null) {
+            cellStyle.setBorderTop(getBorderTop());
+        }
+        if (getBorderBottom() != null) {
+            cellStyle.setBorderBottom(getBorderBottom());
+        }
+        if (getLeftBorderColor() != null) {
+            cellStyle.setLeftBorderColor(getLeftBorderColor());
+        }
+        if (getRightBorderColor() != null) {
+            cellStyle.setRightBorderColor(getRightBorderColor());
+        }
+        if (getTopBorderColor() != null) {
+            cellStyle.setTopBorderColor(getTopBorderColor());
+        }
+        if (getBottomBorderColor() != null) {
+            cellStyle.setBottomBorderColor(getBottomBorderColor());
+        }
+        if (getFillPatternType() != null) {
+            cellStyle.setFillPattern(getFillPatternType());
+        }
+        if (getFillBackgroundColor() != null) {
+            cellStyle.setFillBackgroundColor(getFillBackgroundColor());
+        }
+        if (getFillForegroundColor() != null) {
+            cellStyle.setFillForegroundColor(getFillForegroundColor());
+        }
+        if (getShrinkToFit() != null) {
+            cellStyle.setShrinkToFit(getShrinkToFit());
         }
         return cellStyle;
     }

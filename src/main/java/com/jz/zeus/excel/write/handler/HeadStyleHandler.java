@@ -1,23 +1,28 @@
 package com.jz.zeus.excel.write.handler;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.handler.AbstractCellWriteHandler;
+import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
+import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.jz.zeus.excel.constant.Constants;
 import com.jz.zeus.excel.util.StringUtils;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import org.apache.poi.ss.usermodel.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * @Author JZ
  * @Date 2021/3/23 11:57
  */
-public class HeadStyleHandler extends AbstractCellWriteHandler {
+public class HeadStyleHandler extends AbstractCellWriteHandler implements SheetWriteHandler {
 
     /**
      * 是否自适应列宽，默认开启
@@ -32,11 +37,10 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
     private CellStyleProperty allHeadStyle;
 
     /**
-     * 为表头赋予一个默认的样式
+     * 若使用class表示表头且指定样式时使用指定样式，
+     * 若是用list自定义表头则赋予默认表头样式
      */
-    public HeadStyleHandler() {
-        this(CellStyleProperty.getDefaultHeadProperty());
-    }
+    public HeadStyleHandler() {}
 
     /**
      * 为所有设置表头同一样式
@@ -46,12 +50,33 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
     }
 
     /**
-     * 对表头的每个单元格按指定样式进行设置
+     * 设置行索引为 0 的表头的样式
      */
-    public HeadStyleHandler(List<List<CellStyleProperty>> multiRowHeadCellStyles) {
-        this.multiRowHeadCellStyles = multiRowHeadCellStyles;
+    public HeadStyleHandler(List<CellStyleProperty> singleRowHeadCellStyles) {
+        if (CollUtil.isNotEmpty(singleRowHeadCellStyles)) {
+            this.multiRowHeadCellStyles = new ArrayList<>(1);
+            this.multiRowHeadCellStyles.add(singleRowHeadCellStyles);
+        }
     }
 
+    /**
+     * 对表头的每个单元格按指定样式进行设置
+     * @param multiRowHeadCellStyles  表头单元格样式，外层list下标对应行索引，内层下标对应列索引
+     */
+    public HeadStyleHandler setMultiRowHeadCellStyles(List<List<CellStyleProperty>> multiRowHeadCellStyles) {
+        this.multiRowHeadCellStyles = multiRowHeadCellStyles;
+        return this;
+    }
+
+    @Override
+    public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {}
+
+    @Override
+    public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+        if (!HeadKindEnum.CLASS.equals(writeSheetHolder.getExcelWriteHeadProperty().getHeadKind())) {
+            this.allHeadStyle = CellStyleProperty.getDefaultHeadProperty();
+        }
+    }
 
     @Override
     public void afterCellDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, List<CellData> cellDataList, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
@@ -59,31 +84,54 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
             return;
         }
         Sheet sheet = writeSheetHolder.getSheet();
-
+        boolean isSet = false;
         if (allHeadStyle != null) {
             setCellStyle(sheet, cell, allHeadStyle);
+            isSet = true;
         } else if (CollUtil.isNotEmpty(multiRowHeadCellStyles) && cell.getRowIndex() < multiRowHeadCellStyles.size()) {
             List<CellStyleProperty> cellStylePropertyList = multiRowHeadCellStyles.get(cell.getRowIndex());
             if (CollUtil.isNotEmpty(cellStylePropertyList) && cell.getColumnIndex() < cellStylePropertyList.size()) {
                 setCellStyle(sheet, cell, cellStylePropertyList.get(cell.getColumnIndex()));
+                isSet = true;
             }
         }
+        if (!isSet) {
+            setCellStyle(sheet, cell, head);
+        }
+    }
 
+    private void setCellStyle(Sheet sheet, Cell cell, Head head) {
+        boolean isSet = false;
+        CellStyleProperty cellStyleProperty = new CellStyleProperty();
+        if (head.getHeadStyleProperty() != null) {
+            isSet = true;
+            BeanUtil.copyProperties(head.getHeadStyleProperty(), cellStyleProperty);
+        }
+        if (head.getColumnWidthProperty() != null) {
+            isSet = true;
+            cellStyleProperty.setWidth(head.getColumnWidthProperty().getWidth());
+        }
+        if (head.getHeadFontProperty() != null) {
+            isSet = true;
+            cellStyleProperty.setFontProperty(head.getHeadFontProperty());
+        }
+        if (!isSet) {
+            setCellStyle(sheet, cell, cellStyleProperty);
+        }
     }
 
     private void setCellStyle(Sheet sheet, Cell cell, CellStyleProperty cellStyleProperty) {
         Workbook workbook = sheet.getWorkbook();
         CellStyle cellStyle = workbook.createCellStyle();
-        cell.setCellStyle(cellStyleProperty.setCellStyle(cellStyle));
-
         Font font = workbook.createFont();
-        cellStyleProperty.setFontStyle(font);
-        cellStyle.setFont(font);
+        cellStyleProperty.setCellStyle(font, cellStyle);
+        cell.setCellStyle(cellStyle);
+
         if (isAutoColumnWidth) {
-            sheet.setColumnWidth(cell.getColumnIndex(),
-                    columnWidth(cell.getStringCellValue(),
-                            cellStyleProperty.getFontSize() == null ? font.getFontHeightInPoints() : cellStyleProperty.getFontSize())
-            );
+            Short fontSize = cellStyleProperty.getFontProperty() == null ? font.getFontHeightInPoints() :
+                    (cellStyleProperty.getFontProperty().getFontHeightInPoints() == null ?
+                            font.getFontHeightInPoints() : cellStyleProperty.getFontProperty().getFontHeightInPoints());
+            sheet.setColumnWidth(cell.getColumnIndex(), columnWidth(cell.getStringCellValue(), fontSize));
         } else if (cellStyleProperty.getWidth() != null) {
             sheet.setColumnWidth(cell.getColumnIndex(), cellStyleProperty.getWidth());
         }
