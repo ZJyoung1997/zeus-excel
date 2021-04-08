@@ -2,14 +2,11 @@ package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.handler.AbstractCellWriteHandler;
-import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
-import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.jz.zeus.excel.constant.Constants;
 import com.jz.zeus.excel.util.StringUtils;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
@@ -22,7 +19,7 @@ import java.util.List;
  * @Author JZ
  * @Date 2021/3/23 11:57
  */
-public class HeadStyleHandler extends AbstractCellWriteHandler implements SheetWriteHandler {
+public class HeadStyleHandler extends AbstractCellWriteHandler {
 
     /**
      * 是否自适应列宽，默认开启
@@ -37,7 +34,7 @@ public class HeadStyleHandler extends AbstractCellWriteHandler implements SheetW
     private CellStyleProperty allHeadStyle;
 
     /**
-     * 若使用class表示表头且指定样式时使用指定样式，
+     * 若使用class表示表头且指定样式时，优先使用自定义样式，若无则使用class指定样式，若没有指定任何样式则使用默认样式。
      * 若是用list自定义表头则赋予默认表头样式
      */
     public HeadStyleHandler() {}
@@ -69,16 +66,6 @@ public class HeadStyleHandler extends AbstractCellWriteHandler implements SheetW
     }
 
     @Override
-    public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {}
-
-    @Override
-    public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        if (!HeadKindEnum.CLASS.equals(writeSheetHolder.getExcelWriteHeadProperty().getHeadKind())) {
-            this.allHeadStyle = CellStyleProperty.getDefaultHeadProperty();
-        }
-    }
-
-    @Override
     public void afterCellDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, List<CellData> cellDataList, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
         if (!Boolean.TRUE.equals(isHead)) {
             return;
@@ -101,23 +88,18 @@ public class HeadStyleHandler extends AbstractCellWriteHandler implements SheetW
     }
 
     private void setCellStyle(Sheet sheet, Cell cell, Head head) {
-        boolean isSet = false;
-        CellStyleProperty cellStyleProperty = new CellStyleProperty();
+        CellStyleProperty cellStyleProperty = CellStyleProperty.getDefaultHeadProperty();
         if (head.getHeadStyleProperty() != null) {
-            isSet = true;
+            cellStyleProperty = new CellStyleProperty();
             BeanUtil.copyProperties(head.getHeadStyleProperty(), cellStyleProperty);
         }
         if (head.getColumnWidthProperty() != null) {
-            isSet = true;
             cellStyleProperty.setWidth(head.getColumnWidthProperty().getWidth());
         }
         if (head.getHeadFontProperty() != null) {
-            isSet = true;
             cellStyleProperty.setFontProperty(head.getHeadFontProperty());
         }
-        if (!isSet) {
-            setCellStyle(sheet, cell, cellStyleProperty);
-        }
+        setCellStyle(sheet, cell, cellStyleProperty);
     }
 
     private void setCellStyle(Sheet sheet, Cell cell, CellStyleProperty cellStyleProperty) {

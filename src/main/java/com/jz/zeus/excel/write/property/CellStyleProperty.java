@@ -47,14 +47,16 @@ public class CellStyleProperty extends StyleProperty {
         cellStyleProperty.setBorderBottom(BorderStyle.NONE);
         cellStyleProperty.setHorizontalAlignment(HorizontalAlignment.CENTER);
         cellStyleProperty.setVerticalAlignment(VerticalAlignment.CENTER);
+        cellStyleProperty.setFontProperty(getDefaultFontProperty());
+        return cellStyleProperty;
+    }
 
+    public static FontProperty getDefaultFontProperty() {
         FontProperty fontProperty = new FontProperty();
         fontProperty.setFontHeightInPoints((short) 18);
         fontProperty.setBold(false);
         fontProperty.setFontName("微软雅黑");
-
-        cellStyleProperty.setFontProperty(fontProperty);
-        return cellStyleProperty;
+        return fontProperty;
     }
 
     public Font setFontStyle(Font font) {
@@ -76,13 +78,13 @@ public class CellStyleProperty extends StyleProperty {
         if (fontProperty.getItalic() != null) {
             font.setItalic(fontProperty.getItalic());
         }
-        if (fontProperty.getCharset() != null) {
+        if (fontProperty.getCharset() != null && fontProperty.getCharset() != -1) {
             font.setCharSet(fontProperty.getCharset());
         }
-        if (fontProperty.getUnderline() != null) {
+        if (fontProperty.getUnderline() != null && fontProperty.getUnderline() != -1) {
             font.setUnderline(fontProperty.getUnderline());
         }
-        if (fontProperty.getTypeOffset() != null) {
+        if (fontProperty.getTypeOffset() != null && fontProperty.getTypeOffset() != -1) {
             font.setTypeOffset(fontProperty.getTypeOffset());
         }
         if (fontProperty.getStrikeout() != null) {
@@ -98,7 +100,7 @@ public class CellStyleProperty extends StyleProperty {
     }
 
     public CellStyle setCellStyle(CellStyle cellStyle) {
-        if (getDataFormat() != null) {
+        if (getDataFormat() != null && getDataFormat() != -1) {
             cellStyle.setDataFormat(getDataFormat());
         }
         if (getHidden() != null) {
@@ -119,10 +121,10 @@ public class CellStyleProperty extends StyleProperty {
         if (getVerticalAlignment() != null) {
             cellStyle.setVerticalAlignment(getVerticalAlignment());
         }
-        if (getRotation() != null) {
+        if (getRotation() != null && getRotation() != -1) {
             cellStyle.setRotation(getRotation());
         }
-        if (getIndent() != null) {
+        if (getIndent() != null && getIndent() != -1) {
             cellStyle.setIndention(getIndent());
         }
         if (getBorderLeft() != null) {
@@ -137,25 +139,25 @@ public class CellStyleProperty extends StyleProperty {
         if (getBorderBottom() != null) {
             cellStyle.setBorderBottom(getBorderBottom());
         }
-        if (getLeftBorderColor() != null) {
+        if (getLeftBorderColor() != null && getLeftBorderColor() != -1) {
             cellStyle.setLeftBorderColor(getLeftBorderColor());
         }
-        if (getRightBorderColor() != null) {
+        if (getRightBorderColor() != null && getRightBorderColor() != -1) {
             cellStyle.setRightBorderColor(getRightBorderColor());
         }
-        if (getTopBorderColor() != null) {
+        if (getTopBorderColor() != null && getTopBorderColor() != -1) {
             cellStyle.setTopBorderColor(getTopBorderColor());
         }
-        if (getBottomBorderColor() != null) {
+        if (getBottomBorderColor() != null && getBottomBorderColor() != -1) {
             cellStyle.setBottomBorderColor(getBottomBorderColor());
         }
         if (getFillPatternType() != null) {
             cellStyle.setFillPattern(getFillPatternType());
         }
-        if (getFillBackgroundColor() != null) {
+        if (getFillBackgroundColor() != null && getFillBackgroundColor() != -1) {
             cellStyle.setFillBackgroundColor(getFillBackgroundColor());
         }
-        if (getFillForegroundColor() != null) {
+        if (getFillForegroundColor() != null && getFillForegroundColor() != -1) {
             cellStyle.setFillForegroundColor(getFillForegroundColor());
         }
         if (getShrinkToFit() != null) {

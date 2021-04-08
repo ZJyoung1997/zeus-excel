@@ -38,7 +38,6 @@ public class DemoData {
     @ExcelProperty(value = "DEST")
     private String dest;
 
-    @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)
     @ExcelProperty(value = "FUNC")
     private String func;
 
