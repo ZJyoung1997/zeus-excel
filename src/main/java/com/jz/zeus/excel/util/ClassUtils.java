@@ -72,9 +72,9 @@ public class ClassUtils {
                                     && ArrayUtil.isNotEmpty(fieldInfo.getDropDownBoxOptions()))
                 .map(fieldInfo -> {
                     if (fieldInfo.getHeadColumnIndex() != null) {
-                        return new DropDownBoxInfo(fieldInfo.getHeadColumnIndex(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                        return DropDownBoxInfo.buildColumn(fieldInfo.getHeadColumnIndex(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
                     }
-                    return new DropDownBoxInfo(fieldInfo.getHeadName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                    return DropDownBoxInfo.buildColumn(fieldInfo.getHeadName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
                 }).collect(Collectors.toList());
     }
 

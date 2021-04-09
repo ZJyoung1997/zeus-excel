@@ -15,7 +15,10 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author JZ
@@ -121,7 +124,7 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
             }
             List<String> optionList = Arrays.asList(options);
             for (int i = 0; i < columnIndexs.length; i++) {
-                dropDownBoxInfoList.add(new DropDownBoxInfo(columnIndexs[i], optionList));
+                dropDownBoxInfoList.add(DropDownBoxInfo.buildColumn(columnIndexs[i], optionList));
             }
         }
     }
