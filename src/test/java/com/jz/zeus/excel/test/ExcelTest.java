@@ -5,7 +5,6 @@ import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DropDownBoxInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
-import com.jz.zeus.excel.test.data.LineOrderPDBData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
 import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
@@ -30,8 +29,8 @@ import java.util.List;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
         long startTime = System.currentTimeMillis();
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
         styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
@@ -43,7 +42,7 @@ public class ExcelTest {
             add(new DropDownBoxInfo("加载方式（不可修改）", "是", "否"));
         }};
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
-        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", LineOrderPDBData.class, new HeadStyleHandler(), null, null);
+        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(), null, null);
 //        ExcelUtils.createTemplate(path, "模板", Arrays.asList("jj", "jkfk"), new HeadStyleHandler(list), null);
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);

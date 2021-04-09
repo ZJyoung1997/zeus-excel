@@ -19,6 +19,6 @@ public @interface DropDownBox {
     /**
      * 下拉框需要填充的行数
      */
-    int rowNum() default 60000;
+    int rowNum() default 10000;
 
 }

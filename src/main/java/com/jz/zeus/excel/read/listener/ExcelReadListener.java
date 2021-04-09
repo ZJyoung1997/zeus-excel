@@ -12,6 +12,7 @@ import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.read.metadata.holder.ReadRowHolder;
 import com.alibaba.excel.read.metadata.property.ExcelReadHeadProperty;
 import com.jz.zeus.excel.CellErrorInfo;
+import com.jz.zeus.excel.exception.DataConvertException;
 import com.jz.zeus.excel.util.ValidatorUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -195,8 +196,12 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     @Override
     public void onException(Exception e, AnalysisContext analysisContext) {
         if (e instanceof ExcelDataConvertException) {
+            String errorMsg = "数据类型错误";
+            if (e.getCause() instanceof DataConvertException) {
+                errorMsg = ((DataConvertException) e.getCause()).getErrorMsg();
+            }
             ExcelDataConvertException dataConvertException = (ExcelDataConvertException) e;
-            addErrorInfo(dataConvertException.getRowIndex(), dataConvertException.getColumnIndex(), "数据类型错误");
+            addErrorInfo(dataConvertException.getRowIndex(), dataConvertException.getColumnIndex(), errorMsg);
         }
     }
 

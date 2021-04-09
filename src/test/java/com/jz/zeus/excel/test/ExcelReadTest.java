@@ -22,8 +22,8 @@ import java.util.List;
 public class ExcelReadTest {
 
     public static void main(String[] args) throws FileNotFoundException {
-        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
         ExcelReadListener readListener = new DemoExcelReadListener(100);
         ExcelUtils.read(readListener, path, null, DemoData.class);
