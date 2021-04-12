@@ -12,9 +12,15 @@ import java.util.Map;
 public class TestNoModelReadListener extends NoModelReadListener {
 
     @Override
-    protected void dataHandle(Map<Integer, Map<Integer, String>> dataMap, AnalysisContext analysisContext) {
-        dataMap.values().forEach(data -> {
-            System.out.println("读取到数据：" + data.values());
+    protected void dataHandle(Map<Integer, Map<Integer, String>> dataMap, Map<Integer, Map<String, String>> dynamicColumnDataMap,
+                              AnalysisContext analysisContext) {
+        dataMap.forEach((key, value) -> {
+            System.out.println("加载class数据：" + value);
+        });
+        dynamicColumnDataMap.forEach((key, value) -> {
+            value.forEach((k, v) -> {
+                System.out.println(String.format("加载动态数据：%s -> %s", k, v));
+            });
         });
     }
 

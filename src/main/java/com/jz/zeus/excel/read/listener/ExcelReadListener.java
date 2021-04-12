@@ -3,8 +3,8 @@ package com.jz.zeus.excel.read.listener;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.exception.ExcelDataConvertException;
+import com.alibaba.excel.metadata.Cell;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.CellExtra;
 import com.alibaba.excel.metadata.Head;
@@ -59,8 +59,6 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     @Getter
     private Map<Integer, List<CellErrorInfo>> errorInfoMap;
 
-    private List<CellErrorInfo> cellErrorInfoList;
-
     /**
      * T 中字段名与列索引映射
      * key T 中字段名、value 列索引
@@ -74,10 +72,22 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     private Map<String, Integer> headNameIndexMap = new HashMap<>();
 
     /**
+     * 该字段中保存的是class中未定义的表头，
+     * key 为列索引、value 为表头
+     */
+    private Map<Integer, String> dynamicColumnMap = new HashMap<>();
+
+    /**
      * Excel 中读取到的数据
      * key 行索引，value 读取到的数据
      */
     private Map<Integer, T> dataMap = new HashMap<>();
+
+    /**
+     * Excel 动态列数据信息
+     * key 行索引，value 该行中所有动态列的表头和值
+     */
+    private Map<Integer, Map<String, String>> dynamicColumnDataMap = new HashMap<>();
 
     public ExcelReadListener() {}
 
@@ -106,17 +116,19 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
 
     /**
      * 对读取到的数据进行处理
-     * @param dataMap           key 为行索引，value 为 Excel中该行数据
+     * @param dataMap                   key 为行索引，value 为 Excel中该行数据
+     * @param dynamicColumnDataMap      key 为行索引，value 为 Excel中该行中动态列数据
      * @param analysisContext
      */
-    protected abstract void dataHandle(Map<Integer, T> dataMap, AnalysisContext analysisContext);
+    protected abstract void dataHandle(Map<Integer, T> dataMap, Map<Integer, Map<String, String>> dynamicColumnDataMap, AnalysisContext analysisContext);
 
     /**
      * 校验读取到的数据
-     * @param dataMap           key 为行索引，value 为 Excel中该行数据
+     * @param dataMap                   key 为行索引，value 为 Excel中该行数据
+     * @param dynamicColumnDataMap      key 为行索引，value 为 Excel中该行中动态列数据
      * @param analysisContext
      */
-    protected abstract void verify(Map<Integer, T> dataMap, AnalysisContext analysisContext);
+    protected abstract void verify(Map<Integer, T> dataMap, Map<Integer, Map<String, String>> dynamicColumnDataMap, AnalysisContext analysisContext);
 
     /**
      * 校验表头是否正常
@@ -129,20 +141,24 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     public void invoke(T data, AnalysisContext analysisContext) {
         ReadRowHolder readRowHolder = analysisContext.readRowHolder();
         annotationValidation(data, readRowHolder);
-        dataMap.put(readRowHolder.getRowIndex(), data);
+        Integer rowIndex = readRowHolder.getRowIndex();
+        dataMap.put(rowIndex, data);
+        dynamicColumnDataMap.put(rowIndex, getDynamicColumnData(readRowHolder));
         if (dataMap.size() >= batchHandleNum) {
-            verify(dataMap, analysisContext);
-            dataHandle(dataMap, analysisContext);
+            verify(dataMap, dynamicColumnDataMap, analysisContext);
+            dataHandle(dataMap, dynamicColumnDataMap, analysisContext);
             dataMap.clear();
+            dynamicColumnMap.clear();
         }
     }
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
         if (dataMap.size() > 0) {
-            verify(dataMap, analysisContext);
-            dataHandle(dataMap, analysisContext);
+            verify(dataMap, dynamicColumnDataMap, analysisContext);
+            dataHandle(dataMap, dynamicColumnDataMap, analysisContext);
             dataMap.clear();
+            dynamicColumnMap.clear();
         }
         doAfterAllDataHandle(analysisContext);
     }
@@ -156,11 +172,12 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         }
 
         ExcelReadHeadProperty excelHeadPropertyData = analysisContext.readSheetHolder().excelReadHeadProperty();
-        boolean isHeadClass = HeadKindEnum.CLASS.equals(excelHeadPropertyData.getHeadKind());
         Map<Integer, Head> headMapData = excelHeadPropertyData.getHeadMap();
+        Set<Integer> columnIndexSet = new HashSet<>();
         if (CollUtil.isNotEmpty(headMapData)) {
             headMapData.values().forEach(head -> {
                 Integer columnIndex = head.getColumnIndex();
+                columnIndexSet.add(columnIndex);
                 if (StrUtil.isNotBlank(head.getFieldName())) {
                     fieldColumnIndexMap.put(head.getFieldName(), columnIndex);
                 }
@@ -173,8 +190,11 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         if (CollUtil.isNotEmpty(headMap)) {
             headMap.forEach((columnIndex, cellData) -> {
                 String headName = cellData.getStringValue();
-                if (!isHeadClass && !headNameIndexMap.containsKey(headName)) {
+                if (!headNameIndexMap.containsKey(headName)) {
                     headNameIndexMap.put(headName, columnIndex);
+                }
+                if (!columnIndexSet.contains(columnIndex)) {
+                    dynamicColumnMap.put(columnIndex, cellData.toString());
                 }
             });
         }
@@ -208,6 +228,39 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     @Override
     public void extra(CellExtra cellExtra, AnalysisContext analysisContext) {}
 
+    /**
+     * 获取动态数据
+     */
+    private Map<String, String> getDynamicColumnData(ReadRowHolder readRowHolder) {
+        Map<Integer, Cell> cellDataMap = readRowHolder.getCellMap();
+        if (CollUtil.isEmpty(cellDataMap)) {
+            return Collections.emptyMap();
+        }
+        Map<String, String> result = new HashMap<>(cellDataMap.size());
+        cellDataMap.forEach((columnIndex, cell) -> {
+            if (dynamicColumnMap.keySet().contains(columnIndex)) {
+                result.put(dynamicColumnMap.get(columnIndex), cell.toString());
+            }
+        });
+        return result;
+    }
+
+    protected void addErrorInfoByField(Integer rowIndex, String fieldName, String... errorMessages) {
+        Integer columnIndex;
+        if (rowIndex == null || (columnIndex = fieldColumnIndexMap.get(fieldName)) == null) {
+            return;
+        }
+        addErrorInfo(rowIndex, columnIndex, errorMessages);
+    }
+
+    protected void addErrorInfoByHead(Integer rowIndex, String headName, String... errorMessages) {
+        Integer columnIndex;
+        if (rowIndex == null || (columnIndex = headNameIndexMap.get(headName)) == null) {
+            return;
+        }
+        addErrorInfo(rowIndex, columnIndex, errorMessages);
+    }
+
     protected void addErrorInfo(Integer rowIndex, Integer columnIndex, String... errorMessage) {
         if (rowIndex == null || columnIndex == null) {
             return;
@@ -221,22 +274,6 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             this.errorInfoMap.put(rowIndex, rowErrorInfoList);
         }
         rowErrorInfoList.add(new CellErrorInfo(rowIndex, columnIndex, errorMessage));
-    }
-
-    protected void addErrorInfo(Integer rowIndex, String headName, String... errorMessages) {
-        Integer columnIndex;
-        if (rowIndex == null || (columnIndex = headNameIndexMap.get(headName)) == null) {
-            return;
-        }
-        if (this.errorInfoMap == null) {
-            this.errorInfoMap = new HashMap<>();
-        }
-        List<CellErrorInfo> rowErrorInfoList = errorInfoMap.get(rowIndex);
-        if (rowErrorInfoList == null) {
-            rowErrorInfoList = new ArrayList<>();
-            this.errorInfoMap.put(rowIndex, rowErrorInfoList);
-        }
-        rowErrorInfoList.add(new CellErrorInfo(rowIndex, columnIndex, errorMessages));
     }
 
     protected void addErrorInfo(List<CellErrorInfo> cellErrorInfos) {
@@ -310,10 +347,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         if (CollUtil.isEmpty(this.errorInfoMap)) {
             return Collections.emptyList();
         }
-        if (cellErrorInfoList != null) {
-            return cellErrorInfoList;
-        }
-        cellErrorInfoList = new ArrayList<>();
+        List<CellErrorInfo> cellErrorInfoList = new ArrayList<>();
         this.errorInfoMap.values().forEach(errorInfos -> {
             cellErrorInfoList.addAll(errorInfos);
         });

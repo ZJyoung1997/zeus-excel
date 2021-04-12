@@ -30,7 +30,7 @@ public abstract class AbstractExcelReadListener<T> extends ExcelReadListener<T> 
     protected void doAfterAllDataHandle(AnalysisContext analysisContext) {}
 
     @Override
-    protected void verify(Map<Integer, T> dataMap, AnalysisContext analysisContext) {}
+    protected void verify(Map<Integer, T> dataMap, Map<Integer, Map<String, String>> dynamicColumnDataMap, AnalysisContext analysisContext) {}
 
     @Override
     protected void headCheck(Map<Integer, CellData> headMap, AnalysisContext context) {

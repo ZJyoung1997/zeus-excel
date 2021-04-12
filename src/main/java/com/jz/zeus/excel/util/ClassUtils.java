@@ -21,6 +21,9 @@ import java.util.stream.Collectors;
 @UtilityClass
 public class ClassUtils {
 
+    /**
+     * class 中字段的信息
+     */
     private static final Map<Class, List<FieldInfo>> CLASS_FIELD_INFO_CACHE = new ConcurrentReferenceHashMap<>();
 
     private static final Map<Class, List<List<String>>> CLASS_HEAD_CACHE_MAP = new ConcurrentReferenceHashMap<>();
@@ -78,11 +81,14 @@ public class ClassUtils {
                 }).collect(Collectors.toList());
     }
 
+    /**
+     * 根据字段名获class取字段信息
+     */
     public Optional<FieldInfo> getFieldInfoByFieldName(Class<?> clazz, String fieldName) {
         if (fieldName == null) {
             return Optional.empty();
         }
-        List<FieldInfo> fieldInfos = CLASS_FIELD_INFO_CACHE.get(clazz);
+        List<FieldInfo> fieldInfos = getClassFieldInfo(clazz);
         if (CollUtil.isEmpty(fieldInfos)) {
             return Optional.empty();
         }
