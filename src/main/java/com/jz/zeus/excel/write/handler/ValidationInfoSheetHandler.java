@@ -55,9 +55,9 @@ public class ValidationInfoSheetHandler extends AbstractZeusSheetWriteHandler {
         boolean isClass = HeadKindEnum.CLASS.equals(writeSheetHolder.getExcelWriteHeadProperty().getHeadKind());
         if (isClass) {
             if (CollUtil.isEmpty(validationInfoList)) {
-                boxInfoList.addAll(ClassUtils.getDropDownBoxInfos(writeSheetHolder.getClazz()));
+                boxInfoList.addAll(ClassUtils.getValidationInfoInfos(writeSheetHolder.getClazz()));
             } else {
-                ClassUtils.getDropDownBoxInfos(writeSheetHolder.getClazz())
+                ClassUtils.getValidationInfoInfos(writeSheetHolder.getClazz())
                         .forEach(boxInfo -> {
                             if (boxInfo.getColumnIndex() == null && StrUtil.isNotBlank(boxInfo.getHeadName())) {
                                 boxInfo.setColumnIndex(getHeadColumnIndex(boxInfo.getHeadName()));
