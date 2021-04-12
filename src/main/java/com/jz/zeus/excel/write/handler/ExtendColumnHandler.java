@@ -43,15 +43,21 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
 
     private Map<Integer, T> dataMap;
 
+    /**
+     * 动态表头
+     */
+    private List<String> dynamicHead;
+
     private UnsafeFieldAccessor fieldAccessor;
 
-    public ExtendColumnHandler(List<T> dataList) {
+    public ExtendColumnHandler(List<T> dataList, List<String> dynamicHead) {
         dataMap = new HashMap<>(dataList == null ? 0 : dataList.size());
         if (CollUtil.isNotEmpty(dataList)) {
             for (int i = 0; i < dataList.size(); i++) {
                 dataMap.put(i, dataList.get(i));
             }
         }
+        this.dynamicHead = dynamicHead;
     }
 
     @Override
@@ -63,7 +69,7 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
         if (rawData == null) {
             return;
         }
-        Map<String, String> dynamicData = (Map<String, String>) fieldAccessor.getObject(rawData);
+        Map<String, String> dynamicData = getDynamicData(rawData);
         if (CollUtil.isEmpty(dynamicData)) {
             return;
         }
@@ -105,7 +111,7 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
         if (rawData == null) {
             return;
         }
-        Map<String, String> dynamicData = (Map<String, String>) fieldAccessor.getObject(rawData);
+        Map<String, String> dynamicData = getDynamicData(rawData);
         if (CollUtil.isEmpty(dynamicData)) {
             return;
         }
@@ -131,6 +137,10 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
             headMap.put(index, head);
             index++;
         }
+    }
+
+    private Map<String, String> getDynamicData(T rawData) {
+        return (Map<String, String>) fieldAccessor.getObject(rawData);
     }
 
     @Override

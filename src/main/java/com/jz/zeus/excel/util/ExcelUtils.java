@@ -8,6 +8,7 @@ import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.read.listener.NoModelReadListener;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
+import com.jz.zeus.excel.write.handler.ExtendColumnHandler;
 import com.jz.zeus.excel.write.handler.HeadStyleHandler;
 import com.jz.zeus.excel.write.handler.ValidationInfoSheetHandler;
 import lombok.SneakyThrows;
@@ -112,6 +113,7 @@ public class ExcelUtils {
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(heads)
+                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList()))
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(Collections.emptyList());
@@ -132,6 +134,7 @@ public class ExcelUtils {
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(headClass)
+                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList()))
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .excludeColumnFiledNames(excludeColumnFiledNames)
@@ -261,6 +264,7 @@ public class ExcelUtils {
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(heads)
+                .registerWriteHandler(new ExtendColumnHandler(dataList))
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(dataList);
@@ -301,6 +305,7 @@ public class ExcelUtils {
                 .sheet(sheetName)
                 .head(headClass)
                 .excludeColumnFiledNames(excludeColumnFiledNames)
+                .registerWriteHandler(new ExtendColumnHandler(dataList))
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(dataList);
@@ -349,6 +354,7 @@ public class ExcelUtils {
         EasyExcel.write(resultOutputStream)
                 .withTemplate(sourceInputStream)
                 .sheet(sheetName)
+                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList()))
                 .registerWriteHandler(new ErrorInfoCommentHandler(headRowNum, errorInfos))
                 .doWrite(Collections.emptyList());
     }
@@ -365,6 +371,7 @@ public class ExcelUtils {
         EasyExcel.write(resultOutputStream)
                 .withTemplate(new ByteArrayInputStream(sourceExcelBytes))
                 .sheet(sheetName)
+                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList()))
                 .registerWriteHandler(new ErrorInfoCommentHandler(headRowNum, errorInfos))
                 .doWrite(Collections.emptyList());
     }
