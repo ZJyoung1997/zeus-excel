@@ -4,8 +4,14 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.write.style.*;
+import com.alibaba.excel.metadata.property.ColumnWidthProperty;
+import com.alibaba.excel.metadata.property.FontProperty;
+import com.alibaba.excel.metadata.property.LoopMergeProperty;
+import com.alibaba.excel.metadata.property.StyleProperty;
 import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.ValidationInfo;
+import com.jz.zeus.excel.annotation.DynamicColumn;
 import com.jz.zeus.excel.annotation.ValidationData;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.internal.util.ConcurrentReferenceHashMap;
@@ -42,6 +48,7 @@ public class ClassUtils {
         Field[] fields = clazz.getDeclaredFields();
         for (Field field : fields) {
             FieldInfo fieldInfo = new FieldInfo();
+            fieldInfo.setField(field);
             fieldInfo.setFieldName(field.getName());
             ExcelProperty excelProperty = field.getAnnotation(ExcelProperty.class);
             if (excelProperty != null) {
@@ -55,6 +62,16 @@ public class ClassUtils {
                 fieldInfo.setDropDownBoxOptions(validationData.options());
                 fieldInfo.setDropDownBoxRowNum(validationData.rowNum());
             }
+            DynamicColumn dynamicColumn = field.getAnnotation(DynamicColumn.class);
+            if (dynamicColumn != null) {
+                fieldInfo.setDynamicColumn(true);
+            }
+            fieldInfo.setHeadFontProperty(FontProperty.build(field.getAnnotation(HeadFontStyle.class)));
+            fieldInfo.setHeadStyleProperty(StyleProperty.build(field.getAnnotation(HeadStyle.class)));
+            fieldInfo.setContentFontProperty(FontProperty.build(field.getAnnotation(ContentFontStyle.class)));
+            fieldInfo.setContentStyleProperty(StyleProperty.build(field.getAnnotation(ContentStyle.class)));
+            fieldInfo.setColumnWidthProperty(ColumnWidthProperty.build(field.getAnnotation(ColumnWidth.class)));
+            fieldInfo.setLoopMergeProperty(LoopMergeProperty.build(field.getAnnotation(ContentLoopMerge.class)));
             fieldInfos.add(fieldInfo);
         }
         CLASS_FIELD_INFO_CACHE.put(clazz, fieldInfos);

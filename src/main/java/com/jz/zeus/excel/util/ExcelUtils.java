@@ -38,18 +38,19 @@ public class ExcelUtils {
      * @param sheetName                 sheet名，可以为 null
      * @param headClass                 表示表头信息的 class
      * @param validationInfos           下拉框配置信息
+     * @param dynamicHeads              动态表头
      * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
      */
     @SneakyThrows
     public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, Class<?> headClass,
                                  HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos,
-                                 List<String> excludeColumnFiledNames) {
+                                 List<String> dynamicHeads, List<String> excludeColumnFiledNames) {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
         // 这里URLEncoder.encode可以防止中文乱码
         String fileName = URLEncoder.encode(excelName, "UTF-8").replaceAll("\\+", "%20");
         response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-        createTemplate(response.getOutputStream(), sheetName, headClass, headStyleHandler, validationInfos, excludeColumnFiledNames);
+        createTemplate(response.getOutputStream(), sheetName, headClass, headStyleHandler, validationInfos, dynamicHeads, excludeColumnFiledNames);
     }
 
     /**
@@ -89,13 +90,14 @@ public class ExcelUtils {
      * @param sheetName                sheet名，可以为null
      * @param headClass                表示表头信息的class
      * @param validationInfos          下拉框配置信息
+     * @param dynamicHeads             动态表头
      * @param excludeColumnFiledNames  不需要读取的字段名，字段名对应 dataClass 中的字段名，并非表头名
      */
     @SneakyThrows
     public void createTemplate(String excelName, String sheetName, Class<?> headClass, HeadStyleHandler headStyleHandler,
-                               List<ValidationInfo> validationInfos, List<String> excludeColumnFiledNames) {
+                               List<ValidationInfo> validationInfos, List<String> dynamicHeads, List<String> excludeColumnFiledNames) {
         createTemplate(new FileOutputStream(excelName), sheetName, headClass, headStyleHandler,
-                validationInfos, excludeColumnFiledNames);
+                validationInfos, dynamicHeads, excludeColumnFiledNames);
     }
 
     /**
@@ -113,7 +115,7 @@ public class ExcelUtils {
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(heads)
-                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList()))
+                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList(), null))
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(Collections.emptyList());
@@ -125,16 +127,17 @@ public class ExcelUtils {
      * @param sheetName                 sheet名，可以为 null
      * @param headClass                 表示表头信息的 class
      * @param validationInfos           下拉框配置信息
+     * @param dynamicHeads              动态表头
      * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
      */
     public void createTemplate(OutputStream outputStream, String sheetName, Class<?> headClass,
                                HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos,
-                               List<String> excludeColumnFiledNames) {
+                               List<String> dynamicHeads, List<String> excludeColumnFiledNames) {
         EasyExcel.write(outputStream)
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(headClass)
-                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList()))
+                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList(), dynamicHeads))
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .excludeColumnFiledNames(excludeColumnFiledNames)
@@ -151,7 +154,7 @@ public class ExcelUtils {
      */
     @SneakyThrows
     public <T> void readAndWriteErrorMsg(ExcelReadListener<T> readListener, String excelName,
-                                         String sheetName, Class<T> headClass) {
+                                         String sheetName, Class<T> headClass, List<String> dynamicHeads) {
         byte[] excelBytes = IoUtils.toByteArray(new FileInputStream(excelName));
         readAndWriteErrorMsg(readListener, excelBytes, new FileOutputStream(excelName), sheetName, headClass);
     }
@@ -264,7 +267,7 @@ public class ExcelUtils {
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(heads)
-                .registerWriteHandler(new ExtendColumnHandler(dataList))
+                .registerWriteHandler(new ExtendColumnHandler(dataList, null))
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(dataList);
@@ -276,15 +279,16 @@ public class ExcelUtils {
      * @param sheetName                     需写入数据的sheet名称，可以为null
      * @param headClass                     表头信息类
      * @param dataList                      要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
+     * @param dynamicHeads                  动态表头
      * @param excludeColumnFiledNames       不需要写入Excel的字段名（不是表头）
      * @param headStyleHandler              表头格式处理器，为 null 将会采用默认格式
      * @param validationInfos              下拉框信息，为 null 或 空 不会添加下拉框
      */
     @SneakyThrows
     public <T> void write(String excelName, String sheetName, Class<T> headClass, List<T> dataList,
-                          List<String> excludeColumnFiledNames, HeadStyleHandler headStyleHandler,
-                          List<ValidationInfo> validationInfos) {
-        write(new FileOutputStream(excelName), sheetName, headClass, dataList, excludeColumnFiledNames, headStyleHandler, validationInfos);
+                          List<String> dynamicHeads, List<String> excludeColumnFiledNames,
+                          HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
+        write(new FileOutputStream(excelName), sheetName, headClass, dataList, dynamicHeads, excludeColumnFiledNames, headStyleHandler, validationInfos);
     }
 
     /**
@@ -293,19 +297,20 @@ public class ExcelUtils {
      * @param sheetName                     需写入数据的sheet名称，可以为null
      * @param headClass                     表头信息类
      * @param dataList                      要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
+     * @param dynamicHeads                  动态表头
      * @param excludeColumnFiledNames       不需要写入Excel的字段名（不是表头）
      * @param headStyleHandler              表头格式处理器，为 null 将会采用默认格式
      * @param validationInfos              下拉框信息，为 null 或 空 不会添加下拉框
      */
     public <T> void write(OutputStream outputStream, String sheetName, Class<T> headClass, List<T> dataList,
-                          List<String> excludeColumnFiledNames, HeadStyleHandler headStyleHandler,
-                          List<ValidationInfo> validationInfos) {
+                          List<String> dynamicHeads, List<String> excludeColumnFiledNames,
+                          HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
         EasyExcel.write(outputStream)
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(headClass)
                 .excludeColumnFiledNames(excludeColumnFiledNames)
-                .registerWriteHandler(new ExtendColumnHandler(dataList))
+                .registerWriteHandler(new ExtendColumnHandler(dataList, dynamicHeads))
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(dataList);
@@ -354,7 +359,7 @@ public class ExcelUtils {
         EasyExcel.write(resultOutputStream)
                 .withTemplate(sourceInputStream)
                 .sheet(sheetName)
-                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList()))
+                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList(), null))
                 .registerWriteHandler(new ErrorInfoCommentHandler(headRowNum, errorInfos))
                 .doWrite(Collections.emptyList());
     }
@@ -371,7 +376,6 @@ public class ExcelUtils {
         EasyExcel.write(resultOutputStream)
                 .withTemplate(new ByteArrayInputStream(sourceExcelBytes))
                 .sheet(sheetName)
-                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList()))
                 .registerWriteHandler(new ErrorInfoCommentHandler(headRowNum, errorInfos))
                 .doWrite(Collections.emptyList());
     }

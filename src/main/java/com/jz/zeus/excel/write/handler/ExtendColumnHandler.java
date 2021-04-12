@@ -1,28 +1,26 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
-import com.alibaba.excel.annotation.write.style.*;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.metadata.Head;
-import com.alibaba.excel.metadata.property.ColumnWidthProperty;
-import com.alibaba.excel.metadata.property.FontProperty;
-import com.alibaba.excel.metadata.property.LoopMergeProperty;
-import com.alibaba.excel.metadata.property.StyleProperty;
-import com.alibaba.excel.write.handler.AbstractCellWriteHandler;
 import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
 import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
-import com.jz.zeus.excel.annotation.DynamicColumn;
+import com.jz.zeus.excel.FieldInfo;
+import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.UnsafeFieldAccessor;
-import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Author JZ
@@ -35,6 +33,8 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
     private Integer lastColumnIndex;
 
     private boolean isClassHead;
+
+    private Map<String, Integer> dynamicHeadIndexMap = new HashMap<>();
 
     /**
      * 表头行数
@@ -57,12 +57,15 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
                 dataMap.put(i, dataList.get(i));
             }
         }
-        this.dynamicHead = dynamicHead;
+        if (CollUtil.isNotEmpty(dynamicHead)) {
+            this.dynamicHead = new ArrayList<>(dynamicHead);
+        }
     }
 
     @Override
     public void afterRowDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Integer relativeRowIndex, Boolean isHead) {
-        if (Boolean.TRUE.equals(isHead) || !isClassHead || dynamicColumnField == null) {
+        if (CollUtil.isEmpty(dynamicHead) || Boolean.TRUE.equals(isHead)
+                || !isClassHead || dynamicColumnField == null) {
             return;
         }
         T rawData = dataMap.get(row.getRowNum()-headRowNum);
@@ -73,67 +76,68 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
         if (CollUtil.isEmpty(dynamicData)) {
             return;
         }
-        int index = lastColumnIndex;
-        for (String value : dynamicData.values()) {
-            Cell cell = row.createCell(index++);
-            cell.setCellValue(value);
-        }
+        dynamicData.forEach((head, data) -> {
+            Integer columnIndex = dynamicHeadIndexMap.get(head);
+            if (columnIndex != null) {
+                Cell cell = row.createCell(columnIndex);
+                cell.setCellValue(data);
+            }
+        });
     }
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+        if (CollUtil.isEmpty(dynamicHead) && CollUtil.isEmpty(dataMap)) {
+            return;
+        }
         ExcelWriteHeadProperty excelWriteHeadProperty = writeSheetHolder.getExcelWriteHeadProperty();
         lastColumnIndex = excelWriteHeadProperty.getHeadMap().size();
         isClassHead = HeadKindEnum.CLASS.equals(excelWriteHeadProperty.getHeadKind());
         headRowNum = excelWriteHeadProperty.getHeadRowNumber();
 
-        Map<String, Field> ignoreFieldMap = excelWriteHeadProperty.getIgnoreMap();
-        if (CollUtil.isEmpty(ignoreFieldMap)) {
-            return;
-        }
-        for (Field field : ignoreFieldMap.values()) {
-            if (field.getAnnotation(DynamicColumn.class) != null) {
-                dynamicColumnField = field;
-                dynamicColumnField.setAccessible(true);
-                fieldAccessor = new UnsafeFieldAccessor(dynamicColumnField);
-                break;
-            }
-        }
-        if (dynamicColumnField == null) {
-            return;
-        }
-        addHead(excelWriteHeadProperty);
+        List<FieldInfo> fieldInfos = ClassUtils.getClassFieldInfo(writeSheetHolder.getClazz());
+        fieldInfos.stream().filter(FieldInfo::isDynamicColumn)
+                .findFirst().ifPresent(fieldInfo -> {
+            dynamicColumnField = fieldInfo.getField();
+            dynamicColumnField.setAccessible(true);
+            fieldAccessor = new UnsafeFieldAccessor(dynamicColumnField);
+            addHead(excelWriteHeadProperty, fieldInfo);
+        });
     }
 
-    private void addHead(ExcelWriteHeadProperty excelWriteHeadProperty) {
+    private void addHead(ExcelWriteHeadProperty excelWriteHeadProperty, FieldInfo fieldInfo) {
         Map<Integer, Head> headMap = excelWriteHeadProperty.getHeadMap();
-        T rawData = dataMap.get(0);
-        if (rawData == null) {
+        if (CollUtil.isEmpty(dynamicHead)) {
+            dynamicHead = new ArrayList<>();
+        }
+        if (CollUtil.isNotEmpty(dataMap)) {
+            T rawData = dataMap.get(0);
+            if (rawData != null) {
+                Map<String, String> dynamicData = getDynamicData(rawData);
+                if (CollUtil.isNotEmpty(dynamicData)) {
+                    dynamicHead.addAll(dynamicData.keySet());
+                    dynamicHead = dynamicHead.stream().distinct()
+                            .collect(Collectors.toList());
+                }
+            }
+        }
+        if (dynamicHead.size() == 0) {
             return;
         }
-        Map<String, String> dynamicData = getDynamicData(rawData);
-        if (CollUtil.isEmpty(dynamicData)) {
-            return;
-        }
-        FontProperty headFontProperty = FontProperty.build(dynamicColumnField.getAnnotation(HeadFontStyle.class));
-        StyleProperty headStyleProperty = StyleProperty.build(dynamicColumnField.getAnnotation(HeadStyle.class));
-        FontProperty contentFontProperty = FontProperty.build(dynamicColumnField.getAnnotation(ContentFontStyle.class));
-        StyleProperty contentStyleProperty = StyleProperty.build(dynamicColumnField.getAnnotation(ContentStyle.class));
-        ColumnWidthProperty columnWidthProperty = ColumnWidthProperty.build(dynamicColumnField.getAnnotation(ColumnWidth.class));
-        LoopMergeProperty loopMergeProperty = LoopMergeProperty.build(dynamicColumnField.getAnnotation(ContentLoopMerge.class));
         int index = lastColumnIndex;
-        for (String headName : dynamicData.keySet()) {
+        for (String headName : dynamicHead) {
             List<String> headNames = new ArrayList<>(headRowNum);
             for (int i = 0; i < headRowNum; i++) {
                 headNames.add(headName);
             }
+            dynamicHeadIndexMap.put(headName, index);
             Head head = new Head(index, null, headNames, false, true);
-            head.setHeadFontProperty(headFontProperty);
-            head.setHeadStyleProperty(headStyleProperty);
-            head.setContentFontProperty(contentFontProperty);
-            head.setContentStyleProperty(contentStyleProperty);
-            head.setColumnWidthProperty(columnWidthProperty);
-            head.setLoopMergeProperty(loopMergeProperty);
+            head.setHeadFontProperty(fieldInfo.getHeadFontProperty());
+            head.setHeadStyleProperty(fieldInfo.getHeadStyleProperty());
+            head.setContentFontProperty(fieldInfo.getContentFontProperty());
+            head.setContentStyleProperty(fieldInfo.getContentStyleProperty());
+            head.setColumnWidthProperty(fieldInfo.getColumnWidthProperty());
+            head.setLoopMergeProperty(fieldInfo.getLoopMergeProperty());
             headMap.put(index, head);
             index++;
         }

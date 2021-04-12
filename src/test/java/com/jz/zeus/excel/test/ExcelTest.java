@@ -28,8 +28,8 @@ import java.util.*;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
         long startTime = System.currentTimeMillis();
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
         styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
@@ -41,12 +41,12 @@ public class ExcelTest {
             add(ValidationInfo.buildColumn("ID", "是", "否"));
         }};
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
-//        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(), null, null);
+//        ExcelUtils.createTemplate(path, "模板", DemoData.class, new HeadStyleHandler(), null, Arrays.asList("积分卡", "jjjj"), null);
 //        ExcelUtils.createTemplate(path, "模板", Arrays.asList("jj", "jkfk"), new HeadStyleHandler(list), null);
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
-//        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
-        write(new FileOutputStream(path), getCellErrorInfo());
+        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), Arrays.asList("积分卡", "jjjj"), null, null, null);
+//        write(new FileOutputStream(path), getCellErrorInfo());
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
@@ -64,7 +64,7 @@ public class ExcelTest {
                 .sheet("模板")
 //                .head(getHead())
                 .head(DemoData.class)
-                .registerWriteHandler(new ExtendColumnHandler<DemoData>(classDataList))
+                .registerWriteHandler(new ExtendColumnHandler<DemoData>(classDataList, null))
                 .registerWriteHandler(new HeadStyleHandler())
 //                .registerWriteHandler(new ErrorInfoCommentHandler(cellErrorInfoList))
 //                .registerWriteHandler(new DropDownBoxSheetHandler(getDropDownBoxInfo()))

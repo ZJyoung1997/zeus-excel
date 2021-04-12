@@ -27,12 +27,6 @@ public class ErrorInfoCommentHandler extends AbstractZeusSheetWriteHandler {
 
     private Map<Integer, List<CellErrorInfo>> rowErrorInfoMap;
 
-    /**
-     * 存放表头与其列索引的信息
-     * key 表头、value 列索引
-     */
-    private Map<String, Integer> headNameIndexMap;
-
     public ErrorInfoCommentHandler(List<CellErrorInfo> errorInfoList) {
         this(null, errorInfoList);
     }
@@ -64,7 +58,7 @@ public class ErrorInfoCommentHandler extends AbstractZeusSheetWriteHandler {
             errorInfos.forEach(errorInfo -> {
                 Integer columnIndex = errorInfo.getColumnIndex();
                 if (columnIndex == null) {
-                    columnIndex = headNameIndexMap.get(errorInfo.getHeadName());
+                    columnIndex = getHeadColumnIndex(errorInfo.getHeadName());
                 }
                 ExcelUtils.setCommentErrorInfo(sheet, rowIndex, columnIndex, errorInfo.getErrorMsgs().toArray(new String[0]));
             });
