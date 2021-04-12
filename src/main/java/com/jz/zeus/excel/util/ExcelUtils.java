@@ -4,12 +4,12 @@ import cn.hutool.core.util.ArrayUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.util.IoUtils;
 import com.jz.zeus.excel.CellErrorInfo;
-import com.jz.zeus.excel.DropDownBoxInfo;
+import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.read.listener.NoModelReadListener;
-import com.jz.zeus.excel.write.handler.DropDownBoxSheetHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import com.jz.zeus.excel.write.handler.HeadStyleHandler;
+import com.jz.zeus.excel.write.handler.ValidationInfoSheetHandler;
 import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import org.apache.poi.ss.usermodel.*;
@@ -36,17 +36,19 @@ public class ExcelUtils {
      * @param excelName                 Excel名
      * @param sheetName                 sheet名，可以为 null
      * @param headClass                 表示表头信息的 class
-     * @param dropDownBoxInfoList       下拉框配置信息
+     * @param validationInfos           下拉框配置信息
      * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
      */
     @SneakyThrows
-    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, Class<?> headClass, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, Class<?> headClass,
+                                 HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos,
+                                 List<String> excludeColumnFiledNames) {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
         // 这里URLEncoder.encode可以防止中文乱码
         String fileName = URLEncoder.encode(excelName, "UTF-8").replaceAll("\\+", "%20");
         response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-        createTemplate(response.getOutputStream(), sheetName, headClass, headStyleHandler, dropDownBoxInfoList, excludeColumnFiledNames);
+        createTemplate(response.getOutputStream(), sheetName, headClass, headStyleHandler, validationInfos, excludeColumnFiledNames);
     }
 
     /**
@@ -55,16 +57,16 @@ public class ExcelUtils {
      * @param excelName                Excel名
      * @param sheetName                sheet名，可以为null
      * @param headList                 表头
-     * @param dropDownBoxInfoList      下拉框配置信息
+     * @param validationInfos         下拉框配置信息
      */
     @SneakyThrows
-    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
+    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
         // 这里URLEncoder.encode可以防止中文乱码
         String fileName = URLEncoder.encode(excelName, "UTF-8").replaceAll("\\+", "%20");
         response.setHeader("Content-disposition", "attachment;filename*=utf-8''" + fileName + ".xlsx");
-        createTemplate(response.getOutputStream(), sheetName, headList, headStyleHandler, dropDownBoxInfoList);
+        createTemplate(response.getOutputStream(), sheetName, headList, headStyleHandler, validationInfos);
     }
 
     /**
@@ -72,12 +74,12 @@ public class ExcelUtils {
      * @param excelName                Excel全路径名
      * @param sheetName                sheet名，可以为null
      * @param headList                 表头
-     * @param dropDownBoxInfoList      下拉框配置信息
+     * @param validationInfos         下拉框配置信息
      */
     @SneakyThrows
     public void createTemplate(String excelName, String sheetName, List<String> headList,
-                               HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
-        createTemplate(new FileOutputStream(excelName), sheetName, headList, headStyleHandler, dropDownBoxInfoList);
+                               HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
+        createTemplate(new FileOutputStream(excelName), sheetName, headList, headStyleHandler, validationInfos);
     }
 
     /**
@@ -85,14 +87,14 @@ public class ExcelUtils {
      * @param excelName                Excel全路径名
      * @param sheetName                sheet名，可以为null
      * @param headClass                表示表头信息的class
-     * @param dropDownBoxInfoList      下拉框配置信息
+     * @param validationInfos          下拉框配置信息
      * @param excludeColumnFiledNames  不需要读取的字段名，字段名对应 dataClass 中的字段名，并非表头名
      */
     @SneakyThrows
     public void createTemplate(String excelName, String sheetName, Class<?> headClass, HeadStyleHandler headStyleHandler,
-                               List<DropDownBoxInfo> dropDownBoxInfoList, List<String> excludeColumnFiledNames) {
+                               List<ValidationInfo> validationInfos, List<String> excludeColumnFiledNames) {
         createTemplate(new FileOutputStream(excelName), sheetName, headClass, headStyleHandler,
-                dropDownBoxInfoList, excludeColumnFiledNames);
+                validationInfos, excludeColumnFiledNames);
     }
 
     /**
@@ -100,10 +102,10 @@ public class ExcelUtils {
      * @param outputStream             Excel的输出流
      * @param sheetName                sheet名，可以为null
      * @param headList                 表头
-     * @param dropDownBoxInfoList      下拉框配置信息
+     * @param validationInfos         下拉框配置信息
      */
     public void createTemplate(OutputStream outputStream, String sheetName, List<String> headList,
-                               HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList) {
+                               HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
         List<List<String>> heads = new ArrayList<>(headList.size());
         headList.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
         EasyExcel.write(outputStream)
@@ -111,7 +113,7 @@ public class ExcelUtils {
                 .sheet(sheetName)
                 .head(heads)
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
-                .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
+                .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(Collections.emptyList());
     }
 
@@ -120,18 +122,18 @@ public class ExcelUtils {
      * @param outputStream              Excel的输出流
      * @param sheetName                 sheet名，可以为 null
      * @param headClass                 表示表头信息的 class
-     * @param dropDownBoxInfoList       下拉框配置信息
+     * @param validationInfos           下拉框配置信息
      * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
      */
     public void createTemplate(OutputStream outputStream, String sheetName, Class<?> headClass,
-                               HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfoList,
+                               HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos,
                                List<String> excludeColumnFiledNames) {
         EasyExcel.write(outputStream)
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(headClass)
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
-                .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfoList))
+                .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .excludeColumnFiledNames(excludeColumnFiledNames)
                 .doWrite(Collections.emptyList());
     }
@@ -234,12 +236,12 @@ public class ExcelUtils {
      * @param headNames           表头
      * @param dataList            要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据,下标表示列索引
      * @param headStyleHandler    表头格式处理器，为 null 将会采用默认格式
-     * @param dropDownBoxInfos    下拉框信息，为 null 或 空 不会添加下拉框
+     * @param validationInfos     下拉框信息，为 null 或 空 不会添加下拉框
      */
     @SneakyThrows
     public void write(String excelName, String sheetName, List<String> headNames, List<List<Object>> dataList,
-                      HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfos) {
-        write(new FileOutputStream(excelName), sheetName, headNames, dataList, headStyleHandler, dropDownBoxInfos);
+                      HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
+        write(new FileOutputStream(excelName), sheetName, headNames, dataList, headStyleHandler, validationInfos);
     }
 
     /**
@@ -249,10 +251,10 @@ public class ExcelUtils {
      * @param headNames           表头，外层list下标表示列下标，内层list表示该列的多个表头，分多行
      * @param dataList            要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
      * @param headStyleHandler    表头格式处理器，为 null 将会采用默认格式
-     * @param dropDownBoxInfos    下拉框信息，为 null 或 空 不会添加下拉框
+     * @param validationInfos    下拉框信息，为 null 或 空 不会添加下拉框
      */
     public void write(OutputStream outputStream, String sheetName, List<String> headNames, List<List<Object>> dataList,
-                      HeadStyleHandler headStyleHandler, List<DropDownBoxInfo> dropDownBoxInfos) {
+                      HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
         List<List<String>> heads = new ArrayList<>(headNames.size());
         headNames.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
         EasyExcel.write(outputStream)
@@ -260,7 +262,7 @@ public class ExcelUtils {
                 .sheet(sheetName)
                 .head(heads)
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
-                .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfos))
+                .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(dataList);
     }
 
@@ -272,13 +274,13 @@ public class ExcelUtils {
      * @param dataList                      要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
      * @param excludeColumnFiledNames       不需要写入Excel的字段名（不是表头）
      * @param headStyleHandler              表头格式处理器，为 null 将会采用默认格式
-     * @param dropDownBoxInfos              下拉框信息，为 null 或 空 不会添加下拉框
+     * @param validationInfos              下拉框信息，为 null 或 空 不会添加下拉框
      */
     @SneakyThrows
     public <T> void write(String excelName, String sheetName, Class<T> headClass, List<T> dataList,
                           List<String> excludeColumnFiledNames, HeadStyleHandler headStyleHandler,
-                          List<DropDownBoxInfo> dropDownBoxInfos) {
-        write(new FileOutputStream(excelName), sheetName, headClass, dataList, excludeColumnFiledNames, headStyleHandler, dropDownBoxInfos);
+                          List<ValidationInfo> validationInfos) {
+        write(new FileOutputStream(excelName), sheetName, headClass, dataList, excludeColumnFiledNames, headStyleHandler, validationInfos);
     }
 
     /**
@@ -289,18 +291,18 @@ public class ExcelUtils {
      * @param dataList                      要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
      * @param excludeColumnFiledNames       不需要写入Excel的字段名（不是表头）
      * @param headStyleHandler              表头格式处理器，为 null 将会采用默认格式
-     * @param dropDownBoxInfos              下拉框信息，为 null 或 空 不会添加下拉框
+     * @param validationInfos              下拉框信息，为 null 或 空 不会添加下拉框
      */
     public <T> void write(OutputStream outputStream, String sheetName, Class<T> headClass, List<T> dataList,
                           List<String> excludeColumnFiledNames, HeadStyleHandler headStyleHandler,
-                          List<DropDownBoxInfo> dropDownBoxInfos) {
+                          List<ValidationInfo> validationInfos) {
         EasyExcel.write(outputStream)
                 .useDefaultStyle(false)
                 .sheet(sheetName)
                 .head(headClass)
                 .excludeColumnFiledNames(excludeColumnFiledNames)
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
-                .registerWriteHandler(new DropDownBoxSheetHandler(dropDownBoxInfos))
+                .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(dataList);
     }
 

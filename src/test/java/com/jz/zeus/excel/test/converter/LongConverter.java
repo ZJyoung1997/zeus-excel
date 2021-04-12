@@ -27,7 +27,7 @@ public class LongConverter implements Converter<Long> {
     @Override
     public Long convertToJavaData(CellData cellData, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws Exception {
         try {
-            return Long.valueOf(cellData.getNumberValue().toString());
+            return Long.valueOf(cellData.toString());
         } catch (Exception e) {
             throw new DataConvertException("数据类型应为 Long");
         }

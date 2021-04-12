@@ -6,7 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
-import com.jz.zeus.excel.DropDownBoxInfo;
+import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.util.ClassUtils;
 import org.apache.poi.ss.usermodel.DataValidation;
 import org.apache.poi.ss.usermodel.DataValidationConstraint;
@@ -24,28 +24,28 @@ import java.util.Objects;
  * @Author JZ
  * @Date 2021/3/26 17:01
  */
-public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
+public class ValidationInfoSheetHandler extends AbstractZeusSheetWriteHandler {
 
     /**
      * 下拉框信息
      */
-    private List<DropDownBoxInfo> dropDownBoxInfoList;
+    private List<ValidationInfo> validationInfoList;
 
-    public DropDownBoxSheetHandler(List<DropDownBoxInfo> dropDownBoxInfoList) {
-        this(null, dropDownBoxInfoList);
+    public ValidationInfoSheetHandler(List<ValidationInfo> validationInfoList) {
+        this(null, validationInfoList);
     }
 
-    public DropDownBoxSheetHandler(Integer headRowNum, List<DropDownBoxInfo> dropDownBoxInfoList) {
+    public ValidationInfoSheetHandler(Integer headRowNum, List<ValidationInfo> validationInfoList) {
         super(headRowNum);
-        this.dropDownBoxInfoList = dropDownBoxInfoList;
+        this.validationInfoList = validationInfoList;
     }
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
         init(writeSheetHolder);
-        List<DropDownBoxInfo> boxInfoList = new ArrayList<>();
-        if (CollUtil.isNotEmpty(dropDownBoxInfoList)) {
-            dropDownBoxInfoList.forEach(boxInfo -> {
+        List<ValidationInfo> boxInfoList = new ArrayList<>();
+        if (CollUtil.isNotEmpty(validationInfoList)) {
+            validationInfoList.forEach(boxInfo -> {
                 if (boxInfo.getColumnIndex() == null && StrUtil.isNotBlank(boxInfo.getHeadName())) {
                     boxInfo.setColumnIndex(getHeadColumnIndex(boxInfo.getHeadName()));
                 }
@@ -54,7 +54,7 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
         }
         boolean isClass = HeadKindEnum.CLASS.equals(writeSheetHolder.getExcelWriteHeadProperty().getHeadKind());
         if (isClass) {
-            if (CollUtil.isEmpty(dropDownBoxInfoList)) {
+            if (CollUtil.isEmpty(validationInfoList)) {
                 boxInfoList.addAll(ClassUtils.getDropDownBoxInfos(writeSheetHolder.getClazz()));
             } else {
                 ClassUtils.getDropDownBoxInfos(writeSheetHolder.getClazz())
@@ -62,7 +62,7 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
                             if (boxInfo.getColumnIndex() == null && StrUtil.isNotBlank(boxInfo.getHeadName())) {
                                 boxInfo.setColumnIndex(getHeadColumnIndex(boxInfo.getHeadName()));
                             }
-                            if (!dropDownBoxInfoList.stream().filter(info -> Objects.equals(boxInfo, info)).findFirst().isPresent()) {
+                            if (!validationInfoList.stream().filter(info -> Objects.equals(boxInfo, info)).findFirst().isPresent()) {
                                 boxInfoList.add(boxInfo);
                             }
                         });
@@ -108,23 +108,23 @@ public class DropDownBoxSheetHandler extends AbstractZeusSheetWriteHandler {
         sheet.addValidationData(dataValidation);
     }
 
-    public void addDropDownBoxInfo(DropDownBoxInfo dropDownBoxInfo) {
-        if (dropDownBoxInfo != null) {
-            if (CollUtil.isEmpty(dropDownBoxInfoList)) {
-                dropDownBoxInfoList = new ArrayList<>();
+    public void addValidationInfo(ValidationInfo validationInfo) {
+        if (validationInfo != null) {
+            if (CollUtil.isEmpty(validationInfoList)) {
+                validationInfoList = new ArrayList<>();
             }
-            dropDownBoxInfoList.add(dropDownBoxInfo);
+            validationInfoList.add(validationInfo);
         }
     }
 
-    public void addDropDownBoxInfo(Integer[] columnIndexs, String... options) {
+    public void addValidationInfo(Integer[] columnIndexs, String... options) {
         if (ArrayUtil.isNotEmpty(columnIndexs) && ArrayUtil.isNotEmpty(options)) {
-            if (CollUtil.isEmpty(dropDownBoxInfoList)) {
-                dropDownBoxInfoList = new ArrayList<>();
+            if (CollUtil.isEmpty(validationInfoList)) {
+                validationInfoList = new ArrayList<>();
             }
             List<String> optionList = Arrays.asList(options);
             for (int i = 0; i < columnIndexs.length; i++) {
-                dropDownBoxInfoList.add(DropDownBoxInfo.buildColumn(columnIndexs[i], optionList));
+                validationInfoList.add(ValidationInfo.buildColumn(columnIndexs[i], optionList));
             }
         }
     }

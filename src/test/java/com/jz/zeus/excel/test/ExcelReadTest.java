@@ -24,13 +24,14 @@ public class ExcelReadTest {
     public static void main(String[] args) throws FileNotFoundException {
 //        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
         String path = "C:\\Users\\User\\Desktop\\254.xlsx";
-
+        long startTime = System.currentTimeMillis();
         ExcelReadListener readListener = new DemoExcelReadListener(100);
-        ExcelUtils.read(readListener, path, null, DemoData.class);
+        ExcelUtils.read(readListener, path, "模板", DemoData.class);
 //        read(new FileInputStream(path), readListener);
 
         NoModelReadListener noModelReadListener = new TestNoModelReadListener();
 //        ExcelUtils.read(noModelReadListener, path, "模板", 1);
+        System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
     }
 
     public static void read(InputStream inputStream, ReadListener readListener) {

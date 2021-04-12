@@ -43,7 +43,7 @@ EasyExcel是一个基于Java的简单、省内存的读写Excel的开源项目�
 
 #### 下拉框处理器 DropDownBoxSheetHandler
 
-只需将下拉框的位置和需显示的内容通过构造函数传入或 `addDropDownBoxInfo` 方法添加到 `dropDownBoxInfoList` 属性中即可。
+只需将下拉框的位置和需显示的内容通过构造函数传入或 `addDropDownBoxInfo` 方法添加到 `validationInfoList` 属性中即可。
 
 该属性中的数据类型为 `DropDownBoxInfo`
 

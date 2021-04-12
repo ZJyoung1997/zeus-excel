@@ -4,9 +4,9 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.annotation.ExcelProperty;
-import com.jz.zeus.excel.DropDownBoxInfo;
 import com.jz.zeus.excel.FieldInfo;
-import com.jz.zeus.excel.annotation.DropDownBox;
+import com.jz.zeus.excel.ValidationInfo;
+import com.jz.zeus.excel.annotation.ValidationData;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.internal.util.ConcurrentReferenceHashMap;
 
@@ -47,10 +47,10 @@ public class ClassUtils {
                     fieldInfo.setHeadColumnIndex(excelProperty.index());
                 }
             }
-            DropDownBox dropDownBox = field.getAnnotation(DropDownBox.class);
-            if (dropDownBox != null) {
-                fieldInfo.setDropDownBoxOptions(dropDownBox.options());
-                fieldInfo.setDropDownBoxRowNum(dropDownBox.rowNum());
+            ValidationData validationData = field.getAnnotation(ValidationData.class);
+            if (validationData != null) {
+                fieldInfo.setDropDownBoxOptions(validationData.options());
+                fieldInfo.setDropDownBoxRowNum(validationData.rowNum());
             }
             fieldInfos.add(fieldInfo);
         }
@@ -63,7 +63,7 @@ public class ClassUtils {
      * @param clazz
      * @return
      */
-    public List<DropDownBoxInfo> getDropDownBoxInfos(Class<?> clazz) {
+    public List<ValidationInfo> getValidationInfoInfos(Class<?> clazz) {
         List<FieldInfo> fieldInfos = getClassFieldInfo(clazz);
         if (CollUtil.isEmpty(fieldInfos)) {
             return new ArrayList<>();
@@ -72,9 +72,9 @@ public class ClassUtils {
                                     && ArrayUtil.isNotEmpty(fieldInfo.getDropDownBoxOptions()))
                 .map(fieldInfo -> {
                     if (fieldInfo.getHeadColumnIndex() != null) {
-                        return DropDownBoxInfo.buildColumn(fieldInfo.getHeadColumnIndex(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                        return ValidationInfo.buildColumn(fieldInfo.getHeadColumnIndex(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
                     }
-                    return DropDownBoxInfo.buildColumn(fieldInfo.getHeadName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                    return ValidationInfo.buildColumn(fieldInfo.getHeadName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
                 }).collect(Collectors.toList());
     }
 

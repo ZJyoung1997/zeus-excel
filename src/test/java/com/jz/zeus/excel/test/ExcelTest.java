@@ -2,7 +2,7 @@ package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.EasyExcel;
 import com.jz.zeus.excel.CellErrorInfo;
-import com.jz.zeus.excel.DropDownBoxInfo;
+import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
@@ -38,8 +38,8 @@ public class ExcelTest {
         List<CellStyleProperty> list = new ArrayList<>();
         list.add(styleProperty);
 
-        List<DropDownBoxInfo> dropDownBoxInfos = new ArrayList<DropDownBoxInfo>() {{
-            add(DropDownBoxInfo.buildColumn("ID", "是", "否"));
+        List<ValidationInfo> validationInfos = new ArrayList<ValidationInfo>() {{
+            add(ValidationInfo.buildColumn("ID", "是", "否"));
         }};
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
         ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(), null, null);
@@ -47,15 +47,13 @@ public class ExcelTest {
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
         ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
-
 //        write(new FileOutputStream(path), getCellErrorInfo());
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
 //        ExcelUtils.addErrorInfo(path, path, "模板", readListener.getErrorInfoList());
-
-        System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
+        System.out.println("次耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
         System.out.println("end");
     }
 
@@ -102,13 +100,13 @@ public class ExcelTest {
         return list;
     }
 
-    public static List<DropDownBoxInfo> getDropDownBoxInfo() {
-        List<DropDownBoxInfo> dropDownBoxInfoList = new ArrayList<>();
-        dropDownBoxInfoList.add(DropDownBoxInfo.buildColumn("SRC", "是", "否"));
-        dropDownBoxInfoList.add(DropDownBoxInfo.buildColumn(1,"可以", "不可以"));
-        dropDownBoxInfoList.add(DropDownBoxInfo.bulidRow(2, "中", "不中"));
-        dropDownBoxInfoList.add(DropDownBoxInfo.buildPrecise(3, "媒体CODE", "不中"));
-        return dropDownBoxInfoList;
+    public static List<ValidationInfo> getDropDownBoxInfo() {
+        List<ValidationInfo> validationInfoList = new ArrayList<>();
+        validationInfoList.add(ValidationInfo.buildColumn("SRC", "是", "否"));
+        validationInfoList.add(ValidationInfo.buildColumn(1,"可以", "不可以"));
+        validationInfoList.add(ValidationInfo.bulidRow(2, "中", "不中"));
+        validationInfoList.add(ValidationInfo.buildPrecise(3, "媒体CODE", "不中"));
+        return validationInfoList;
     }
 
     public static List<CellErrorInfo> getCellErrorInfo() {
