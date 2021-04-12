@@ -5,12 +5,15 @@ import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.ContentFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadStyle;
+import com.jz.zeus.excel.annotation.DynamicColumn;
 import com.jz.zeus.excel.test.converter.LongConverter;
 import com.jz.zeus.excel.validation.IsLong;
 import lombok.Data;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
+
+import java.util.Map;
 
 /**
  * @Author JZ
@@ -28,7 +31,7 @@ public class DemoData {
     private Long id;
 
     @IsLong
-    @ExcelProperty(value = "SRC")
+    @ExcelProperty(value = {"SRC"})
     private String src;
 
     @ContentFontStyle(fontName = "微软雅黑", fontHeightInPoints = 14)
@@ -37,5 +40,11 @@ public class DemoData {
 
     @ExcelProperty(value = "FUNC")
     private String func;
+
+    @ExcelIgnore
+    @DynamicColumn
+    @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)
+    @ContentFontStyle(fontName = "微软雅黑", fontHeightInPoints = 14)
+    private Map<String, String> dynamicColumnMap;
 
 }

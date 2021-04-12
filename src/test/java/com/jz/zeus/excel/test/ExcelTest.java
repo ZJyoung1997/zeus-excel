@@ -8,6 +8,7 @@ import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
 import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
+import com.jz.zeus.excel.write.handler.ExtendColumnHandler;
 import com.jz.zeus.excel.write.handler.HeadStyleHandler;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import lombok.SneakyThrows;
@@ -18,9 +19,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author JZ
@@ -42,12 +41,12 @@ public class ExcelTest {
             add(ValidationInfo.buildColumn("ID", "是", "否"));
         }};
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
-        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(), null, null);
+//        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", DemoData.class, new HeadStyleHandler(), null, null);
 //        ExcelUtils.createTemplate(path, "模板", Arrays.asList("jj", "jkfk"), new HeadStyleHandler(list), null);
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
-        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
-//        write(new FileOutputStream(path), getCellErrorInfo());
+//        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), null, null, null);
+        write(new FileOutputStream(path), getCellErrorInfo());
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
@@ -60,17 +59,19 @@ public class ExcelTest {
 
     @SneakyThrows
     public static void write(OutputStream outputStream, List<CellErrorInfo> cellErrorInfoList) {
+        List classDataList = getDataList();
         EasyExcel.write(outputStream)
                 .sheet("模板")
-                .head(getHead())
-//                .head(DemoData.class)
+//                .head(getHead())
+                .head(DemoData.class)
+                .registerWriteHandler(new ExtendColumnHandler<DemoData>(classDataList))
                 .registerWriteHandler(new HeadStyleHandler())
 //                .registerWriteHandler(new ErrorInfoCommentHandler(cellErrorInfoList))
 //                .registerWriteHandler(new DropDownBoxSheetHandler(getDropDownBoxInfo()))
 //                .excludeColumnFiledNames(Arrays.asList("dest"))
 //                .doWrite(Collections.emptyList());
 //                .doWrite(getDataList());
-                .doWrite(getDataList());
+                .doWrite(classDataList);
         outputStream.close();
     }
 
@@ -126,6 +127,12 @@ public class ExcelTest {
             demoData.setDest("dest" + i);
             demoData.setSrc("src" + i);
             demoData.setFunc("func" + i);
+
+            Map<String, String> map = new LinkedHashMap<>();
+            map.put("自定义1", "12");
+            map.put("自定义2", "jfak");
+            map.put("自定义3", "集分宝");
+            demoData.setDynamicColumnMap(map);
             dataList.add(demoData);
         }
         return dataList;

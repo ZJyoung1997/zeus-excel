@@ -139,8 +139,8 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
         int result = 0;
         for (String s : strs) {
             int chineseNum = StringUtils.chineseNum(s);
-            int dataLength = (int) ((s.length() - chineseNum) + chineseNum * 1.6);
-            int columnWidth = dataLength * 36 * fontSize;
+            int dataLength = (int) ((s.length() - chineseNum) + chineseNum * 1.5);
+            int columnWidth = dataLength * 40 * fontSize;
             columnWidth = columnWidth > Constants.MAX_COLUMN_WIDTH ? Constants.MAX_COLUMN_WIDTH : columnWidth;
             if (columnWidth > result) {
                 result = columnWidth;
