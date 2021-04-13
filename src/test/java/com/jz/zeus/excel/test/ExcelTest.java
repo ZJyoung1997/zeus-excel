@@ -6,6 +6,7 @@ import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
+import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import com.jz.zeus.excel.write.handler.ExtendColumnHandler;
 import com.jz.zeus.excel.write.handler.HeadStyleHandler;
@@ -45,7 +46,8 @@ public class ExcelTest {
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
 //        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), Arrays.asList("积分卡", "jjjj"), null, null, null);
-        write(path, getCellErrorInfo());
+        ExcelUtils.write(path, "模板", DemoData.class, getDataList());
+//        write(path, getCellErrorInfo());
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
 
