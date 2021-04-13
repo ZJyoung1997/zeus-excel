@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
+ * 当存在动态表头时，该 handler应该最先被注册，已保证将动态表头添加到配置中
  * @Author JZ
  * @Date 2021/4/12 15:23
  */
@@ -121,7 +122,7 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
         if (dynamicHead.size() == 0) {
             return;
         }
-        int index = excelWriteHeadProperty.getHeadMap().size();;
+        int index = excelWriteHeadProperty.getHeadMap().size();
         for (String headName : dynamicHead) {
             List<String> headNames = new ArrayList<>(headRowNum);
             for (int i = 0; i < headRowNum; i++) {
