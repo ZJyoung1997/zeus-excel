@@ -154,7 +154,7 @@ public class ExcelUtils {
      */
     @SneakyThrows
     public <T> void readAndWriteErrorMsg(ExcelReadListener<T> readListener, String excelName,
-                                         String sheetName, Class<T> headClass, List<String> dynamicHeads) {
+                                         String sheetName, Class<T> headClass) {
         byte[] excelBytes = IoUtils.toByteArray(new FileInputStream(excelName));
         readAndWriteErrorMsg(readListener, excelBytes, new FileOutputStream(excelName), sheetName, headClass);
     }

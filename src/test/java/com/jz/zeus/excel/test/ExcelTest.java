@@ -49,7 +49,6 @@ public class ExcelTest {
 //        write(new FileOutputStream(path), getCellErrorInfo());
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
-//        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
 //        ExcelUtils.addErrorInfo(path, path, "模板", readListener.getErrorInfoList());
         System.out.println("次耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");

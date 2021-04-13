@@ -25,12 +25,16 @@ public class ExcelReadTest {
 //        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
         String path = "C:\\Users\\User\\Desktop\\254.xlsx";
         long startTime = System.currentTimeMillis();
+
         ExcelReadListener readListener = new DemoExcelReadListener(100);
-        ExcelUtils.read(readListener, path, "模板", DemoData.class);
+//        ExcelUtils.read(readListener, path, "模板", DemoData.class);
 //        read(new FileInputStream(path), readListener);
+        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
         NoModelReadListener noModelReadListener = new TestNoModelReadListener();
 //        ExcelUtils.read(noModelReadListener, path, "模板", 1);
+
+
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
     }
 

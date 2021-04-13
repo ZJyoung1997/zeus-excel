@@ -191,12 +191,12 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
 
         if (CollUtil.isNotEmpty(headMap)) {
             headMap.forEach((columnIndex, cellData) -> {
-                String headName = cellData.getStringValue();
+                String headName = cellData.toString();
                 if (!headNameIndexMap.containsKey(headName)) {
                     headNameIndexMap.put(headName, columnIndex);
                 }
                 if (!columnIndexSet.contains(columnIndex)) {
-                    dynamicColumnMap.put(columnIndex, cellData.toString());
+                    dynamicColumnMap.put(columnIndex, headName);
                 }
             });
         }
