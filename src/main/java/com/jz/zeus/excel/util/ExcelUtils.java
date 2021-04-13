@@ -37,6 +37,17 @@ public class ExcelUtils {
      * @param excelName                 Excel名
      * @param sheetName                 sheet名，可以为 null
      * @param headClass                 表示表头信息的 class
+     */
+    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, Class<?> headClass) {
+        downloadTemplate(response, excelName, sheetName, headClass, null, null, null, null);
+    }
+
+    /**
+     * 将生成的Excel直接写入response
+     * @param response
+     * @param excelName                 Excel名
+     * @param sheetName                 sheet名，可以为 null
+     * @param headClass                 表示表头信息的 class
      * @param validationInfos           下拉框配置信息
      * @param dynamicHeads              动态表头
      * @param excludeColumnFiledNames   不需要包含的表头，可以为 null
@@ -83,6 +94,16 @@ public class ExcelUtils {
     public void createTemplate(String excelName, String sheetName, List<String> headList,
                                HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
         createTemplate(new FileOutputStream(excelName), sheetName, headList, headStyleHandler, validationInfos);
+    }
+
+    /**
+     * 创建一个有表头的空Excel
+     * @param excelName                Excel全路径名
+     * @param sheetName                sheet名，可以为null
+     * @param headClass                表示表头信息的class
+     */
+    public void createTemplate(String excelName, String sheetName, Class<?> headClass) {
+        createTemplate(excelName, sheetName, headClass, null, null, null, null);
     }
 
     /**
@@ -272,6 +293,17 @@ public class ExcelUtils {
                 .registerWriteHandler(headStyleHandler == null ? new HeadStyleHandler() : headStyleHandler)
                 .registerWriteHandler(new ValidationInfoSheetHandler(validationInfos))
                 .doWrite(dataList);
+    }
+
+    /**
+     * 将数据写入Excel
+     * @param excelName                     Excel全路径名
+     * @param sheetName                     需写入数据的sheet名称，可以为null
+     * @param headClass                     表头信息类
+     * @param dataList                      要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
+     */
+    public <T> void write(String excelName, String sheetName, Class<T> headClass, List<T> dataList) {
+        write(excelName, sheetName, headClass, dataList, null, null, null, null);
     }
 
     /**
