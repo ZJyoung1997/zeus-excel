@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.handler.AbstractSheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
+import com.jz.zeus.excel.util.ExcelUtils;
 import lombok.Getter;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -53,13 +54,7 @@ public class AbstractZeusSheetWriteHandler extends AbstractSheetWriteHandler {
         int lastRowNum = writeSheetHolder.getCachedSheet().getLastRowNum();
         Map<Integer, Head> headMap = writeSheetHolder.getExcelWriteHeadProperty().getHeadMap();
         if (CollUtil.isNotEmpty(headMap)) {
-            headNameIndexMap = new HashMap<>();
-            headMap.values().forEach(head -> {
-                Integer columnIndex = head.getColumnIndex();
-                head.getHeadNameList().forEach(headName -> {
-                    headNameIndexMap.put(headName, columnIndex);
-                });
-            });
+            headNameIndexMap = ExcelUtils.getHeadIndexMap(headMap);
         } else if (lastRowNum > 0) {
             if (headRowNum == null) {
                 initHeadRowNum(writeSheetHolder);

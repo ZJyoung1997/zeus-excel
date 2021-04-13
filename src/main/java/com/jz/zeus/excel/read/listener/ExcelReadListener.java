@@ -159,7 +159,6 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             verify(dataMap, analysisContext);
             dataHandle(dataMap, analysisContext);
             dataMap.clear();
-            dynamicColumnMap.clear();
         }
         doAfterAllDataHandle(analysisContext);
     }
@@ -171,35 +170,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         if (StrUtil.isNotBlank(this.headErrorMsg)) {
             headError = true;
         }
-
-        ExcelReadHeadProperty excelHeadPropertyData = analysisContext.readSheetHolder().excelReadHeadProperty();
-        readAfterHeadRowNum = excelHeadPropertyData.getHeadRowNumber();
-        Map<Integer, Head> headMapData = excelHeadPropertyData.getHeadMap();
-        Set<Integer> columnIndexSet = new HashSet<>();
-        if (CollUtil.isNotEmpty(headMapData)) {
-            headMapData.values().forEach(head -> {
-                Integer columnIndex = head.getColumnIndex();
-                columnIndexSet.add(columnIndex);
-                if (StrUtil.isNotBlank(head.getFieldName())) {
-                    fieldColumnIndexMap.put(head.getFieldName(), columnIndex);
-                }
-                head.getHeadNameList().forEach(headName -> {
-                    headNameIndexMap.put(headName, columnIndex);
-                });
-            });
-        }
-
-        if (CollUtil.isNotEmpty(headMap)) {
-            headMap.forEach((columnIndex, cellData) -> {
-                String headName = cellData.toString();
-                if (!headNameIndexMap.containsKey(headName)) {
-                    headNameIndexMap.put(headName, columnIndex);
-                }
-                if (!columnIndexSet.contains(columnIndex)) {
-                    dynamicColumnMap.put(columnIndex, headName);
-                }
-            });
-        }
+        initHeadCache(headMap,analysisContext.readSheetHolder().excelReadHeadProperty());
     }
 
     /**
@@ -369,6 +340,40 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
 
     protected Integer getHeadIndex(String headName) {
         return headNameIndexMap.get(headName);
+    }
+
+    protected void initHeadCache(Map<Integer, CellData> headMap, ExcelReadHeadProperty excelHeadPropertyData) {
+        fieldColumnIndexMap.clear();
+        headNameIndexMap.clear();
+        dynamicColumnMap.clear();
+
+        readAfterHeadRowNum = excelHeadPropertyData.getHeadRowNumber();
+        Map<Integer, Head> headMapData = excelHeadPropertyData.getHeadMap();
+        Set<Integer> columnIndexSet = new HashSet<>();
+        if (CollUtil.isNotEmpty(headMapData)) {
+            headMapData.values().forEach(head -> {
+                Integer columnIndex = head.getColumnIndex();
+                columnIndexSet.add(columnIndex);
+                if (StrUtil.isNotBlank(head.getFieldName())) {
+                    fieldColumnIndexMap.put(head.getFieldName(), columnIndex);
+                }
+                head.getHeadNameList().forEach(headName -> {
+                    headNameIndexMap.put(headName, columnIndex);
+                });
+            });
+        }
+
+        if (CollUtil.isNotEmpty(headMap)) {
+            headMap.forEach((columnIndex, cellData) -> {
+                String headName = cellData.toString();
+                if (!headNameIndexMap.containsKey(headName)) {
+                    headNameIndexMap.put(headName, columnIndex);
+                }
+                if (!columnIndexSet.contains(columnIndex)) {
+                    dynamicColumnMap.put(columnIndex, headName);
+                }
+            });
+        }
     }
 
 }
