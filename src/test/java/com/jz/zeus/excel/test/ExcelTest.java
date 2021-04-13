@@ -7,6 +7,7 @@ import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
 import com.jz.zeus.excel.util.ExcelUtils;
+import com.jz.zeus.excel.write.handler.DynamicHeadHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import com.jz.zeus.excel.write.handler.ExtendColumnHandler;
 import com.jz.zeus.excel.write.handler.HeadStyleHandler;
@@ -28,8 +29,8 @@ import java.util.*;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
         long startTime = System.currentTimeMillis();
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
         styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
@@ -46,8 +47,8 @@ public class ExcelTest {
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
 //        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), Arrays.asList("积分卡", "jjjj"), null, null, null);
-        ExcelUtils.write(path, "模板", DemoData.class, getDataList());
-//        write(path, getCellErrorInfo());
+//        ExcelUtils.write(path, "模板", DemoData.class, getDataList());
+        write(path, getCellErrorInfo());
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
 
@@ -64,6 +65,7 @@ public class ExcelTest {
                 .sheet("模板")
 //                .head(getHead())
                 .head(DemoData.class)
+                .registerWriteHandler(new DynamicHeadHandler(null))
                 .registerWriteHandler(new ExtendColumnHandler<DemoData>(classDataList, null))
                 .registerWriteHandler(new HeadStyleHandler())
 //                .registerWriteHandler(new ErrorInfoCommentHandler(cellErrorInfoList))

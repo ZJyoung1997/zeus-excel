@@ -11,7 +11,7 @@ import com.alibaba.excel.metadata.property.LoopMergeProperty;
 import com.alibaba.excel.metadata.property.StyleProperty;
 import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.ValidationInfo;
-import com.jz.zeus.excel.annotation.DynamicColumn;
+import com.jz.zeus.excel.annotation.ExtendColumn;
 import com.jz.zeus.excel.annotation.ValidationData;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.internal.util.ConcurrentReferenceHashMap;
@@ -62,9 +62,9 @@ public class ClassUtils {
                 fieldInfo.setDropDownBoxOptions(validationData.options());
                 fieldInfo.setDropDownBoxRowNum(validationData.rowNum());
             }
-            DynamicColumn dynamicColumn = field.getAnnotation(DynamicColumn.class);
-            if (dynamicColumn != null) {
-                fieldInfo.setDynamicColumn(true);
+            ExtendColumn extendColumn = field.getAnnotation(ExtendColumn.class);
+            if (extendColumn != null) {
+                fieldInfo.setExtendColumn(true);
             }
             fieldInfo.setHeadFontProperty(FontProperty.build(field.getAnnotation(HeadFontStyle.class)));
             fieldInfo.setHeadStyleProperty(StyleProperty.build(field.getAnnotation(HeadStyle.class)));

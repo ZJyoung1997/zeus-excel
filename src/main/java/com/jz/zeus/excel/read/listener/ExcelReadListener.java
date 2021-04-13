@@ -219,7 +219,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             }
         });
         ClassUtils.getClassFieldInfo(data.getClass()).stream()
-                .filter(FieldInfo::isDynamicColumn)
+                .filter(FieldInfo::isExtendColumn)
                 .findFirst().ifPresent(fieldInfo -> {
             Field field = fieldInfo.getField();
             UnsafeFieldAccessor accessor = new UnsafeFieldAccessor(field);

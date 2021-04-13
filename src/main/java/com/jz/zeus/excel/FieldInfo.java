@@ -40,7 +40,7 @@ public class FieldInfo {
     /**
      * 是否为动态列
      */
-    private boolean isDynamicColumn;
+    private boolean isExtendColumn;
 
     private FontProperty headFontProperty;
 

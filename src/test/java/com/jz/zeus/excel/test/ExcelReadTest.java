@@ -8,6 +8,7 @@ import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
 import com.jz.zeus.excel.test.listener.TestNoModelReadListener;
 import com.jz.zeus.excel.util.ExcelUtils;
+import lombok.SneakyThrows;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,13 +22,14 @@ import java.util.List;
  */
 public class ExcelReadTest {
 
-    public static void main(String[] args) throws FileNotFoundException {
-//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
-//        System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
+    @SneakyThrows
+    public static void main(String[] args) {
+        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+        System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
         long startTime = System.currentTimeMillis();
 
-        ExcelReadListener readListener = new DemoExcelReadListener(5);
+        ExcelReadListener readListener = new DemoExcelReadListener(10);
         ExcelUtils.read(readListener, path, "模板", DemoData.class);
 //        read(path, readListener);
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
