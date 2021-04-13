@@ -24,25 +24,28 @@ public class ExcelReadTest {
     public static void main(String[] args) throws FileNotFoundException {
 //        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
         String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//        System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
         long startTime = System.currentTimeMillis();
 
-        ExcelReadListener readListener = new DemoExcelReadListener(100);
-//        ExcelUtils.read(readListener, path, "模板", DemoData.class);
-//        read(new FileInputStream(path), readListener);
-        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
+        ExcelReadListener readListener = new DemoExcelReadListener(5);
+        ExcelUtils.read(readListener, path, "模板", DemoData.class);
+//        read(path, readListener);
+//        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
         NoModelReadListener noModelReadListener = new TestNoModelReadListener();
 //        ExcelUtils.read(noModelReadListener, path, "模板", 1);
 
 
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
+        System.out.println("解析Excel后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
     }
 
-    public static void read(InputStream inputStream, ReadListener readListener) {
-        EasyExcel.read(inputStream)
+    public static void read(String path, ReadListener readListener) {
+        EasyExcel.read(path)
                 .sheet((String) null)
 //                .headRowNumber(1)
-                .head(getHead())
+                .head(DemoData.class)
+//                .head(getHead())
                 .registerReadListener(readListener)
                 .doRead();
     }

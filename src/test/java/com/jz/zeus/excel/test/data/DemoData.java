@@ -30,23 +30,23 @@ public class DemoData {
             borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
             borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
     @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)
-    @ExcelProperty(value = "订单ID\n（不可修改）", converter = LongConverter.class)
+    @ExcelProperty(index = 0, value = "订单ID\n（不可修改）", converter = LongConverter.class)
     private Long id;
 
     @IsLong
-    @ExcelProperty(value = {"SRC"})
+    @ExcelProperty(index = 1, value = {"SRC"})
     private String src;
 
     @NumberFormat("#.#")
-    @ExcelProperty(value = "金额")
+    @ExcelProperty(index = 2, value = "金额")
     private Double price;
 
     @ContentFontStyle(fontName = "微软雅黑", fontHeightInPoints = 14)
-    @ExcelProperty(value = "DEST")
+    @ExcelProperty(index = 3, value = "DEST")
     private String dest;
 
     @ValidationData(options = {"aa", "bb", "cc"})
-    @ExcelProperty(value = "FUNC")
+    @ExcelProperty(index = 4, value = "FUNC")
     private String func;
 
     @ExcelIgnore
