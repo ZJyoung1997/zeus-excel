@@ -6,6 +6,7 @@ import com.alibaba.excel.annotation.write.style.ContentFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadStyle;
 import com.jz.zeus.excel.annotation.DynamicColumn;
+import com.jz.zeus.excel.annotation.ValidationData;
 import com.jz.zeus.excel.test.converter.LongConverter;
 import com.jz.zeus.excel.validation.IsLong;
 import lombok.Data;
@@ -38,6 +39,7 @@ public class DemoData {
     @ExcelProperty(value = "DEST")
     private String dest;
 
+    @ValidationData(options = {"aa", "bb", "cc"})
     @ExcelProperty(value = "FUNC")
     private String func;
 

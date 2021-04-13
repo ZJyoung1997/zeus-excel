@@ -5,8 +5,9 @@ import com.alibaba.excel.enums.CellDataTypeEnum;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.GlobalConfiguration;
 import com.alibaba.excel.metadata.property.ExcelContentProperty;
-import com.alibaba.excel.util.NumberUtils;
 import com.jz.zeus.excel.exception.DataConvertException;
+
+import java.math.BigDecimal;
 
 /**
  * @Author JZ
@@ -35,6 +36,6 @@ public class LongConverter implements Converter<Long> {
 
     @Override
     public CellData convertToExcelData(Long value, ExcelContentProperty contentProperty, GlobalConfiguration globalConfiguration) throws Exception {
-        return NumberUtils.formatToCellData(value, contentProperty);
+        return new CellData(BigDecimal.valueOf(value));
     }
 }
