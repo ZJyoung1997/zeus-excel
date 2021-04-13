@@ -176,7 +176,7 @@ public class ExcelUtils {
                 .head(headClass)
                 .registerReadListener(readListener)
                 .doRead();
-        addErrorInfo(outputStream, excelBytes, sheetName, null, readListener.getErrorInfoList());
+        addErrorInfo(outputStream, excelBytes, sheetName, readListener.getReadAfterHeadRowNum(), readListener.getErrorInfoList());
     }
 
     /**

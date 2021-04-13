@@ -21,14 +21,9 @@ public class DemoExcelReadListener extends AbstractExcelReadListener<DemoData> {
     }
 
     @Override
-    protected void dataHandle(Map<Integer, DemoData> dataMap, Map<Integer, Map<String, String>> dynamicColumnDataMap, AnalysisContext analysisContext) {
+    protected void dataHandle(Map<Integer, DemoData> dataMap, AnalysisContext analysisContext) {
         dataMap.forEach((key, value) -> {
             System.out.println("加载class数据：" + value);
-        });
-        dynamicColumnDataMap.forEach((key, value) -> {
-            value.forEach((k, v) -> {
-                System.out.println(String.format("加载动态数据：%s -> %s", k, v));
-            });
         });
     }
 

@@ -28,8 +28,8 @@ import java.util.*;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
         long startTime = System.currentTimeMillis();
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
         styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);

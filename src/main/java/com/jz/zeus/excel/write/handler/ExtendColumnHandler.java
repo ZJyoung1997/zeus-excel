@@ -30,8 +30,6 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
 
     private Field dynamicColumnField;
 
-    private Integer lastColumnIndex;
-
     private boolean isClassHead;
 
     private Map<String, Integer> dynamicHeadIndexMap = new HashMap<>();
@@ -91,7 +89,6 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
             return;
         }
         ExcelWriteHeadProperty excelWriteHeadProperty = writeSheetHolder.getExcelWriteHeadProperty();
-        lastColumnIndex = excelWriteHeadProperty.getHeadMap().size();
         isClassHead = HeadKindEnum.CLASS.equals(excelWriteHeadProperty.getHeadKind());
         headRowNum = excelWriteHeadProperty.getHeadRowNumber();
 
@@ -124,7 +121,7 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
         if (dynamicHead.size() == 0) {
             return;
         }
-        int index = lastColumnIndex;
+        int index = excelWriteHeadProperty.getHeadMap().size();;
         for (String headName : dynamicHead) {
             List<String> headNames = new ArrayList<>(headRowNum);
             for (int i = 0; i < headRowNum; i++) {

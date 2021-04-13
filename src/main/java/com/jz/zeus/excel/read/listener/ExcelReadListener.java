@@ -12,11 +12,15 @@ import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.read.metadata.holder.ReadRowHolder;
 import com.alibaba.excel.read.metadata.property.ExcelReadHeadProperty;
 import com.jz.zeus.excel.CellErrorInfo;
+import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.exception.DataConvertException;
+import com.jz.zeus.excel.util.ClassUtils;
+import com.jz.zeus.excel.util.UnsafeFieldAccessor;
 import com.jz.zeus.excel.util.ValidatorUtils;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.lang.reflect.Field;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,6 +29,12 @@ import java.util.stream.Collectors;
  * @Date 2021/3/22 14:31
  */
 public abstract class ExcelReadListener<T> implements ReadListener<T> {
+
+    /**
+     * 读取Excel完毕后，Excel的真实表头行数
+     */
+    @Getter
+    private Integer readAfterHeadRowNum;
 
     /**
      * 开启hibernate注解校验
@@ -83,12 +93,6 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      */
     private Map<Integer, T> dataMap = new HashMap<>();
 
-    /**
-     * Excel 动态列数据信息
-     * key 行索引，value 该行中所有动态列的表头和值
-     */
-    private Map<Integer, Map<String, String>> dynamicColumnDataMap = new HashMap<>();
-
     public ExcelReadListener() {}
 
     public ExcelReadListener(Boolean enabledAnnotationValidation) {
@@ -117,18 +121,16 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     /**
      * 对读取到的数据进行处理
      * @param dataMap                   key 为行索引，value 为 Excel中该行数据
-     * @param dynamicColumnDataMap      key 为行索引，value 为 Excel中该行中动态列数据
      * @param analysisContext
      */
-    protected abstract void dataHandle(Map<Integer, T> dataMap, Map<Integer, Map<String, String>> dynamicColumnDataMap, AnalysisContext analysisContext);
+    protected abstract void dataHandle(Map<Integer, T> dataMap, AnalysisContext analysisContext);
 
     /**
      * 校验读取到的数据
      * @param dataMap                   key 为行索引，value 为 Excel中该行数据
-     * @param dynamicColumnDataMap      key 为行索引，value 为 Excel中该行中动态列数据
      * @param analysisContext
      */
-    protected abstract void verify(Map<Integer, T> dataMap, Map<Integer, Map<String, String>> dynamicColumnDataMap, AnalysisContext analysisContext);
+    protected abstract void verify(Map<Integer, T> dataMap, AnalysisContext analysisContext);
 
     /**
      * 校验表头是否正常
@@ -142,21 +144,20 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         ReadRowHolder readRowHolder = analysisContext.readRowHolder();
         annotationValidation(data, readRowHolder);
         Integer rowIndex = readRowHolder.getRowIndex();
+        setDynamicColumnData(data, readRowHolder);
         dataMap.put(rowIndex, data);
-        dynamicColumnDataMap.put(rowIndex, getDynamicColumnData(readRowHolder));
         if (dataMap.size() >= batchHandleNum) {
-            verify(dataMap, dynamicColumnDataMap, analysisContext);
-            dataHandle(dataMap, dynamicColumnDataMap, analysisContext);
+            verify(dataMap, analysisContext);
+            dataHandle(dataMap, analysisContext);
             dataMap.clear();
-            dynamicColumnMap.clear();
         }
     }
 
     @Override
     public void doAfterAllAnalysed(AnalysisContext analysisContext) {
         if (dataMap.size() > 0) {
-            verify(dataMap, dynamicColumnDataMap, analysisContext);
-            dataHandle(dataMap, dynamicColumnDataMap, analysisContext);
+            verify(dataMap, analysisContext);
+            dataHandle(dataMap, analysisContext);
             dataMap.clear();
             dynamicColumnMap.clear();
         }
@@ -172,6 +173,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         }
 
         ExcelReadHeadProperty excelHeadPropertyData = analysisContext.readSheetHolder().excelReadHeadProperty();
+        readAfterHeadRowNum = excelHeadPropertyData.getHeadRowNumber();
         Map<Integer, Head> headMapData = excelHeadPropertyData.getHeadMap();
         Set<Integer> columnIndexSet = new HashSet<>();
         if (CollUtil.isNotEmpty(headMapData)) {
@@ -231,18 +233,29 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     /**
      * 获取动态数据
      */
-    private Map<String, String> getDynamicColumnData(ReadRowHolder readRowHolder) {
+    private void setDynamicColumnData(T data, ReadRowHolder readRowHolder) {
+        if (CollUtil.isEmpty(dynamicColumnMap)) {
+            return;
+        }
         Map<Integer, Cell> cellDataMap = readRowHolder.getCellMap();
         if (CollUtil.isEmpty(cellDataMap)) {
-            return Collections.emptyMap();
+            return;
         }
-        Map<String, String> result = new HashMap<>(cellDataMap.size());
+        Map<String, String> dynamicData = new HashMap<>(cellDataMap.size());
         cellDataMap.forEach((columnIndex, cell) -> {
             if (dynamicColumnMap.keySet().contains(columnIndex)) {
-                result.put(dynamicColumnMap.get(columnIndex), cell.toString());
+                dynamicData.put(dynamicColumnMap.get(columnIndex), cell.toString());
             }
         });
-        return result;
+        ClassUtils.getClassFieldInfo(data.getClass()).stream()
+                .filter(FieldInfo::isDynamicColumn)
+                .findFirst().ifPresent(fieldInfo -> {
+            Field field = fieldInfo.getField();
+            UnsafeFieldAccessor accessor = new UnsafeFieldAccessor(field);
+            if (Map.class == field.getType()) {
+                accessor.setObject(data, dynamicData);
+            }
+        });
     }
 
     protected void addErrorInfoByField(Integer rowIndex, String fieldName, String... errorMessages) {
