@@ -6,7 +6,6 @@ import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
-import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.handler.ErrorInfoCommentHandler;
 import com.jz.zeus.excel.write.handler.ExtendColumnHandler;
 import com.jz.zeus.excel.write.handler.HeadStyleHandler;
@@ -15,10 +14,10 @@ import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -45,8 +44,8 @@ public class ExcelTest {
 //        ExcelUtils.createTemplate(path, "模板", Arrays.asList("jj", "jkfk"), new HeadStyleHandler(list), null);
 
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
-        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), Arrays.asList("积分卡", "jjjj"), null, null, null);
-//        write(new FileOutputStream(path), getCellErrorInfo());
+//        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), Arrays.asList("积分卡", "jjjj"), null, null, null);
+        write(path, getCellErrorInfo());
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
 
@@ -57,9 +56,9 @@ public class ExcelTest {
 
 
     @SneakyThrows
-    public static void write(OutputStream outputStream, List<CellErrorInfo> cellErrorInfoList) {
+    public static void write(String path, List<CellErrorInfo> cellErrorInfoList) {
         List classDataList = getDataList();
-        EasyExcel.write(outputStream)
+        EasyExcel.write(path)
                 .sheet("模板")
 //                .head(getHead())
                 .head(DemoData.class)
@@ -71,7 +70,6 @@ public class ExcelTest {
 //                .doWrite(Collections.emptyList());
 //                .doWrite(getDataList());
                 .doWrite(classDataList);
-        outputStream.close();
     }
 
     @SneakyThrows
@@ -126,6 +124,7 @@ public class ExcelTest {
             demoData.setDest("dest" + i);
             demoData.setSrc("src" + i);
             demoData.setFunc("func" + i);
+            demoData.setPrice(3.94);
 
             Map<String, String> map = new LinkedHashMap<>();
             map.put("自定义1", "12");

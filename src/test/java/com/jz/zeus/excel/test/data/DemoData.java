@@ -2,6 +2,7 @@ package com.jz.zeus.excel.test.data;
 
 import com.alibaba.excel.annotation.ExcelIgnore;
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.alibaba.excel.annotation.format.NumberFormat;
 import com.alibaba.excel.annotation.write.style.ContentFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadStyle;
@@ -14,6 +15,7 @@ import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -34,6 +36,10 @@ public class DemoData {
     @IsLong
     @ExcelProperty(value = {"SRC"})
     private String src;
+
+    @NumberFormat("#.#")
+    @ExcelProperty(value = "金额")
+    private Double price;
 
     @ContentFontStyle(fontName = "微软雅黑", fontHeightInPoints = 14)
     @ExcelProperty(value = "DEST")
