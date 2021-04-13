@@ -62,7 +62,8 @@ public class ExcelUtils {
      * @param validationInfos         下拉框配置信息
      */
     @SneakyThrows
-    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, List<String> headList, HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
+    public void downloadTemplate(HttpServletResponse response, String excelName, String sheetName, List<String> headList,
+                                 HeadStyleHandler headStyleHandler, List<ValidationInfo> validationInfos) {
         response.setContentType("application/vnd.ms-excel");
         response.setCharacterEncoding("utf-8");
         // 这里URLEncoder.encode可以防止中文乱码
@@ -355,7 +356,8 @@ public class ExcelUtils {
      * @param errorInfos            错误信息
      */
     @SneakyThrows
-    public void addErrorInfo(OutputStream resultOutputStream, InputStream sourceInputStream, String sheetName, Integer headRowNum, List<CellErrorInfo> errorInfos) {
+    public void addErrorInfo(OutputStream resultOutputStream, InputStream sourceInputStream, String sheetName,
+                             Integer headRowNum, List<CellErrorInfo> errorInfos) {
         EasyExcel.write(resultOutputStream)
                 .withTemplate(sourceInputStream)
                 .sheet(sheetName)
@@ -372,7 +374,8 @@ public class ExcelUtils {
      * @param errorInfos            错误信息
      */
     @SneakyThrows
-    public void addErrorInfo(OutputStream resultOutputStream, byte[] sourceExcelBytes, String sheetName, Integer headRowNum, List<CellErrorInfo> errorInfos) {
+    public void addErrorInfo(OutputStream resultOutputStream, byte[] sourceExcelBytes, String sheetName,
+                             Integer headRowNum, List<CellErrorInfo> errorInfos) {
         EasyExcel.write(resultOutputStream)
                 .withTemplate(new ByteArrayInputStream(sourceExcelBytes))
                 .sheet(sheetName)
@@ -393,7 +396,8 @@ public class ExcelUtils {
      * @param errorMsgSuffix        错误信息后缀
      * @param errorMessages         错误信息
      */
-    public void setCommentErrorInfo(Sheet sheet, Integer rowIndex, Integer columnIndex, String errorMsgPrefix, String errorMsgSuffix, String... errorMessages) {
+    public void setCommentErrorInfo(Sheet sheet, Integer rowIndex, Integer columnIndex,
+                                    String errorMsgPrefix, String errorMsgSuffix, String... errorMessages) {
         Row row = sheet.getRow(rowIndex);
         if (row == null) {
             return;
