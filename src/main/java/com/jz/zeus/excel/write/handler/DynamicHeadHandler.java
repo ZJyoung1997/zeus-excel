@@ -27,6 +27,9 @@ public class DynamicHeadHandler extends AbstractSheetWriteHandler {
 
     @Override
     public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+        if (CollUtil.isEmpty(dynamicHeads)) {
+            return;
+        }
         ExcelWriteHeadProperty headProperty = writeSheetHolder.excelWriteHeadProperty();
         Map<Integer, Head> headMap = headProperty.getHeadMap();
         headMap.forEach((columnIndex, head) -> {
