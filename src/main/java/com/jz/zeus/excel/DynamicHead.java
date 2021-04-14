@@ -13,7 +13,7 @@ import lombok.Setter;
 @Setter
 public class DynamicHead {
 
-    private static final Integer DEFAULT_ROW_INDEX = 1;
+    private static final Integer DEFAULT_ROW_INDEX = 0;
 
     private Integer rowIndex;
 
@@ -72,6 +72,13 @@ public class DynamicHead {
         dynamicHead.setNewName(newName);
         dynamicHead.setAppendInfo(appendInfo);
         return dynamicHead;
+    }
+
+    public String getFinalHeadName(String oldHeadName) {
+        if (StrUtil.isBlank(newName)) {
+            return StrUtil.concat(true, oldHeadName, appendInfo);
+        }
+        return StrUtil.concat(true, newName, appendInfo);
     }
 
 }

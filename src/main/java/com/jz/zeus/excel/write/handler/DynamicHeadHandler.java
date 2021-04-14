@@ -9,7 +9,6 @@ import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
 import com.jz.zeus.excel.DynamicHead;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -40,12 +39,7 @@ public class DynamicHeadHandler extends AbstractSheetWriteHandler {
                             return;
                         }
                         Integer rowIndex = dynamicHead.getRowIndex();
-                        if (StrUtil.isNotBlank(dynamicHead.getNewName())) {
-                            headNames.set(rowIndex, dynamicHead.getNewName());
-                        }
-                        if (StrUtil.isNotBlank(dynamicHead.getAppendInfo())) {
-                            headNames.set(rowIndex, headNames.get(rowIndex).concat(dynamicHead.getAppendInfo()));
-                        }
+                        headNames.set(rowIndex, dynamicHead.getFinalHeadName(headNames.get(rowIndex)));
                     });
         });
     }

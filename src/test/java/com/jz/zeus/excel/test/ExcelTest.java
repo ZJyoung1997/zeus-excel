@@ -2,6 +2,7 @@ package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.EasyExcel;
 import com.jz.zeus.excel.CellErrorInfo;
+import com.jz.zeus.excel.DynamicHead;
 import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
@@ -29,8 +30,8 @@ import java.util.*;
 public class ExcelTest {
 
     public static void main(String[] args) throws IOException {
-        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//        String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+        String path = "C:\\Users\\User\\Desktop\\254.xlsx";
         long startTime = System.currentTimeMillis();
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
         styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
@@ -41,6 +42,10 @@ public class ExcelTest {
         List<ValidationInfo> validationInfos = new ArrayList<ValidationInfo>() {{
             add(ValidationInfo.buildColumn("ID", "是", "否"));
         }};
+
+        List<DynamicHead> dynamicHeads = new ArrayList<DynamicHead>() {{
+            add(DynamicHead.buildAppendInfo("src", "（必填）"));
+        }};
 //        ExcelUtils.createTemplate(new FileOutputStream(path), "模板", Arrays.asList("媒体发发发CODE", "解不不不不不决"), new HeadStyleHandler(styleProperty), getDropDownBoxInfo());
 //        ExcelUtils.createTemplate(path, "模板", DemoData.class, new HeadStyleHandler(), null, Arrays.asList("积分卡", "jjjj"), null);
 //        ExcelUtils.createTemplate(path, "模板", Arrays.asList("jj", "jkfk"), new HeadStyleHandler(list), null);
@@ -48,7 +53,7 @@ public class ExcelTest {
 //        ExcelUtils.write(path, "模板", Arrays.asList("字符串", "数字", "dest"), getDataList1(getHead()), null, null);
 //        ExcelUtils.write(path, "模板", DemoData.class, getDataList(), Arrays.asList("积分卡", "jjjj"), null, null, null);
 //        ExcelUtils.write(path, "模板", DemoData.class, getDataList());
-        write(path, getCellErrorInfo());
+        write(path, getCellErrorInfo(), dynamicHeads);
 
         ExcelReadListener readListener = new DemoExcelReadListener(5);
 
@@ -59,13 +64,13 @@ public class ExcelTest {
 
 
     @SneakyThrows
-    public static void write(String path, List<CellErrorInfo> cellErrorInfoList) {
+    public static void write(String path, List<CellErrorInfo> cellErrorInfoList, List<DynamicHead> dynamicHeads) {
         List classDataList = getDataList();
         EasyExcel.write(path)
                 .sheet("模板")
 //                .head(getHead())
                 .head(DemoData.class)
-                .registerWriteHandler(new DynamicHeadHandler(null))
+                .registerWriteHandler(new DynamicHeadHandler(dynamicHeads))
                 .registerWriteHandler(new ExtendColumnHandler<DemoData>(classDataList, null))
                 .registerWriteHandler(new HeadStyleHandler())
 //                .registerWriteHandler(new ErrorInfoCommentHandler(cellErrorInfoList))
