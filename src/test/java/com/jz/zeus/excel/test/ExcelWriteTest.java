@@ -30,7 +30,7 @@ import java.util.*;
 public class ExcelWriteTest {
 
 //    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -100,7 +100,7 @@ public class ExcelWriteTest {
 
     private static List<DemoData> getDataList() {
         List<DemoData> dataList = new ArrayList<>();
-        for (int i = 0; i < 1000000; i++) {
+        for (int i = 0; i < 10; i++) {
             DemoData demoData = new DemoData();
             demoData.setId(Long.valueOf(i));
             demoData.setDest("dest" + i);

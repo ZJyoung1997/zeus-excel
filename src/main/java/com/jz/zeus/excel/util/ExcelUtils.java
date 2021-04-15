@@ -89,7 +89,7 @@ public class ExcelUtils {
         EasyExcel.read(inputStream)
                 .sheet(sheetName)
                 .head(headClass)
-//                .registerReadListener(readListener)
+                .registerReadListener(readListener)
                 .doRead();
     }
 
