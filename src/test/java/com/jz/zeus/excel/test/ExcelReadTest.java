@@ -30,11 +30,11 @@ public class ExcelReadTest {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
         long startTime = System.currentTimeMillis();
 
-        ExcelReadListener readListener = new DemoExcelReadListener(10);
+        ExcelReadListener readListener = new DemoExcelReadListener();
         NoModelReadListener noModelReadListener = new TestNoModelReadListener();
 
 
-//        ExcelUtils.read(readListener, path, "模板", DemoData.class);
+        ExcelUtils.read(new DemoExcelReadListener(10), "C:\\Users\\User\\Desktop\\2545.xlsx", "模板", DemoData.class);
 //        read(path, readListener);
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 

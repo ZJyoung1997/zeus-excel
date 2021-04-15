@@ -30,7 +30,7 @@ import java.util.*;
 public class ExcelWriteTest {
 
 //    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -56,10 +56,10 @@ public class ExcelWriteTest {
                 .singleRowHeadStyles(styleProperties)
                 .extendHead(Arrays.asList("扩展1", "扩展2"))
                 .validationInfos(validationInfos)
-                .doWrite(DemoData.class, null);
+                .doWrite(DemoData.class, getDataList());
 
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
-        System.out.println("解析Excel后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
+        System.out.println("写入Excel后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
         System.out.println("end");
     }
 
@@ -100,7 +100,7 @@ public class ExcelWriteTest {
 
     private static List<DemoData> getDataList() {
         List<DemoData> dataList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 1000000; i++) {
             DemoData demoData = new DemoData();
             demoData.setId(Long.valueOf(i));
             demoData.setDest("dest" + i);

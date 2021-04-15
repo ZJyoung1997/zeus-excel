@@ -50,10 +50,10 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     private boolean headError = false;
 
     /**
-     * 批量保存数量
+     * 批量处理数据数量
      */
     @Setter
-    private int batchHandleNum = 500;
+    private int batchHandleNum = 2000;
 
     /**
      * 表头错误信息

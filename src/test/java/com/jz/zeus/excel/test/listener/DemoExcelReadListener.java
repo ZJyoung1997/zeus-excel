@@ -12,6 +12,8 @@ import java.util.Map;
  */
 public class DemoExcelReadListener extends AbstractExcelReadListener<DemoData> {
 
+    public DemoExcelReadListener() {}
+
     public DemoExcelReadListener(Boolean lastHandleData) {
         super(lastHandleData);
     }
@@ -22,16 +24,16 @@ public class DemoExcelReadListener extends AbstractExcelReadListener<DemoData> {
 
     @Override
     protected void verify(Map<Integer, DemoData> dataMap, AnalysisContext analysisContext) {
-        dataMap.forEach((rowIndex, data) -> {
-            addErrorInfoByHead(rowIndex, "自定义1", "格式错误");
-        });
+//        dataMap.forEach((rowIndex, data) -> {
+//            addErrorInfoByHead(rowIndex, "自定义1", "格式错误");
+//        });
     }
 
     @Override
     protected void dataHandle(Map<Integer, DemoData> dataMap, AnalysisContext analysisContext) {
-        dataMap.forEach((key, value) -> {
-            System.out.println("加载class数据：" + value);
-        });
+//        dataMap.forEach((key, value) -> {
+//            System.out.println("加载class数据：" + value);
+//        });
     }
 
 }
