@@ -9,7 +9,6 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @Author JZ
@@ -22,44 +21,35 @@ public class CellErrorInfo {
 
     private Integer columnIndex;
 
-    private String headName;
+    private String fieldName;
 
-    private Collection<String> errorMsgs = new ArrayList<>();
+    private Collection<String> errorMsgs;
 
-    public CellErrorInfo(int rowIndex, String headName) {
-        this(rowIndex, null, headName, null);
+    private CellErrorInfo() {}
+
+    public static CellErrorInfo build(int rowIndex, String fieldName, String... errorMsgs) {
+        return build(rowIndex, fieldName, null, errorMsgs);
     }
 
-    public CellErrorInfo(int rowIndex, String headName, String... errorMsgs) {
-        this(rowIndex, null, headName, errorMsgs);
+    public static CellErrorInfo build(int rowIndex, int columnIndex, String... errorMsgs) {
+        return build(rowIndex, null, columnIndex, errorMsgs);
     }
 
-    public CellErrorInfo(int rowIndex, Integer columnIndex) {
-        this(rowIndex, Integer.valueOf(columnIndex), null, null);
-    }
-
-    public CellErrorInfo(int rowIndex, Integer columnIndex, String errorMsg) {
-        this(rowIndex, Integer.valueOf(columnIndex), null, new String[]{errorMsg});
-    }
-
-    public CellErrorInfo(int rowIndex, Integer columnIndex, String... errorMsgs) {
-        this(rowIndex, Integer.valueOf(columnIndex), null, errorMsgs);
-    }
-
-    public CellErrorInfo(int rowIndex, Integer columnIndex, String headName, String... errorMsgs) {
-        Assert.isFalse(columnIndex == null && StrUtil.isBlank(headName),
-                "ColumnIndex and HeadName can't both be empty");
+    public static CellErrorInfo build(int rowIndex, String fieldName, Integer columnIndex, String... errorMsgs) {
+        Assert.isFalse(columnIndex == null && StrUtil.isBlank(fieldName),
+                "ColumnIndex and FieldName can't both be empty");
         Assert.isTrue(rowIndex >= 0, "RowIndex has to be greater than or equal to 0");
-        this.rowIndex = rowIndex;
+        CellErrorInfo errorInfo = new CellErrorInfo();
+        errorInfo.setRowIndex(rowIndex);
         if (columnIndex != null) {
             Assert.isTrue(columnIndex >= 0, "ColumnIndex has to be greater than or equal to 0");
-            this.columnIndex = columnIndex;
-        } else {
-            this.headName = headName;
+            errorInfo.setColumnIndex(columnIndex);
         }
+        errorInfo.setFieldName(fieldName);
         if (ArrayUtil.isNotEmpty(errorMsgs)) {
-            this.errorMsgs.addAll(Arrays.asList(errorMsgs));
+            errorInfo.setErrorMsgs(new ArrayList<>(Arrays.asList(errorMsgs)));
         }
+        return errorInfo;
     }
 
     public CellErrorInfo addErrorMsg(String msg) {
@@ -69,7 +59,7 @@ public class CellErrorInfo {
         return this;
     }
 
-    public CellErrorInfo addErrorMsg(List<String> msgs) {
+    public CellErrorInfo addErrorMsg(Collection<String> msgs) {
         if (CollUtil.isNotEmpty(msgs)) {
             errorMsgs.addAll(msgs);
         }

@@ -29,9 +29,9 @@ public class AbstractZeusSheetWriteHandler extends AbstractSheetWriteHandler {
     private Integer headRowNum;
 
     /**
-     * key 表头、value 表头对应列索引
+     * key 表头、value 字段对应列索引
      */
-    private Map<String, Integer> headNameIndexMap;
+    private Map<String, Integer> fieldIndexMap;
 
 
     public AbstractZeusSheetWriteHandler(Integer headRowNum) {
@@ -40,7 +40,7 @@ public class AbstractZeusSheetWriteHandler extends AbstractSheetWriteHandler {
 
     protected void init(WriteSheetHolder writeSheetHolder) {
         initHeadRowNum(writeSheetHolder);
-        initHeadNameIndexMap(writeSheetHolder);
+        initFieldIndexMap(writeSheetHolder);
     }
 
     private void initHeadRowNum(WriteSheetHolder writeSheetHolder) {
@@ -50,7 +50,7 @@ public class AbstractZeusSheetWriteHandler extends AbstractSheetWriteHandler {
         }
     }
 
-    private void initHeadNameIndexMap(WriteSheetHolder writeSheetHolder) {
+    private void initFieldIndexMap(WriteSheetHolder writeSheetHolder) {
         int lastRowNum = writeSheetHolder.getCachedSheet().getLastRowNum();
         Map<Integer, Head> headMap = writeSheetHolder.getExcelWriteHeadProperty().getHeadMap();
         if (CollUtil.isNotEmpty(headMap)) {

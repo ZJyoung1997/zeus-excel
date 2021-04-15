@@ -3,6 +3,7 @@ package com.jz.zeus.excel.read.listener;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.context.AnalysisContext;
+import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.exception.ExcelDataConvertException;
 import com.alibaba.excel.metadata.Cell;
 import com.alibaba.excel.metadata.CellData;
@@ -69,6 +70,8 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     @Getter
     private Map<Integer, List<CellErrorInfo>> errorInfoMap;
 
+    private Field extendField;
+
     /**
      * T 中字段名与列索引映射
      * key T 中字段名、value 列索引
@@ -76,16 +79,10 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     private Map<String, Integer> fieldColumnIndexMap = new HashMap<>();
 
     /**
-     * 表头与列索引映射
-     * key 表头、value 表头对应列索引
-     */
-    private Map<String, Integer> headNameIndexMap = new HashMap<>();
-
-    /**
      * 该字段中保存的是class中未定义的表头，
      * key 为列索引、value 为表头
      */
-    private Map<Integer, String> dynamicColumnMap = new HashMap<>();
+    private Map<Integer, String> extendColumnMap = new HashMap<>();
 
     /**
      * Excel 中读取到的数据
@@ -170,7 +167,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         if (StrUtil.isNotBlank(this.headErrorMsg)) {
             headError = true;
         }
-        initHeadCache(headMap,analysisContext.readSheetHolder().excelReadHeadProperty());
+        initHeadCache(headMap, analysisContext.readSheetHolder().excelReadHeadProperty());
     }
 
     /**
@@ -205,41 +202,30 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      * 获取动态数据
      */
     private void setDynamicColumnData(T data, ReadRowHolder readRowHolder) {
-        if (CollUtil.isEmpty(dynamicColumnMap)) {
+        if (extendField == null || CollUtil.isEmpty(extendColumnMap)) {
             return;
         }
         Map<Integer, Cell> cellDataMap = readRowHolder.getCellMap();
         if (CollUtil.isEmpty(cellDataMap)) {
             return;
         }
-        Map<String, String> dynamicData = new HashMap<>(cellDataMap.size());
+        Map<String, String> dynamicData = new HashMap<>();
         cellDataMap.forEach((columnIndex, cell) -> {
-            if (dynamicColumnMap.keySet().contains(columnIndex)) {
-                dynamicData.put(dynamicColumnMap.get(columnIndex), cell.toString());
+            String extendHeadName = extendColumnMap.get(columnIndex);
+            if (StrUtil.isNotBlank(extendHeadName)) {
+                dynamicData.put(extendHeadName, cell.toString());
             }
         });
-        ClassUtils.getClassFieldInfo(data.getClass()).stream()
-                .filter(FieldInfo::isExtendColumn)
-                .findFirst().ifPresent(fieldInfo -> {
-            Field field = fieldInfo.getField();
-            UnsafeFieldAccessor accessor = new UnsafeFieldAccessor(field);
-            if (Map.class == field.getType()) {
-                accessor.setObject(data, dynamicData);
-            }
-        });
+
+        UnsafeFieldAccessor accessor = new UnsafeFieldAccessor(extendField);
+        if (Map.class == extendField.getType()) {
+            accessor.setObject(data, dynamicData);
+        }
     }
 
-    protected void addErrorInfoByField(Integer rowIndex, String fieldName, String... errorMessages) {
+    protected void addErrorInfo(Integer rowIndex, String fieldName, String... errorMessages) {
         Integer columnIndex;
         if (rowIndex == null || (columnIndex = fieldColumnIndexMap.get(fieldName)) == null) {
-            return;
-        }
-        addErrorInfo(rowIndex, columnIndex, errorMessages);
-    }
-
-    protected void addErrorInfoByHead(Integer rowIndex, String headName, String... errorMessages) {
-        Integer columnIndex;
-        if (rowIndex == null || (columnIndex = headNameIndexMap.get(headName)) == null) {
             return;
         }
         addErrorInfo(rowIndex, columnIndex, errorMessages);
@@ -257,7 +243,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             rowErrorInfoList = new ArrayList<>();
             this.errorInfoMap.put(rowIndex, rowErrorInfoList);
         }
-        rowErrorInfoList.add(new CellErrorInfo(rowIndex, columnIndex, errorMessage));
+        rowErrorInfoList.add(CellErrorInfo.build(rowIndex, columnIndex, errorMessage));
     }
 
     protected void addErrorInfo(List<CellErrorInfo> cellErrorInfos) {
@@ -293,7 +279,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         }
         List<CellErrorInfo> errorMesInfoList = new ArrayList<>();
         errorMessageMap.forEach((fieldName, errorMessages) -> {
-            errorMesInfoList.add(new CellErrorInfo(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName))
+            errorMesInfoList.add(CellErrorInfo.build(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName))
                                 .addErrorMsg(errorMessages));
 
         });
@@ -338,16 +324,19 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         return cellErrorInfoList;
     }
 
-    protected Integer getHeadIndex(String headName) {
-        return headNameIndexMap.get(headName);
-    }
-
     protected void initHeadCache(Map<Integer, CellData> headMap, ExcelReadHeadProperty excelHeadPropertyData) {
         fieldColumnIndexMap.clear();
-        headNameIndexMap.clear();
-        dynamicColumnMap.clear();
+        extendColumnMap.clear();
+        extendField = null;
 
         readAfterHeadRowNum = excelHeadPropertyData.getHeadRowNumber();
+
+        if (HeadKindEnum.CLASS == excelHeadPropertyData.getHeadKind()) {
+            ClassUtils.getClassFieldInfo(excelHeadPropertyData.getHeadClazz()).stream()
+                    .filter(FieldInfo::isExtendColumn)
+                    .findFirst().ifPresent(fieldInfo -> extendField = fieldInfo.getField());
+        }
+
         Map<Integer, Head> headMapData = excelHeadPropertyData.getHeadMap();
         Set<Integer> columnIndexSet = new HashSet<>();
         if (CollUtil.isNotEmpty(headMapData)) {
@@ -357,20 +346,14 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
                 if (StrUtil.isNotBlank(head.getFieldName())) {
                     fieldColumnIndexMap.put(head.getFieldName(), columnIndex);
                 }
-                head.getHeadNameList().forEach(headName -> {
-                    headNameIndexMap.put(headName, columnIndex);
-                });
             });
         }
 
         if (CollUtil.isNotEmpty(headMap)) {
             headMap.forEach((columnIndex, cellData) -> {
                 String headName = cellData.toString();
-                if (!headNameIndexMap.containsKey(headName)) {
-                    headNameIndexMap.put(headName, columnIndex);
-                }
                 if (!columnIndexSet.contains(columnIndex)) {
-                    dynamicColumnMap.put(columnIndex, headName);
+                    extendColumnMap.put(columnIndex, headName);
                 }
             });
         }

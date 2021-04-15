@@ -29,8 +29,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -56,7 +56,7 @@ public class ExcelWriteTest {
                 .singleRowHeadStyles(styleProperties)
                 .extendHead(Arrays.asList("扩展1", "扩展2"))
                 .validationInfos(validationInfos)
-                .doWrite(DemoData.class, getDataList());
+                .doWrite(DemoData.class, getDataList(10));
 
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
         System.out.println("写入Excel后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -91,16 +91,16 @@ public class ExcelWriteTest {
 
     public static List<CellErrorInfo> getCellErrorInfo() {
         List<CellErrorInfo> cellErrorInfoList = new ArrayList<>();
-        cellErrorInfoList.add(new CellErrorInfo(1, 1, "格式错误"));
-        cellErrorInfoList.add(new CellErrorInfo(4, "媒体CODE", "关系错误"));
-        cellErrorInfoList.add(new CellErrorInfo(2, "FUNC", "格式错误")
+        cellErrorInfoList.add(CellErrorInfo.build(1, 1, "格式错误"));
+        cellErrorInfoList.add(CellErrorInfo.build(4, "price", "关系错误"));
+        cellErrorInfoList.add(CellErrorInfo.build(2, "func", "格式错误")
                 .addErrorMsg("数值放假看电视了积分卡积分错误"));
         return cellErrorInfoList;
     }
 
-    private static List<DemoData> getDataList() {
+    private static List<DemoData> getDataList(int num) {
         List<DemoData> dataList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < num; i++) {
             DemoData demoData = new DemoData();
             demoData.setId(Long.valueOf(i));
             demoData.setDest("dest" + i);
