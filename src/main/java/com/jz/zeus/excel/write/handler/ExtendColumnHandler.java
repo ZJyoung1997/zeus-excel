@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * @Author JZ
  * @Date 2021/4/12 15:23
  */
-public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements SheetWriteHandler {
+public class ExtendColumnHandler extends AbstractRowWriteHandler implements SheetWriteHandler {
 
     private Field extendColumnField;
 
@@ -40,7 +40,7 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
      */
     private int headRowNum;
 
-    private Map<Integer, T> dataMap;
+    private Map<Integer, Object> dataMap;
 
     /**
      * 动态表头
@@ -49,7 +49,7 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
 
     private UnsafeFieldAccessor fieldAccessor;
 
-    public ExtendColumnHandler(List<T> dataList, List<String> extendHead) {
+    public ExtendColumnHandler(List dataList, List<String> extendHead) {
         dataMap = new HashMap<>(dataList == null ? 0 : dataList.size());
         if (CollUtil.isNotEmpty(dataList)) {
             for (int i = 0; i < dataList.size(); i++) {
@@ -67,7 +67,7 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
                 || !isClassHead || extendColumnField == null) {
             return;
         }
-        T rawData = dataMap.get(row.getRowNum()-headRowNum);
+        Object rawData = dataMap.get(row.getRowNum()-headRowNum);
         if (rawData == null) {
             return;
         }
@@ -85,7 +85,7 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
     }
 
     @Override
-    public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+    public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
         if (CollUtil.isEmpty(extendHead) && CollUtil.isEmpty(dataMap)) {
             return;
         }
@@ -103,13 +103,16 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
         });
     }
 
+    @Override
+    public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {}
+
     private void addHead(ExcelWriteHeadProperty excelWriteHeadProperty, FieldInfo fieldInfo) {
         Map<Integer, Head> headMap = excelWriteHeadProperty.getHeadMap();
         if (CollUtil.isEmpty(extendHead)) {
             extendHead = new ArrayList<>();
         }
         if (CollUtil.isNotEmpty(dataMap)) {
-            T rawData = dataMap.get(0);
+            Object rawData = dataMap.get(0);
             if (rawData != null) {
                 Map<String, String> dynamicData = getDynamicData(rawData);
                 if (CollUtil.isNotEmpty(dynamicData)) {
@@ -141,11 +144,8 @@ public class ExtendColumnHandler<T> extends AbstractRowWriteHandler implements S
         }
     }
 
-    private Map<String, String> getDynamicData(T rawData) {
+    private Map<String, String> getDynamicData(Object rawData) {
         return (Map<String, String>) fieldAccessor.getObject(rawData);
     }
-
-    @Override
-    public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {}
 
 }

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
  * @Author JZ
  * @Date 2021/3/26 10:24
  */
-public class ErrorInfoCommentHandler extends AbstractZeusSheetWriteHandler {
+public class ErrorInfoHandler extends AbstractZeusSheetWriteHandler {
 
     @Setter
     private String commentRowPrefix = "- ";
@@ -27,7 +27,7 @@ public class ErrorInfoCommentHandler extends AbstractZeusSheetWriteHandler {
 
     private Map<Integer, List<CellErrorInfo>> rowErrorInfoMap;
 
-    public ErrorInfoCommentHandler(List<CellErrorInfo> errorInfoList) {
+    public ErrorInfoHandler(List<CellErrorInfo> errorInfoList) {
         this(null, errorInfoList);
     }
 
@@ -35,7 +35,7 @@ public class ErrorInfoCommentHandler extends AbstractZeusSheetWriteHandler {
      * @param headRowNum     仅对用表头名作为列坐标时有影响，有误会导致加载不到对应表头，导致对应单元格无法添加错误信息
      * @param errorInfoList
      */
-    public ErrorInfoCommentHandler(Integer headRowNum, List<CellErrorInfo> errorInfoList) {
+    public ErrorInfoHandler(Integer headRowNum, List<CellErrorInfo> errorInfoList) {
         super(headRowNum);
         if (CollUtil.isNotEmpty(errorInfoList)) {
             this.rowErrorInfoMap = errorInfoList.stream()

@@ -24,18 +24,18 @@ import java.util.Objects;
  * @Author JZ
  * @Date 2021/3/26 17:01
  */
-public class ValidationInfoSheetHandler extends AbstractZeusSheetWriteHandler {
+public class ValidationInfoHandler extends AbstractZeusSheetWriteHandler {
 
     /**
      * 下拉框信息
      */
     private List<ValidationInfo> validationInfoList;
 
-    public ValidationInfoSheetHandler(List<ValidationInfo> validationInfoList) {
+    public ValidationInfoHandler(List<ValidationInfo> validationInfoList) {
         this(null, validationInfoList);
     }
 
-    public ValidationInfoSheetHandler(Integer headRowNum, List<ValidationInfo> validationInfoList) {
+    public ValidationInfoHandler(Integer headRowNum, List<ValidationInfo> validationInfoList) {
         super(headRowNum);
         this.validationInfoList = validationInfoList;
     }
