@@ -1,10 +1,11 @@
-package com.jz.zeus.excel.write.handler;
+package com.jz.zeus.excel.write.helper;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.Head;
-import com.alibaba.excel.write.handler.AbstractSheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
+import com.sun.istack.internal.NotNull;
 import lombok.Getter;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -15,9 +16,9 @@ import java.util.Map;
 
 /**
  * @Author JZ
- * @Date 2021/3/26 17:11
+ * @Date 2021/4/16 16:09
  */
-public class AbstractZeusSheetWriteHandler extends AbstractSheetWriteHandler {
+public class WriteSheetHelper {
 
     private static final Integer DEFAULT_HEAD_ROW_NUM = 1;
 
@@ -37,21 +38,29 @@ public class AbstractZeusSheetWriteHandler extends AbstractSheetWriteHandler {
      */
     private Map<String, Integer> headNameIndexMap;
 
+    private WriteSheetHolder writeSheetHolder;
 
-    public AbstractZeusSheetWriteHandler() {}
 
-    public AbstractZeusSheetWriteHandler(Integer headRowNum) {
-        this.headRowNum = headRowNum;
+    public WriteSheetHelper(@NotNull WriteSheetHolder writeSheetHolder) {
+        this(writeSheetHolder, null);
     }
 
-    protected void initHeadRowNum(WriteSheetHolder writeSheetHolder) {
+
+    public WriteSheetHelper(@NotNull WriteSheetHolder writeSheetHolder, Integer headRowNum) {
+        Assert.notNull(writeSheetHolder, "WriteSheetHolder can't be null");
+        this.headRowNum = headRowNum;
+        this.writeSheetHolder = writeSheetHolder;
+        initCache();
+    }
+
+    private void initHeadRowNum() {
         if (headRowNum == null) {
             headRowNum = writeSheetHolder.getExcelWriteHeadProperty().getHeadRowNumber();
             headRowNum = Math.max(headRowNum, DEFAULT_HEAD_ROW_NUM);
         }
     }
 
-    protected void initCache(WriteSheetHolder writeSheetHolder) {
+    private void initCache() {
         int lastRowNum = writeSheetHolder.getCachedSheet().getLastRowNum();
         Map<Integer, Head> headMap = writeSheetHolder.getExcelWriteHeadProperty().getHeadMap();
         if (headNameIndexMap == null) {
@@ -64,9 +73,7 @@ public class AbstractZeusSheetWriteHandler extends AbstractSheetWriteHandler {
         } else {
             fieldNameIndexMap.clear();
         }
-        if (headRowNum == null) {
-            initHeadRowNum(writeSheetHolder);
-        }
+        initHeadRowNum();
 
         if (CollUtil.isNotEmpty(headMap)) {
             headMap.values().forEach(head -> {
@@ -98,11 +105,11 @@ public class AbstractZeusSheetWriteHandler extends AbstractSheetWriteHandler {
         }
     }
 
-    protected Integer getHeadColumnIndex(String headName) {
+    public Integer getHeadColumnIndex(String headName) {
         return CollUtil.isEmpty(headNameIndexMap) ? null : headNameIndexMap.get(headName);
     }
 
-    protected Integer getFieldColumnIndex(String fieldName) {
+    public Integer getFieldColumnIndex(String fieldName) {
         return CollUtil.isEmpty(fieldNameIndexMap) ? null : fieldNameIndexMap.get(fieldName);
     }
 

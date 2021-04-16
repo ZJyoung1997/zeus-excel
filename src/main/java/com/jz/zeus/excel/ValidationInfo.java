@@ -1,5 +1,6 @@
 package com.jz.zeus.excel;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
@@ -29,6 +30,8 @@ public class ValidationInfo {
 
     private Integer columnNum = 100;
 
+    private String fieldName;
+
     private String headName;
 
     private List<String> options;
@@ -36,89 +39,79 @@ public class ValidationInfo {
     private ValidationInfo() {}
 
 
-    public static ValidationInfo buildColumn(String headName, String... options) {
-        return buildColumn(headName, null, options);
+    public static ValidationInfo buildColumnByIndex(int columnIndex, String... options) {
+        return buildColumn(null, null, columnIndex, null, options);
     }
 
-    public static ValidationInfo buildColumn(String headName, Integer rowNum, String... options) {
-        return buildColumn(headName, rowNum, options == null ? Collections.emptyList() : Arrays.asList(options));
+    public static ValidationInfo buildColumnByIndex(int columnIndex, Integer rowNum, String... options) {
+        return buildColumn(null, null, columnIndex, rowNum, options);
     }
 
-    public static ValidationInfo buildColumn(String headName, List<String> options) {
-        return buildColumn(headName, null, options);
+    public static ValidationInfo buildColumnByHead(String headName, String... options) {
+        return buildColumn(null, headName, null, null, options);
     }
 
-    public static ValidationInfo buildColumn(String headName, Integer rowNum, List<String> options) {
-        Assert.isTrue(StrUtil.isNotBlank(headName), "HeadName can't be empty");
+    public static ValidationInfo buildColumnByHead(String headName, Integer rowNum, String... options) {
+        return buildColumn(null, headName, null, rowNum, options);
+    }
+
+    public static ValidationInfo buildColumnByField(String fieldName, String... options) {
+        return buildColumn(fieldName, null, null, null, options);
+    }
+
+    public static ValidationInfo buildColumnByField(String fieldName, Integer rowNum, String... options) {
+        return buildColumn(fieldName, null, null, rowNum, options);
+    }
+
+    public static ValidationInfo buildColumnByField(Class<?> clazz, String fieldName, Integer rowNum, String... options) {
+        if (ClassUtils.getFieldInfoByFieldName(clazz, fieldName).isPresent()) {
+            return buildColumn(fieldName, null, null, rowNum, options);
+        }
+        return null;
+    }
+
+    public static ValidationInfo buildColumn(String fieldName, String headName, Integer columnIndex, Integer rowNum, String... options) {
+        if (ArrayUtil.isEmpty(options)) {
+            return buildColumn(fieldName, headName, columnIndex, rowNum, new ArrayList<>(0));
+        }
+        return buildColumn(fieldName, headName, columnIndex, rowNum, CollUtil.toList(options));
+    }
+
+    public static ValidationInfo buildColumn(String fieldName, String headName, Integer columnIndex, Integer rowNum, List<String> options) {
+        Assert.isFalse(columnIndex == null && StrUtil.isBlank(fieldName) && StrUtil.isBlank(headName),
+                "ColumnIndex and FieldName and HeadName not all empty");
+        if (rowNum != null) {
+            Assert.isTrue(rowNum >= 0, "RowNum has to be greater than or equal to 0");
+        }
+        if (columnIndex != null) {
+            Assert.isTrue(columnIndex >= 0, "ColumnIndex has to be greater than or equal to 0");
+        }
         ValidationInfo validationInfo = new ValidationInfo();
+        validationInfo.setColumnIndex(columnIndex);
+        validationInfo.setFieldName(fieldName);
         validationInfo.setHeadName(headName);
         validationInfo.setRowNum(rowNum == null ? DEFAULT_ROW_NUM : rowNum);
         validationInfo.setOptions(options);
         return validationInfo;
     }
 
-    public static ValidationInfo buildColumn(Integer columnIndex, String... options) {
-        return buildColumn(columnIndex, null, options);
-    }
-
-    public static ValidationInfo buildColumn(Integer columnIndex, Integer rowNum, String... options) {
-        return buildColumn(columnIndex, rowNum, options == null ? Collections.emptyList() : Arrays.asList(options));
-    }
-
-    /**
-     * 构建某一列的下拉框
-     * @param columnIndex     列索引
-     * @param options         选项内容
-     */
-    public static ValidationInfo buildColumn(Integer columnIndex, List<String> options) {
-        return buildColumn(columnIndex, null, options);
-    }
-
-    /**
-     * 构建某一列的下拉框
-     * @param columnIndex     列索引
-     * @param rowNum          需要构建下拉框的行数
-     * @param options         选项内容
-     */
-    public static ValidationInfo buildColumn(Integer columnIndex, Integer rowNum, List<String> options) {
-        Assert.isTrue(columnIndex != null, "ColumnIndex can't be null");
-        ValidationInfo validationInfo = new ValidationInfo();
-        validationInfo.setColumnIndex(columnIndex);
-        validationInfo.setRowNum(rowNum == null ? DEFAULT_ROW_NUM : rowNum);
-        validationInfo.setOptions(options);
-        return validationInfo;
-    }
-
-    public static ValidationInfo buildColumn(Class<?> clazz, String fieldName, List<String> options) {
-        return buildColumn(clazz, fieldName, null, options);
-    }
-
-    public static ValidationInfo buildColumn(Class<?> clazz, String fieldName, Integer rowNum, List<String> options) {
-        Optional<FieldInfo> fieldInfoOptional = ClassUtils.getFieldInfoByFieldName(clazz, fieldName);
-        if (fieldInfoOptional.isPresent()) {
-            FieldInfo fieldInfo = fieldInfoOptional.get();
-            if (fieldInfo.getHeadColumnIndex() != null) {
-                return buildColumn(fieldInfo.getHeadColumnIndex(), rowNum, options);
-            } else if (StrUtil.isNotBlank(fieldInfo.getHeadName())) {
-                return buildColumn(fieldInfo.getHeadName(), rowNum, options);
-            }
-        }
-        return null;
-    }
-
     /**
      * 构建具有相同选项的多列下拉框
-     * @param headNames             表头
+     * @param names                 表头 或 属性名
+     * @param isField               true names 表示属性名、false names 表示表头
      * @param options               选项内容
      */
-    public static List<ValidationInfo> buildCommonOption(String[] headNames, String... options) {
-        if (ArrayUtil.isEmpty(headNames) || ArrayUtil.isEmpty(options)) {
+    public static List<ValidationInfo> buildCommonOption(String[] names, boolean isField, String... options) {
+        if (ArrayUtil.isEmpty(names)) {
             return new ArrayList<>(0);
         }
         List<ValidationInfo> validationInfoList = new ArrayList<>();
-        List<String> optionList = Arrays.asList(options);
-        for(int i = 0; i < headNames.length; ++i) {
-            validationInfoList.add(ValidationInfo.buildColumn(headNames[i], optionList));
+        for(String name : names) {
+            if (isField) {
+                validationInfoList.add(ValidationInfo.buildColumnByField(name, options));
+            } else {
+                validationInfoList.add(ValidationInfo.buildColumnByHead(name, options));
+            }
         }
         return validationInfoList;
     }
@@ -132,10 +125,9 @@ public class ValidationInfo {
         if (ArrayUtil.isEmpty(columnIndexs) || ArrayUtil.isEmpty(options)) {
             return new ArrayList<>(0);
         }
-        List<ValidationInfo> validationInfoList = new ArrayList<>();
-        List<String> optionList = Arrays.asList(options);
+        List<ValidationInfo> validationInfoList = new ArrayList<>(columnIndexs.length);
         for(int i = 0; i < columnIndexs.length; ++i) {
-            validationInfoList.add(ValidationInfo.buildColumn(columnIndexs[i], optionList));
+            validationInfoList.add(ValidationInfo.buildColumnByIndex(columnIndexs[i], options));
         }
         return validationInfoList;
     }
@@ -193,11 +185,12 @@ public class ValidationInfo {
         }
         ValidationInfo that = (ValidationInfo) o;
         return (Objects.equals(rowIndex, that.rowIndex) && Objects.equals(columnIndex, that.columnIndex)) ||
+                (Objects.equals(rowIndex, that.rowIndex) && Objects.equals(fieldName, that.fieldName)) ||
                 (Objects.equals(rowIndex, that.rowIndex) && Objects.equals(headName, that.headName));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(rowIndex, rowNum, columnIndex, columnNum, headName, options);
+        return Objects.hash(rowIndex, fieldName, rowNum, columnIndex, columnNum, headName, options);
     }
 }

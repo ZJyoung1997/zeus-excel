@@ -42,44 +42,39 @@ public class ValidationInfoHandler extends AbstractZeusSheetWriteHandler {
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        init(writeSheetHolder);
-        List<ValidationInfo> boxInfoList = new ArrayList<>();
-        if (CollUtil.isNotEmpty(validationInfoList)) {
-            validationInfoList.forEach(boxInfo -> {
-                if (boxInfo.getColumnIndex() == null && StrUtil.isNotBlank(boxInfo.getHeadName())) {
-                    boxInfo.setColumnIndex(getHeadColumnIndex(boxInfo.getHeadName()));
-                }
-                boxInfoList.add(boxInfo);
-            });
+        boolean isClass = HeadKindEnum.CLASS == writeSheetHolder.getExcelWriteHeadProperty().getHeadKind();
+        if (CollUtil.isEmpty(validationInfoList)) {
+            validationInfoList = new ArrayList<>();
         }
-        boolean isClass = HeadKindEnum.CLASS.equals(writeSheetHolder.getExcelWriteHeadProperty().getHeadKind());
         if (isClass) {
             if (CollUtil.isEmpty(validationInfoList)) {
-                boxInfoList.addAll(ClassUtils.getValidationInfoInfos(writeSheetHolder.getClazz()));
+                validationInfoList.addAll(ClassUtils.getValidationInfoInfos(writeSheetHolder.getClazz()));
             } else {
                 ClassUtils.getValidationInfoInfos(writeSheetHolder.getClazz())
                         .forEach(boxInfo -> {
-                            if (boxInfo.getColumnIndex() == null && StrUtil.isNotBlank(boxInfo.getHeadName())) {
-                                boxInfo.setColumnIndex(getHeadColumnIndex(boxInfo.getHeadName()));
-                            }
-                            if (!validationInfoList.stream().filter(info -> Objects.equals(boxInfo, info)).findFirst().isPresent()) {
-                                boxInfoList.add(boxInfo);
+                            if (validationInfoList.stream().noneMatch(info -> Objects.equals(boxInfo, info))) {
+                                validationInfoList.add(boxInfo);
                             }
                         });
             }
         }
-
-        if (CollUtil.isEmpty(boxInfoList)) {
+        if (CollUtil.isEmpty(validationInfoList)) {
             return;
         }
 
+        initCache(writeSheetHolder);
+
         Integer headRowNum = getHeadRowNum();
         Sheet sheet = writeSheetHolder.getSheet();
-        boxInfoList.forEach(boxInfo -> {
+        validationInfoList.forEach(boxInfo -> {
             Integer rowIndex = boxInfo.getRowIndex();
             Integer columnIndex = boxInfo.getColumnIndex();
             if (columnIndex == null) {
-                columnIndex = getHeadColumnIndex(boxInfo.getHeadName());
+                if (StrUtil.isNotBlank(boxInfo.getFieldName())) {
+                    columnIndex = getFieldColumnIndex(boxInfo.getFieldName());
+                } else if (StrUtil.isNotBlank(boxInfo.getHeadName())) {
+                    columnIndex = getHeadColumnIndex(boxInfo.getHeadName());
+                }
             }
             if (rowIndex == null && columnIndex != null) {
                 addValidationData(sheet, headRowNum, headRowNum+boxInfo.getRowNum(), columnIndex, columnIndex, boxInfo.getOptions());
@@ -109,24 +104,17 @@ public class ValidationInfoHandler extends AbstractZeusSheetWriteHandler {
     }
 
     public void addValidationInfo(ValidationInfo validationInfo) {
-        if (validationInfo != null) {
-            if (CollUtil.isEmpty(validationInfoList)) {
-                validationInfoList = new ArrayList<>();
-            }
-            validationInfoList.add(validationInfo);
+        if (validationInfo == null) {
+            return;
         }
+        if (CollUtil.isEmpty(validationInfoList)) {
+            validationInfoList = new ArrayList<>();
+        }
+        validationInfoList.add(validationInfo);
     }
 
     public void addValidationInfo(Integer[] columnIndexs, String... options) {
-        if (ArrayUtil.isNotEmpty(columnIndexs) && ArrayUtil.isNotEmpty(options)) {
-            if (CollUtil.isEmpty(validationInfoList)) {
-                validationInfoList = new ArrayList<>();
-            }
-            List<String> optionList = Arrays.asList(options);
-            for (int i = 0; i < columnIndexs.length; i++) {
-                validationInfoList.add(ValidationInfo.buildColumn(columnIndexs[i], optionList));
-            }
-        }
+        validationInfoList.addAll(ValidationInfo.buildCommonOption(columnIndexs, options));
     }
 
 }

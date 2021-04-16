@@ -23,22 +23,28 @@ public class CellErrorInfo {
 
     private String fieldName;
 
+    private String headName;
+
     private Collection<String> errorMsgs;
 
     private CellErrorInfo() {}
 
-    public static CellErrorInfo build(int rowIndex, String fieldName, String... errorMsgs) {
-        return build(rowIndex, fieldName, null, errorMsgs);
+    public static CellErrorInfo buildByHead(int rowIndex, String headName, String... errorMsgs) {
+        return build(rowIndex, null, headName, null, errorMsgs);
     }
 
-    public static CellErrorInfo build(int rowIndex, int columnIndex, String... errorMsgs) {
-        return build(rowIndex, null, columnIndex, errorMsgs);
+    public static CellErrorInfo buildByField(int rowIndex, String fieldName, String... errorMsgs) {
+        return build(rowIndex, fieldName, null, null, errorMsgs);
     }
 
-    public static CellErrorInfo build(int rowIndex, String fieldName, Integer columnIndex, String... errorMsgs) {
-        Assert.isFalse(columnIndex == null && StrUtil.isBlank(fieldName),
-                "ColumnIndex and FieldName can't both be empty");
+    public static CellErrorInfo buildByColumnIndex(int rowIndex, int columnIndex, String... errorMsgs) {
+        return build(rowIndex, null, null, columnIndex, errorMsgs);
+    }
+
+    public static CellErrorInfo build(int rowIndex, String fieldName, String headName, Integer columnIndex, String... errorMsgs) {
         Assert.isTrue(rowIndex >= 0, "RowIndex has to be greater than or equal to 0");
+        Assert.isFalse(columnIndex == null && StrUtil.isBlank(fieldName) && StrUtil.isBlank(headName),
+                "ColumnIndex and FieldName and HeadName not all empty");
         CellErrorInfo errorInfo = new CellErrorInfo();
         errorInfo.setRowIndex(rowIndex);
         if (columnIndex != null) {
@@ -46,8 +52,11 @@ public class CellErrorInfo {
             errorInfo.setColumnIndex(columnIndex);
         }
         errorInfo.setFieldName(fieldName);
+        errorInfo.setHeadName(headName);
         if (ArrayUtil.isNotEmpty(errorMsgs)) {
             errorInfo.setErrorMsgs(new ArrayList<>(Arrays.asList(errorMsgs)));
+        } else {
+            errorInfo.setErrorMsgs(new ArrayList<>());
         }
         return errorInfo;
     }

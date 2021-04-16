@@ -82,7 +82,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      * 该字段中保存的是class中未定义的表头，
      * key 为列索引、value 为表头
      */
-    private Map<Integer, String> extendColumnMap = new HashMap<>();
+    private Map<Integer, String> extendColumnIndexMap = new HashMap<>();
 
     /**
      * Excel 中读取到的数据
@@ -141,7 +141,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         ReadRowHolder readRowHolder = analysisContext.readRowHolder();
         annotationValidation(data, readRowHolder);
         Integer rowIndex = readRowHolder.getRowIndex();
-        setDynamicColumnData(data, readRowHolder);
+        setExtendColumnData(data, readRowHolder);
         dataMap.put(rowIndex, data);
         if (dataMap.size() >= batchHandleNum) {
             verify(dataMap, analysisContext);
@@ -201,28 +201,57 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     /**
      * 获取动态数据
      */
-    private void setDynamicColumnData(T data, ReadRowHolder readRowHolder) {
-        if (extendField == null || CollUtil.isEmpty(extendColumnMap)) {
+    private void setExtendColumnData(T data, ReadRowHolder readRowHolder) {
+        if (extendField == null || CollUtil.isEmpty(extendColumnIndexMap)) {
             return;
         }
         Map<Integer, Cell> cellDataMap = readRowHolder.getCellMap();
         if (CollUtil.isEmpty(cellDataMap)) {
             return;
         }
-        Map<String, String> dynamicData = new HashMap<>();
+        Map<String, String> extendData = new HashMap<>();
         cellDataMap.forEach((columnIndex, cell) -> {
-            String extendHeadName = extendColumnMap.get(columnIndex);
+            String extendHeadName = extendColumnIndexMap.get(columnIndex);
             if (StrUtil.isNotBlank(extendHeadName)) {
-                dynamicData.put(extendHeadName, cell.toString());
+                extendData.put(extendHeadName, cell.toString());
             }
         });
 
         UnsafeFieldAccessor accessor = new UnsafeFieldAccessor(extendField);
         if (Map.class == extendField.getType()) {
-            accessor.setObject(data, dynamicData);
+            accessor.setObject(data, extendData);
         }
     }
 
+    /**
+     * 根据行索引和扩展列表头添加错误信息，目前扩展列添加错误信息需通过该方法添加错误信息
+     * @param rowIndex            行索引
+     * @param extendHeadName      扩展列表头名
+     * @param errorMessages       错误信息
+     */
+    protected void addExtendColumnErrorInfo(Integer rowIndex, String extendHeadName, String... errorMessages) {
+        if (rowIndex == null || StrUtil.isBlank(extendHeadName)) {
+            return;
+        }
+        Integer columnIndex = null;
+        for (Map.Entry<Integer, String> entry : extendColumnIndexMap.entrySet()) {
+            if (Objects.equals(extendHeadName, entry.getValue())) {
+                columnIndex = entry.getKey();
+                break;
+            }
+        }
+        if (columnIndex == null) {
+            return;
+        }
+        addErrorInfo(rowIndex, columnIndex, errorMessages);
+    }
+
+    /**
+     * 根据行索引和属性名称添加错误信息，扩展列不适用于该方法
+     * @param rowIndex             行索引
+     * @param fieldName            class中属性名
+     * @param errorMessages        错误信息
+     */
     protected void addErrorInfo(Integer rowIndex, String fieldName, String... errorMessages) {
         Integer columnIndex;
         if (rowIndex == null || (columnIndex = fieldColumnIndexMap.get(fieldName)) == null) {
@@ -231,6 +260,12 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         addErrorInfo(rowIndex, columnIndex, errorMessages);
     }
 
+    /**
+     * 根据行索引和列索引添加错误信息
+     * @param rowIndex          行索引
+     * @param columnIndex       列索引
+     * @param errorMessage      错误信息
+     */
     protected void addErrorInfo(Integer rowIndex, Integer columnIndex, String... errorMessage) {
         if (rowIndex == null || columnIndex == null) {
             return;
@@ -243,9 +278,13 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             rowErrorInfoList = new ArrayList<>();
             this.errorInfoMap.put(rowIndex, rowErrorInfoList);
         }
-        rowErrorInfoList.add(CellErrorInfo.build(rowIndex, columnIndex, errorMessage));
+        rowErrorInfoList.add(CellErrorInfo.buildByColumnIndex(rowIndex, columnIndex, errorMessage));
     }
 
+    /**
+     * 批量添加错误信息
+     * @param cellErrorInfos
+     */
     protected void addErrorInfo(List<CellErrorInfo> cellErrorInfos) {
         if (CollUtil.isEmpty(cellErrorInfos)) {
             return;
@@ -264,26 +303,6 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
                 }
             });
         }
-    }
-
-    /**
-     * 对数据进行 hibernate 注解校验
-     */
-    protected void annotationValidation(T data, ReadRowHolder readRowHolder) {
-        if (!enabledAnnotationValidation) {
-            return;
-        }
-        Map<String, List<String>> errorMessageMap = ValidatorUtils.validate(data);
-        if (CollUtil.isEmpty(errorMessageMap)) {
-            return;
-        }
-        List<CellErrorInfo> errorMesInfoList = new ArrayList<>();
-        errorMessageMap.forEach((fieldName, errorMessages) -> {
-            errorMesInfoList.add(CellErrorInfo.build(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName))
-                                .addErrorMsg(errorMessages));
-
-        });
-        addErrorInfo(errorMesInfoList);
     }
 
     /**
@@ -313,6 +332,9 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         return CollUtil.isNotEmpty(this.errorInfoMap.get(rowIndex));
     }
 
+    /**
+     * 获取错误信息
+     */
     public List<CellErrorInfo> getErrorInfoList() {
         if (CollUtil.isEmpty(this.errorInfoMap)) {
             return Collections.emptyList();
@@ -324,9 +346,29 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         return cellErrorInfoList;
     }
 
+    /**
+     * 对数据进行 hibernate 注解校验
+     */
+    protected void annotationValidation(T data, ReadRowHolder readRowHolder) {
+        if (!enabledAnnotationValidation) {
+            return;
+        }
+        Map<String, List<String>> errorMessageMap = ValidatorUtils.validate(data);
+        if (CollUtil.isEmpty(errorMessageMap)) {
+            return;
+        }
+        List<CellErrorInfo> errorMesInfoList = new ArrayList<>();
+        errorMessageMap.forEach((fieldName, errorMessages) -> {
+            errorMesInfoList.add(CellErrorInfo.buildByColumnIndex(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName))
+                    .addErrorMsg(errorMessages));
+
+        });
+        addErrorInfo(errorMesInfoList);
+    }
+
     protected void initHeadCache(Map<Integer, CellData> headMap, ExcelReadHeadProperty excelHeadPropertyData) {
         fieldColumnIndexMap.clear();
-        extendColumnMap.clear();
+        extendColumnIndexMap.clear();
         extendField = null;
 
         readAfterHeadRowNum = excelHeadPropertyData.getHeadRowNumber();
@@ -353,7 +395,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             headMap.forEach((columnIndex, cellData) -> {
                 String headName = cellData.toString();
                 if (!columnIndexSet.contains(columnIndex)) {
-                    extendColumnMap.put(columnIndex, headName);
+                    extendColumnIndexMap.put(columnIndex, headName);
                 }
             });
         }

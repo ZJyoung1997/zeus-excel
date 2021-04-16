@@ -5,19 +5,13 @@ import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DynamicHead;
 import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.ZeusExcel;
-import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
-import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
-import com.jz.zeus.excel.write.handler.DynamicHeadHandler;
 import com.jz.zeus.excel.write.handler.ErrorInfoHandler;
-import com.jz.zeus.excel.write.handler.ExtendColumnHandler;
-import com.jz.zeus.excel.write.handler.HeadStyleHandler;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.IndexedColors;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,8 +23,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -42,12 +36,14 @@ public class ExcelWriteTest {
         List<CellStyleProperty> styleProperties = new ArrayList<>();
         styleProperties.add(styleProperty);
 
-        List<ValidationInfo> validationInfos = new ArrayList<ValidationInfo>() {{
-            add(ValidationInfo.buildColumn("ID", "是", "否"));
-        }};
         List<DynamicHead> dynamicHeads = new ArrayList<DynamicHead>() {{
             add(DynamicHead.buildAppendInfo("src", "（必填）"));
             add(DynamicHead.build("dest", "destPlus", "（选填）"));
+        }};
+        List<CellErrorInfo> errorInfos = new ArrayList<CellErrorInfo>() {{
+            add(CellErrorInfo.buildByField(5, "id", "不合法id"));
+            add(CellErrorInfo.buildByColumnIndex(7, 2, "金额有误"));
+            add(CellErrorInfo.buildByHead(7, "destPlus（选填）", "金额有误"));
         }};
 
         ZeusExcel.write(path)
@@ -55,7 +51,8 @@ public class ExcelWriteTest {
                 .dynamicHeads(dynamicHeads)
                 .singleRowHeadStyles(styleProperties)
                 .extendHead(Arrays.asList("扩展1", "扩展2"))
-                .validationInfos(validationInfos)
+                .validationInfos(getValidationInfo())
+                .errorInfos(errorInfos)
                 .doWrite(DemoData.class, getDataList(10));
 
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
@@ -89,11 +86,19 @@ public class ExcelWriteTest {
         return list;
     }
 
+    public static List<ValidationInfo> getValidationInfo() {
+        return new ArrayList<ValidationInfo>() {{
+            add(ValidationInfo.buildColumnByField("id", "是", "否"));
+            add(ValidationInfo.buildColumnByHead("destPlus", "是", "否"));
+            add(ValidationInfo.buildColumnByHead("自定义1", "是自定义", "不是自定义"));
+        }};
+    }
+
     public static List<CellErrorInfo> getCellErrorInfo() {
         List<CellErrorInfo> cellErrorInfoList = new ArrayList<>();
-        cellErrorInfoList.add(CellErrorInfo.build(1, 1, "格式错误"));
-        cellErrorInfoList.add(CellErrorInfo.build(4, "price", "关系错误"));
-        cellErrorInfoList.add(CellErrorInfo.build(2, "func", "格式错误")
+        cellErrorInfoList.add(CellErrorInfo.buildByColumnIndex(1, 1, "格式错误"));
+        cellErrorInfoList.add(CellErrorInfo.buildByField(4, "price", "关系错误"));
+        cellErrorInfoList.add(CellErrorInfo.buildByHead(2, "FUNC", "格式错误")
                 .addErrorMsg("数值放假看电视了积分卡积分错误"));
         return cellErrorInfoList;
     }

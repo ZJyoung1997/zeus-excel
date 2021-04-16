@@ -88,13 +88,15 @@ public class ClassUtils {
         if (CollUtil.isEmpty(fieldInfos)) {
             return new ArrayList<>();
         }
-        return fieldInfos.stream().filter(fieldInfo -> (fieldInfo.getHeadColumnIndex() != null || StrUtil.isNotBlank(fieldInfo.getHeadName()))
-                                    && ArrayUtil.isNotEmpty(fieldInfo.getDropDownBoxOptions()))
+        return fieldInfos.stream().filter(fieldInfo -> (fieldInfo.getHeadColumnIndex() != null || StrUtil.isNotBlank(fieldInfo.getHeadName())
+                                    || StrUtil.isNotBlank(fieldInfo.getFieldName())) && ArrayUtil.isNotEmpty(fieldInfo.getDropDownBoxOptions()))
                 .map(fieldInfo -> {
-                    if (fieldInfo.getHeadColumnIndex() != null) {
-                        return ValidationInfo.buildColumn(fieldInfo.getHeadColumnIndex(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                    if (StrUtil.isNotBlank(fieldInfo.getFieldName())) {
+                        return ValidationInfo.buildColumnByField(fieldInfo.getFieldName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                    } else if (fieldInfo.getHeadColumnIndex() != null) {
+                        return ValidationInfo.buildColumnByIndex(fieldInfo.getHeadColumnIndex(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
                     }
-                    return ValidationInfo.buildColumn(fieldInfo.getHeadName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                    return ValidationInfo.buildColumnByHead(fieldInfo.getHeadName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
                 }).collect(Collectors.toList());
     }
 

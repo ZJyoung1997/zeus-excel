@@ -1,9 +1,7 @@
 package com.jz.zeus.excel.util;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ArrayUtil;
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.util.IoUtils;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
@@ -18,9 +16,7 @@ import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
 import java.io.*;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @Author JZ
@@ -210,6 +206,7 @@ public class ExcelUtils {
             return;
         }
         CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
+        cellStyle.cloneStyleFrom(cell.getCellStyle());
         cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         cellStyle.setFillForegroundColor(IndexedColors.RED.index);
         cell.setCellStyle(cellStyle);
@@ -218,25 +215,6 @@ public class ExcelUtils {
         Comment comment = drawing.createCellComment(new XSSFClientAnchor(0, 0, 0, 0, columnIndex, rowIndex, columnIndex+2, rowIndex+2));
         comment.setString(new XSSFRichTextString(ArrayUtil.join(errorMessages, "\n", errorMsgPrefix, errorMsgSuffix)));
         cell.setCellComment(comment);
-    }
-
-    /**
-     * 获取表头与列索引映射关系
-     * @param headMap
-     * @return         key 表头、value 列索引
-     */
-    public Map<String, Integer> getHeadIndexMap(Map<Integer, Head> headMap) {
-        if (CollUtil.isEmpty(headMap)) {
-            return new HashMap(0);
-        }
-        Map<String, Integer> headNameIndexMap = new HashMap<>(headMap.size());
-        headMap.values().forEach(head -> {
-            Integer columnIndex = head.getColumnIndex();
-            head.getHeadNameList().forEach(headName -> {
-                headNameIndexMap.put(headName, columnIndex);
-            });
-        });
-        return headNameIndexMap;
     }
 
 }
