@@ -7,7 +7,6 @@ import cn.hutool.core.util.StrUtil;
 import lombok.Data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 
 /**
@@ -33,7 +32,15 @@ public class CellErrorInfo {
         return build(rowIndex, null, headName, null, errorMsgs);
     }
 
+    public static CellErrorInfo buildByHead(int rowIndex, String headName,  Collection<String> errorMsgs) {
+        return build(rowIndex, null, headName, null, errorMsgs);
+    }
+
     public static CellErrorInfo buildByField(int rowIndex, String fieldName, String... errorMsgs) {
+        return build(rowIndex, fieldName, null, null, errorMsgs);
+    }
+
+    public static CellErrorInfo buildByField(int rowIndex, String fieldName,  Collection<String> errorMsgs) {
         return build(rowIndex, fieldName, null, null, errorMsgs);
     }
 
@@ -41,7 +48,18 @@ public class CellErrorInfo {
         return build(rowIndex, null, null, columnIndex, errorMsgs);
     }
 
+    public static CellErrorInfo buildByColumnIndex(int rowIndex, int columnIndex,  Collection<String> errorMsgs) {
+        return build(rowIndex, null, null, columnIndex, errorMsgs);
+    }
+
     public static CellErrorInfo build(int rowIndex, String fieldName, String headName, Integer columnIndex, String... errorMsgs) {
+        if (ArrayUtil.isNotEmpty(errorMsgs)) {
+            return build(rowIndex, fieldName, headName, columnIndex, CollUtil.toList(errorMsgs));
+        }
+        return build(rowIndex, fieldName, headName, columnIndex, (Collection<String>) null);
+    }
+
+    public static CellErrorInfo build(int rowIndex, String fieldName, String headName, Integer columnIndex, Collection<String> errorMsgs) {
         Assert.isTrue(rowIndex >= 0, "RowIndex has to be greater than or equal to 0");
         Assert.isFalse(columnIndex == null && StrUtil.isBlank(fieldName) && StrUtil.isBlank(headName),
                 "ColumnIndex and FieldName and HeadName not all empty");
@@ -53,8 +71,8 @@ public class CellErrorInfo {
         }
         errorInfo.setFieldName(fieldName);
         errorInfo.setHeadName(headName);
-        if (ArrayUtil.isNotEmpty(errorMsgs)) {
-            errorInfo.setErrorMsgs(new ArrayList<>(Arrays.asList(errorMsgs)));
+        if (errorMsgs != null) {
+            errorInfo.setErrorMsgs(errorMsgs);
         } else {
             errorInfo.setErrorMsgs(new ArrayList<>());
         }

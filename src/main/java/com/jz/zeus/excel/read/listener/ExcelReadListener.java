@@ -282,30 +282,6 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     }
 
     /**
-     * 批量添加错误信息
-     * @param cellErrorInfos
-     */
-    protected void addErrorInfo(List<CellErrorInfo> cellErrorInfos) {
-        if (CollUtil.isEmpty(cellErrorInfos)) {
-            return;
-        }
-        Map<Integer, List<CellErrorInfo>> tempMap = cellErrorInfos.stream()
-                .collect(Collectors.groupingBy(CellErrorInfo::getRowIndex));
-        if (this.errorInfoMap == null) {
-            this.errorInfoMap = tempMap;
-        } else {
-            tempMap.forEach((rowIndex, errorInfos) -> {
-                List<CellErrorInfo> cellErrorInfoList = this.errorInfoMap.get(rowIndex);
-                if (cellErrorInfoList == null) {
-                    this.errorInfoMap.put(rowIndex, errorInfos);
-                } else {
-                    cellErrorInfoList.addAll(errorInfos);
-                }
-            });
-        }
-    }
-
-    /**
      * 判断是否存在表头错误
      * @return true 存在表头错误、false 不存在表头错误
      */
@@ -359,7 +335,8 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         }
         List<CellErrorInfo> errorMesInfoList = new ArrayList<>();
         errorMessageMap.forEach((fieldName, errorMessages) -> {
-            errorMesInfoList.add(CellErrorInfo.buildByColumnIndex(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName))
+            addErrorInfo(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName), errorMessages);
+            errorMesInfoList.add(CellErrorInfo.buildByColumnIndex(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName), errorMessages)
                     .addErrorMsg(errorMessages));
 
         });
