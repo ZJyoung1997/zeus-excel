@@ -89,7 +89,7 @@ public class ExcelWriteTest {
     public static List<ValidationInfo> getValidationInfo() {
         return new ArrayList<ValidationInfo>() {{
             add(ValidationInfo.buildColumnByField("id", "是", "否"));
-            add(ValidationInfo.buildColumnByHead("destPlus", "是", "否"));
+            add(ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"));
             add(ValidationInfo.buildColumnByHead("自定义1", "是自定义", "不是自定义"));
         }};
     }
