@@ -14,7 +14,7 @@ import java.util.Collection;
  * @Date 2021/3/22 17:56
  */
 @Data
-public class CellErrorInfo {
+public class CellErrorInfo implements Cloneable {
 
     private Integer rowIndex;
 

@@ -1,5 +1,6 @@
 package com.jz.zeus.excel.test;
 
+import com.jz.zeus.excel.ValidationInfo;
 import lombok.SneakyThrows;
 
 import java.util.ArrayList;
@@ -14,8 +15,7 @@ public class Test {
 
     @SneakyThrows
     public static void main(String[] args) {
-        List<String> list = new ArrayList<>();
-        list.addAll(Collections.emptyList());
+
     }
 
 }

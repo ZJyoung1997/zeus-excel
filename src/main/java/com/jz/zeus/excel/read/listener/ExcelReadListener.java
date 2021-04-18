@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.read.listener;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.enums.HeadKindEnum;
@@ -69,6 +70,12 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      */
     @Getter
     private Map<Integer, List<CellErrorInfo>> errorInfoMap;
+
+    /**
+     * 错误数据
+     * key 行索引、value Excel中读取到的该行数据
+     */
+    private Map<Integer, T> errorDataMap = new HashMap<>();
 
     private Field extendField;
 
@@ -224,6 +231,15 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     }
 
     /**
+     * 记录错误数据
+     * @param rowIndex    行索引
+     * @param data        错误数据
+     */
+    private void addErrorDataRecord(Integer rowIndex, T data) {
+        errorDataMap.put(rowIndex, data);
+    }
+
+    /**
      * 根据行索引和扩展列表头添加错误信息，目前扩展列添加错误信息需通过该方法添加错误信息
      * @param rowIndex            行索引
      * @param extendHeadName      扩展列表头名
@@ -279,6 +295,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             this.errorInfoMap.put(rowIndex, rowErrorInfoList);
         }
         rowErrorInfoList.add(CellErrorInfo.buildByColumnIndex(rowIndex, columnIndex, errorMessage));
+        addErrorDataRecord(rowIndex, dataMap.get(rowIndex));
     }
 
     /**
@@ -323,6 +340,22 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     }
 
     /**
+     * 获取错误数据及其错误信息，若要将其作为Excel的数据源创建新的Excel，并显示错误信息时，
+     * 需修改错误信息的行索引
+     * @return
+     */
+    public Map<T, List<CellErrorInfo>> getErrorRecord() {
+        if (CollUtil.isEmpty(errorDataMap)) {
+            return MapUtil.newHashMap(0);
+        }
+        Map<T, List<CellErrorInfo>> record = new HashMap<>();
+        errorDataMap.forEach((rowIndex, data) -> {
+            record.put(data, errorInfoMap.get(rowIndex));
+        });
+        return record;
+    }
+
+    /**
      * 对数据进行 hibernate 注解校验
      */
     protected void annotationValidation(T data, ReadRowHolder readRowHolder) {
@@ -335,12 +368,18 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         }
         List<CellErrorInfo> errorMesInfoList = new ArrayList<>();
         errorMessageMap.forEach((fieldName, errorMessages) -> {
-            addErrorInfo(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName), errorMessages);
-            errorMesInfoList.add(CellErrorInfo.buildByColumnIndex(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName), errorMessages)
-                    .addErrorMsg(errorMessages));
-
+            errorMesInfoList.add(CellErrorInfo.buildByColumnIndex(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName), errorMessages));
         });
-        addErrorInfo(errorMesInfoList);
+        errorMesInfoList.stream().collect(Collectors.groupingBy(CellErrorInfo::getRowIndex))
+                .forEach((rowIndex, errorInfos) -> {
+                    List<CellErrorInfo> infos = errorInfoMap.get(rowIndex);
+                    if (infos == null) {
+                        infos = new ArrayList<>(errorInfos.size());
+                        errorInfoMap.put(rowIndex, infos);
+                    }
+                    infos.addAll(errorInfos);
+                    addErrorDataRecord(rowIndex, data);
+                });
     }
 
     protected void initHeadCache(Map<Integer, CellData> headMap, ExcelReadHeadProperty excelHeadPropertyData) {

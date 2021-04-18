@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @Author JZ
@@ -58,6 +59,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             } else {
                 ClassUtils.getValidationInfoInfos(writeSheetHolder.getClazz())
                         .forEach(boxInfo -> {
+                            List<Object> li = validationInfoList.stream().filter(info -> Objects.equals(boxInfo, info)).collect(Collectors.toList());
                             if (validationInfoList.stream().noneMatch(info -> Objects.equals(boxInfo, info))) {
                                 validationInfoList.add(boxInfo);
                             }

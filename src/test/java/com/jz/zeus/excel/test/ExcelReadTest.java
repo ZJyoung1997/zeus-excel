@@ -2,7 +2,7 @@ package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.ReadListener;
-import com.alibaba.excel.util.IoUtils;
+import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.read.listener.NoModelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
@@ -11,12 +11,9 @@ import com.jz.zeus.excel.test.listener.TestNoModelReadListener;
 import com.jz.zeus.excel.util.ExcelUtils;
 import lombok.SneakyThrows;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author JZ
@@ -24,8 +21,8 @@ import java.util.List;
  */
 public class ExcelReadTest {
 
-//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
+    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
 
     @SneakyThrows
     public static void main(String[] args) {
@@ -38,7 +35,8 @@ public class ExcelReadTest {
 //        byte[] bytes = IoUtils.toByteArray(new FileInputStream(path));
 //        System.out.println("解析为字节后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
 
-        ExcelUtils.read(new DemoExcelReadListener(2000), path, "模板", DemoData.class);
+        ExcelUtils.read(readListener, path, "模板", DemoData.class);
+        Map<DemoData, List<CellErrorInfo>> errorRecord = readListener.getErrorRecord();
 //        read(path, readListener);
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 

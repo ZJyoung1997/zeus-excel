@@ -184,9 +184,16 @@ public class ValidationInfo {
             return false;
         }
         ValidationInfo that = (ValidationInfo) o;
-        return (Objects.equals(rowIndex, that.rowIndex) && Objects.equals(columnIndex, that.columnIndex)) ||
-                (Objects.equals(rowIndex, that.rowIndex) && Objects.equals(fieldName, that.fieldName)) ||
-                (Objects.equals(rowIndex, that.rowIndex) && Objects.equals(headName, that.headName));
+        if (Objects.equals(rowIndex, that.rowIndex)) {
+            if (rowIndex != null && Objects.equals(that.columnIndex, columnIndex)) {
+                return true;
+            } else if (StrUtil.isNotBlank(fieldName) && Objects.equals(that.fieldName, fieldName)) {
+                return true;
+            } else if (StrUtil.isNotBlank(headName) && Objects.equals(that.headName, headName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

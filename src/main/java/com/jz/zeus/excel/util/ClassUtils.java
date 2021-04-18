@@ -88,8 +88,7 @@ public class ClassUtils {
         if (CollUtil.isEmpty(fieldInfos)) {
             return new ArrayList<>();
         }
-        return fieldInfos.stream().filter(fieldInfo -> (fieldInfo.getHeadColumnIndex() != null || StrUtil.isNotBlank(fieldInfo.getHeadName())
-                                    || StrUtil.isNotBlank(fieldInfo.getFieldName())) && ArrayUtil.isNotEmpty(fieldInfo.getDropDownBoxOptions()))
+        return fieldInfos.stream().filter(fieldInfo -> ArrayUtil.isNotEmpty(fieldInfo.getDropDownBoxOptions()))
                 .map(fieldInfo -> {
                     if (StrUtil.isNotBlank(fieldInfo.getFieldName())) {
                         return ValidationInfo.buildColumnByField(fieldInfo.getFieldName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
