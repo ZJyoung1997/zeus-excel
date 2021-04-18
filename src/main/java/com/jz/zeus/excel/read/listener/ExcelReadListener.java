@@ -68,8 +68,9 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      * 数据的错误信息（不包含表头错误信息）
      * key 为行索引，value 为该行中单元格的错误信息
      */
+
     @Getter
-    private Map<Integer, List<CellErrorInfo>> errorInfoMap;
+    private Map<Integer, List<CellErrorInfo>> errorInfoMap = new HashMap<>();
 
     /**
      * 错误数据
@@ -199,6 +200,8 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             }
             ExcelDataConvertException dataConvertException = (ExcelDataConvertException) e;
             addErrorInfo(dataConvertException.getRowIndex(), dataConvertException.getColumnIndex(), errorMsg);
+        } else {
+            throw new RuntimeException(e);
         }
     }
 
@@ -286,9 +289,6 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         if (rowIndex == null || columnIndex == null) {
             return;
         }
-        if (this.errorInfoMap == null) {
-            this.errorInfoMap = new HashMap<>();
-        }
         List<CellErrorInfo> rowErrorInfoList = errorInfoMap.get(rowIndex);
         if (rowErrorInfoList == null) {
             rowErrorInfoList = new ArrayList<>();
@@ -330,7 +330,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      */
     public List<CellErrorInfo> getErrorInfoList() {
         if (CollUtil.isEmpty(this.errorInfoMap)) {
-            return Collections.emptyList();
+            return new ArrayList<>(0);
         }
         List<CellErrorInfo> cellErrorInfoList = new ArrayList<>();
         this.errorInfoMap.values().forEach(errorInfos -> {
