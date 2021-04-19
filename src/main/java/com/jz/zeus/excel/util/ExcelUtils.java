@@ -60,61 +60,7 @@ public class ExcelUtils {
         addErrorInfo(outputStream, excelBytes, sheetName, readListener.getReadAfterHeadRowNum(), readListener.getErrorInfoList());
     }
 
-    /**
-     * 读取具有module的Excel
-     * @param readListener          Excel读取监听器
-     * @param excelName             Excel全路径名
-     * @param sheetName             需要读取的sheet名称
-     * @param headClass             Excel的module
-     * @param <T>
-     */
-    @SneakyThrows
-    public <T> void read(ExcelReadListener<T> readListener, String excelName, String sheetName, Class<T> headClass) {
-        read(readListener, new FileInputStream(excelName), sheetName, headClass);
-    }
 
-    /**
-     * 读取具有module的Excel
-     * @param readListener          Excel读取监听器
-     * @param inputStream           Excel输入流
-     * @param sheetName            需要读取的sheet名称
-     * @param headClass            Excel的module
-     * @param <T>
-     */
-    public <T> void read(ExcelReadListener<T> readListener, InputStream inputStream, String sheetName, Class<T> headClass) {
-        EasyExcel.read(inputStream)
-                .sheet(sheetName)
-                .head(headClass)
-                .registerReadListener(readListener)
-                .doRead();
-    }
-
-    /**
-     * 当没有module时，读取Excel内容
-     * @param readListener        Excel读取监听器
-     * @param excelName           Excel全路径名
-     * @param sheetName           需要读取的sheet名称
-     * @param headRowNum          表头行数，小于等于 0 时表示没有表头
-     */
-    @SneakyThrows
-    public void read(NoModelReadListener readListener, String excelName, String sheetName, Integer headRowNum) {
-        read(readListener, new FileInputStream(excelName), sheetName, headRowNum);
-    }
-
-    /**
-     * 当没有module时，读取Excel内容
-     * @param readListener        Excel读取监听器
-     * @param inputStream         Excel输入流
-     * @param sheetName           需要读取的sheet名称
-     * @param headRowNum          表头行数，小于等于 0 时表示没有表头
-     */
-    public void read(NoModelReadListener readListener, InputStream inputStream, String sheetName, Integer headRowNum) {
-        EasyExcel.read(inputStream)
-                .sheet(sheetName)
-                .headRowNumber(headRowNum)
-                .registerReadListener(readListener)
-                .doRead();
-    }
 
     /**
      * @param excelName            需要写入错误信息的Excel全路径名称

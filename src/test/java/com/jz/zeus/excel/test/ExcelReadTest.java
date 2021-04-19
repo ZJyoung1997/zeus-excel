@@ -21,8 +21,8 @@ import java.util.Map;
  */
 public class ExcelReadTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx"
+    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
 
     @SneakyThrows
     public static void main(String[] args) {
@@ -35,7 +35,7 @@ public class ExcelReadTest {
 //        byte[] bytes = IoUtils.toByteArray(new FileInputStream(path));
 //        System.out.println("解析为字节后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
 
-        ExcelUtils.read(readListener, path, "模板", DemoData.class);
+//        ExcelUtils.read(readListener, path, "模板", DemoData.class);
         Map<DemoData, List<CellErrorInfo>> errorRecord = readListener.getErrorRecord();
 //        read(path, readListener);
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
