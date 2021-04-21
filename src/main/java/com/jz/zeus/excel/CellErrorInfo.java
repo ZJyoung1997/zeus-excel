@@ -5,6 +5,8 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import lombok.Data;
+import lombok.SneakyThrows;
+import lombok.experimental.Accessors;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,6 +16,7 @@ import java.util.Collection;
  * @Date 2021/3/22 17:56
  */
 @Data
+@Accessors(chain = true)
 public class CellErrorInfo implements Cloneable {
 
     private Integer rowIndex;
@@ -97,4 +100,9 @@ public class CellErrorInfo implements Cloneable {
         return CollUtil.isNotEmpty(errorMsgs);
     }
 
+    @Override
+    @SneakyThrows
+    public CellErrorInfo clone() {
+        return (CellErrorInfo) super.clone();
+    }
 }

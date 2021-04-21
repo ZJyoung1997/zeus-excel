@@ -19,6 +19,7 @@ import com.jz.zeus.excel.exception.DataConvertException;
 import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.UnsafeFieldAccessor;
 import com.jz.zeus.excel.util.ValidatorUtils;
+import javafx.util.Pair;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -68,7 +69,6 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      * 数据的错误信息（不包含表头错误信息）
      * key 为行索引，value 为该行中单元格的错误信息
      */
-
     @Getter
     private Map<Integer, List<CellErrorInfo>> errorInfoMap = new HashMap<>();
 
@@ -344,15 +344,21 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      * 需修改错误信息的行索引
      * @return
      */
-    public Map<T, List<CellErrorInfo>> getErrorRecord() {
+    public Pair<List<T>, List<CellErrorInfo>> getErrorRecord() {
         if (CollUtil.isEmpty(errorDataMap)) {
-            return MapUtil.newHashMap(0);
+            return new Pair<>(null, null);
         }
-        Map<T, List<CellErrorInfo>> record = new HashMap<>();
-        errorDataMap.forEach((rowIndex, data) -> {
-            record.put(data, errorInfoMap.get(rowIndex));
-        });
-        return record;
+        List<T> errorDatas = new ArrayList<>(errorDataMap.size());
+        List<CellErrorInfo> newCellErrorInfos = new ArrayList<>();
+        int rowIndex = readAfterHeadRowNum;
+        for (Map.Entry<Integer, T> entry : errorDataMap.entrySet()) {
+            errorDatas.add(entry.getValue());
+            int finalRowIndex = rowIndex;
+            CollUtil.addAll(newCellErrorInfos, errorInfoMap.get(entry.getKey()).stream()
+                    .map(errorInfo -> errorInfo.clone().setRowIndex(finalRowIndex)).collect(Collectors.toList()));
+            rowIndex++;
+        }
+        return new Pair<>(errorDatas, newCellErrorInfos);
     }
 
     /**

@@ -43,7 +43,7 @@ public class DemoData {
     @ExcelProperty(index = 3, value = "DEST")
     private String dest;
 
-    @IsLong
+//    @IsLong
     @ValidationData(options = {"aa", "bb", "cc"})
     @ExcelProperty(index = 4, value = "FUNC")
     private String func;

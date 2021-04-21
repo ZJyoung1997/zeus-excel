@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
 import com.jz.zeus.excel.DynamicHead;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +30,7 @@ public class ExcelContext {
     public static List<String> getExtendHead() {
         List<String> result = (List<String>) EXCEL_CONTEXT.get().get(EXTEND_HEAD);
         if (result == null) {
-            return CollUtil.newArrayList();
+            return new ArrayList<>(0);
         }
         return result;
     }
