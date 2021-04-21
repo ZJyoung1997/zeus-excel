@@ -52,6 +52,6 @@ public class DemoData {
     @ExtendColumn
     @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)
     @ContentFontStyle(fontName = "微软雅黑", fontHeightInPoints = 14)
-    private Map<String, String> dynamicColumnMap;
+    private Map<String, String> extendColumnMap;
 
 }

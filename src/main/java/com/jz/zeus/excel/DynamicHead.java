@@ -52,11 +52,14 @@ public class DynamicHead {
     }
 
     public static DynamicHead build(Integer rowIndex, Integer columnIndex, String newName, String appendInfo) {
+        if (rowIndex == null) {
+            rowIndex = DEFAULT_ROW_INDEX;
+        }
         Assert.isTrue(rowIndex >= 0, "rowIndex must be greater than or equal to 0");
         Assert.isTrue(columnIndex != null, "columnIndex must not be null");
         Assert.isTrue(columnIndex >= 0, "columnIndex must be greater than or equal to 0");
         DynamicHead dynamicHead = new DynamicHead();
-        dynamicHead.setRowIndex(rowIndex == null ? DEFAULT_ROW_INDEX : rowIndex);
+        dynamicHead.setRowIndex(rowIndex);
         dynamicHead.setColumnIndex(columnIndex);
         dynamicHead.setNewName(newName);
         dynamicHead.setAppendInfo(appendInfo);
@@ -64,10 +67,13 @@ public class DynamicHead {
     }
 
     public static DynamicHead build(Integer rowIndex, String fieldName, String newName, String appendInfo) {
+        if (rowIndex == null) {
+            rowIndex = DEFAULT_ROW_INDEX;
+        }
         Assert.isTrue(rowIndex >= 0, "rowIndex must be greater than or equal to 0");
         Assert.isTrue(StrUtil.isNotBlank(fieldName), "fieldName must not be blank");
         DynamicHead dynamicHead = new DynamicHead();
-        dynamicHead.setRowIndex(rowIndex == null ? DEFAULT_ROW_INDEX : rowIndex);
+        dynamicHead.setRowIndex(rowIndex);
         dynamicHead.setFieldName(fieldName);
         dynamicHead.setNewName(newName);
         dynamicHead.setAppendInfo(appendInfo);

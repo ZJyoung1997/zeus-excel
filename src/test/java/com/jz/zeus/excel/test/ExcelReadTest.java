@@ -1,8 +1,10 @@
 package com.jz.zeus.excel.test;
 
+import cn.hutool.core.collection.CollUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.jz.zeus.excel.CellErrorInfo;
+import com.jz.zeus.excel.ZeusExcel;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.read.listener.NoModelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
@@ -35,9 +37,10 @@ public class ExcelReadTest {
 //        byte[] bytes = IoUtils.toByteArray(new FileInputStream(path));
 //        System.out.println("解析为字节后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
 
-//        ExcelUtils.read(readListener, path, "模板", DemoData.class);
+        read(path, readListener);
         Map<DemoData, List<CellErrorInfo>> errorRecord = readListener.getErrorRecord();
-//        read(path, readListener);
+        if (CollUtil.isNotEmpty(errorRecord)) {
+        }
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
 

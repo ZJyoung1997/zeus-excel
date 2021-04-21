@@ -2,24 +2,28 @@ package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
-import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.Head;
-import com.alibaba.excel.write.handler.AbstractCellWriteHandler;
+import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
+import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
+import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.constant.Constants;
+import com.jz.zeus.excel.context.ExcelContext;
+import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.StringUtils;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import org.apache.poi.ss.usermodel.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author JZ
  * @Date 2021/3/23 11:57
  */
-public class HeadStyleHandler extends AbstractCellWriteHandler {
+public class HeadStyleHandler extends AbstractRowWriteHandler {
 
     /**
      * 是否自适应列宽，默认开启
@@ -73,24 +77,55 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
     }
 
     @Override
-    public void afterCellDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, List<CellData> cellDataList, Cell cell, Head head, Integer relativeRowIndex, Boolean isHead) {
+    public void afterRowDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Integer relativeRowIndex, Boolean isHead) {
         if (!Boolean.TRUE.equals(isHead)) {
             return;
         }
+        ExcelWriteHeadProperty excelWriteHeadProperty = writeSheetHolder.getExcelWriteHeadProperty();
+        Class headClass = excelWriteHeadProperty.getClass();
+        Map<Integer, Head> headMap = excelWriteHeadProperty.getHeadMap();
         Sheet sheet = writeSheetHolder.getSheet();
-        boolean isSet = false;
-        if (allHeadStyle != null) {
-            setCellStyle(sheet, cell, allHeadStyle);
-            isSet = true;
-        } else if (CollUtil.isNotEmpty(multiRowHeadCellStyles) && cell.getRowIndex() < multiRowHeadCellStyles.size()) {
-            List<CellStyleProperty> cellStylePropertyList = multiRowHeadCellStyles.get(cell.getRowIndex());
-            if (CollUtil.isNotEmpty(cellStylePropertyList) && cell.getColumnIndex() < cellStylePropertyList.size()) {
-                setCellStyle(sheet, cell, cellStylePropertyList.get(cell.getColumnIndex()));
-                isSet = true;
+        int rawColumnNum = headMap.size();
+        int realColumnNum = rawColumnNum + (CollUtil.isEmpty(ExcelContext.getExtendHead()) || headClass != ExcelContext.getHeadClass() ?
+                0 : ExcelContext.getExtendHead().size());
+        for (int i = 0; i < realColumnNum; i++) {
+            Cell cell = row.getCell(i);
+            if (cell == null) {
+                continue;
             }
-        }
-        if (!isSet) {
-            setCellStyle(sheet, cell, head);
+            boolean isSet = false;
+            if (allHeadStyle != null) {
+                setCellStyle(sheet, cell, allHeadStyle);
+                isSet = true;
+            } else if (CollUtil.isNotEmpty(multiRowHeadCellStyles) && cell.getRowIndex() < multiRowHeadCellStyles.size()) {
+                List<CellStyleProperty> cellStylePropertyList = multiRowHeadCellStyles.get(cell.getRowIndex());
+                if (CollUtil.isNotEmpty(cellStylePropertyList) && cell.getColumnIndex() < cellStylePropertyList.size()) {
+                    setCellStyle(sheet, cell, cellStylePropertyList.get(i));
+                    isSet = true;
+                }
+            }
+            if (!isSet) {
+                if (i >= rawColumnNum) {
+                    CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
+                    ClassUtils.getClassFieldInfo(headClass).stream()
+                            .filter(FieldInfo::isExtendColumn)
+                            .findFirst()
+                            .ifPresent(fieldInfo -> {
+                                if (fieldInfo.getHeadFontProperty() != null) {
+                                    styleProperty.setFontProperty(fieldInfo.getHeadFontProperty());
+                                }
+                                if (fieldInfo.getHeadStyleProperty() != null) {
+                                    BeanUtil.copyProperties(fieldInfo.getHeadStyleProperty(), styleProperty);
+                                }
+                                if (fieldInfo.getColumnWidthProperty() != null) {
+                                    styleProperty.setWidth(fieldInfo.getColumnWidthProperty().getWidth());
+                                }
+                            });
+                    setCellStyle(sheet, cell, styleProperty);
+                } else {
+                    setCellStyle(sheet, cell, headMap.get(i));
+                }
+            }
         }
     }
 
@@ -117,6 +152,7 @@ public class HeadStyleHandler extends AbstractCellWriteHandler {
     private void setCellStyle(Sheet sheet, Cell cell, CellStyleProperty cellStyleProperty) {
         Workbook workbook = sheet.getWorkbook();
         CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.cloneStyleFrom(cell.getCellStyle());
         Font font = workbook.createFont();
         cellStyleProperty.setCellStyle(font, cellStyle);
         cell.setCellStyle(cellStyle);

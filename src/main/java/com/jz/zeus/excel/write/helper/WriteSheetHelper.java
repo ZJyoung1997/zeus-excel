@@ -5,6 +5,8 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
+import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
+import com.jz.zeus.excel.context.ExcelContext;
 import com.sun.istack.internal.NotNull;
 import lombok.Getter;
 import org.apache.poi.ss.usermodel.Cell;
@@ -62,14 +64,15 @@ public class WriteSheetHelper {
 
     private void initCache() {
         int lastRowNum = writeSheetHolder.getCachedSheet().getLastRowNum();
-        Map<Integer, Head> headMap = writeSheetHolder.getExcelWriteHeadProperty().getHeadMap();
+        ExcelWriteHeadProperty excelWriteHeadProperty = writeSheetHolder.getExcelWriteHeadProperty();
+        Map<Integer, Head> headMap = excelWriteHeadProperty.getHeadMap();
         if (headNameIndexMap == null) {
             headNameIndexMap = new HashMap<>(headMap.size());
         } else {
             headNameIndexMap.clear();
         }
         if (fieldNameIndexMap == null) {
-            fieldNameIndexMap = new HashMap<>();
+            fieldNameIndexMap = new HashMap<>(headMap.size());
         } else {
             fieldNameIndexMap.clear();
         }
@@ -101,6 +104,12 @@ public class WriteSheetHelper {
                         headNameIndexMap.put(cellValue, j);
                     }
                 }
+            }
+        }
+        int columnIndexMax = headNameIndexMap.values().stream().max(Integer::compareTo).orElse(-1);
+        if (CollUtil.isNotEmpty(ExcelContext.getExtendHead())) {
+            for (String extendHead : ExcelContext.getExtendHead()) {
+                headNameIndexMap.put(extendHead, ++columnIndexMax);
             }
         }
     }

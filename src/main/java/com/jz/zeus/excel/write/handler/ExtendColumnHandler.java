@@ -10,6 +10,7 @@ import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
 import com.jz.zeus.excel.FieldInfo;
+import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.UnsafeFieldAccessor;
 import org.apache.poi.ss.usermodel.Cell;
@@ -31,7 +32,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
 
     private Field extendColumnField;
 
-    private boolean isClassHead;
+    private boolean isNotClassHead;
 
     private Map<String, Integer> extendHeadIndexMap = new HashMap<>();
 
@@ -63,25 +64,42 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
 
     @Override
     public void afterRowDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Integer relativeRowIndex, Boolean isHead) {
-        if (CollUtil.isEmpty(extendHead) || Boolean.TRUE.equals(isHead)
-                || !isClassHead || extendColumnField == null) {
+        if (CollUtil.isEmpty(extendHead) || isNotClassHead || extendColumnField == null) {
             return;
         }
+        if (Boolean.TRUE.equals(isHead)) {
+            createExtendHead(writeSheetHolder, row);
+            return;
+        }
+        writeExtendData(writeSheetHolder, row);
+    }
+
+    private void writeExtendData(WriteSheetHolder writeSheetHolder, Row row) {
         Object rawData = dataMap.get(row.getRowNum()-headRowNum);
         if (rawData == null) {
             return;
         }
-        Map<String, String> dynamicData = getDynamicData(rawData);
-        if (CollUtil.isEmpty(dynamicData)) {
+        Map<String, String> extendData = getExtendData(rawData);
+        if (CollUtil.isEmpty(extendData)) {
             return;
         }
-        dynamicData.forEach((head, data) -> {
-            Integer columnIndex = extendHeadIndexMap.get(head);
+        extendData.forEach((headName, data) -> {
+            Integer columnIndex = extendHeadIndexMap.get(headName);
             if (columnIndex != null) {
                 Cell cell = row.createCell(columnIndex);
                 cell.setCellValue(data);
             }
         });
+    }
+
+    private void createExtendHead(WriteSheetHolder writeSheetHolder, Row row) {
+        Map<Integer, Head> headMap = writeSheetHolder.excelWriteHeadProperty().getHeadMap();
+        int rawColumnNum = headMap.size();
+        int realColumnNum = rawColumnNum + extendHead.size();
+        for (int i = rawColumnNum; i < realColumnNum; i++) {
+            Cell cell = row.createCell(i);
+            cell.setCellValue(extendHead.get(i - rawColumnNum));
+        }
     }
 
     @Override
@@ -90,7 +108,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
             return;
         }
         ExcelWriteHeadProperty excelWriteHeadProperty = writeSheetHolder.getExcelWriteHeadProperty();
-        isClassHead = HeadKindEnum.CLASS.equals(excelWriteHeadProperty.getHeadKind());
+        isNotClassHead = HeadKindEnum.CLASS != excelWriteHeadProperty.getHeadKind();
         headRowNum = excelWriteHeadProperty.getHeadRowNumber();
 
         List<FieldInfo> fieldInfos = ClassUtils.getClassFieldInfo(writeSheetHolder.getClazz());
@@ -99,24 +117,25 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
             extendColumnField = fieldInfo.getField();
             extendColumnField.setAccessible(true);
             fieldAccessor = new UnsafeFieldAccessor(extendColumnField);
-            addHead(excelWriteHeadProperty, fieldInfo);
+            addHeadCache(excelWriteHeadProperty);
         });
+        ExcelContext.setExtendHead(extendHead);
+        ExcelContext.setHeadClass(writeSheetHolder.getClazz());
     }
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {}
 
-    private void addHead(ExcelWriteHeadProperty excelWriteHeadProperty, FieldInfo fieldInfo) {
-        Map<Integer, Head> headMap = excelWriteHeadProperty.getHeadMap();
+    private void addHeadCache(ExcelWriteHeadProperty excelWriteHeadProperty) {
         if (CollUtil.isEmpty(extendHead)) {
             extendHead = new ArrayList<>();
         }
         if (CollUtil.isNotEmpty(dataMap)) {
             Object rawData = dataMap.get(0);
             if (rawData != null) {
-                Map<String, String> dynamicData = getDynamicData(rawData);
-                if (CollUtil.isNotEmpty(dynamicData)) {
-                    extendHead.addAll(dynamicData.keySet());
+                Map<String, String> extendData = getExtendData(rawData);
+                if (CollUtil.isNotEmpty(extendData)) {
+                    extendHead.addAll(extendData.keySet());
                     extendHead = extendHead.stream().distinct()
                             .collect(Collectors.toList());
                 }
@@ -127,24 +146,11 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
         }
         int index = excelWriteHeadProperty.getHeadMap().size();
         for (String headName : extendHead) {
-            List<String> headNames = new ArrayList<>(headRowNum);
-            for (int i = 0; i < headRowNum; i++) {
-                headNames.add(headName);
-            }
-            extendHeadIndexMap.put(headName, index);
-            Head head = new Head(index, null, headNames, false, true);
-            head.setHeadFontProperty(fieldInfo.getHeadFontProperty());
-            head.setHeadStyleProperty(fieldInfo.getHeadStyleProperty());
-            head.setContentFontProperty(fieldInfo.getContentFontProperty());
-            head.setContentStyleProperty(fieldInfo.getContentStyleProperty());
-            head.setColumnWidthProperty(fieldInfo.getColumnWidthProperty());
-            head.setLoopMergeProperty(fieldInfo.getLoopMergeProperty());
-            headMap.put(index, head);
-            index++;
+            extendHeadIndexMap.put(headName, index++);
         }
     }
 
-    private Map<String, String> getDynamicData(Object rawData) {
+    private Map<String, String> getExtendData(Object rawData) {
         return (Map<String, String>) fieldAccessor.getObject(rawData);
     }
 

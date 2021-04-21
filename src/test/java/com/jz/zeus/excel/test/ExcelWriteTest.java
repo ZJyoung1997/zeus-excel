@@ -23,8 +23,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -117,7 +117,7 @@ public class ExcelWriteTest {
             map.put("自定义1", "12");
             map.put("自定义2", "jfak");
             map.put("自定义3", "集分宝");
-            demoData.setDynamicColumnMap(map);
+            demoData.setExtendColumnMap(map);
             dataList.add(demoData);
         }
         return dataList;
