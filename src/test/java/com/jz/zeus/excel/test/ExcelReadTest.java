@@ -10,7 +10,6 @@ import com.jz.zeus.excel.read.listener.NoModelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
 import com.jz.zeus.excel.test.listener.TestNoModelReadListener;
-import com.jz.zeus.excel.util.ExcelUtils;
 import lombok.SneakyThrows;
 
 import java.util.ArrayList;
@@ -23,8 +22,10 @@ import java.util.Map;
  */
 public class ExcelReadTest {
 
-//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx"
-    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\2545.xlsx";
 
     @SneakyThrows
     public static void main(String[] args) {
@@ -40,6 +41,12 @@ public class ExcelReadTest {
         read(path, readListener);
         Map<DemoData, List<CellErrorInfo>> errorRecord = readListener.getErrorRecord();
         if (CollUtil.isNotEmpty(errorRecord)) {
+            List<CellErrorInfo> errorInfoList = new ArrayList<>();
+            errorRecord.values().forEach(errorInfos -> errorInfoList.addAll(errorInfos));
+            ZeusExcel.write(path)
+                    .sheet("错误数据")
+                    .errorInfos(errorInfoList)
+                    .doWrite(DemoData.class, CollUtil.newArrayList(errorRecord.keySet()));
         }
 //        ExcelUtils.readAndWriteErrorMsg(readListener, path, "模板", DemoData.class);
 
