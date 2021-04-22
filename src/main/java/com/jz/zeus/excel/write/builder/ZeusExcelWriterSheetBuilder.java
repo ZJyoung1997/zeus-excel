@@ -126,9 +126,7 @@ public class ZeusExcelWriterSheetBuilder {
         if (CollUtil.isNotEmpty(dynamicHeads)) {
             sheetBuilder.registerWriteHandler(new DynamicHeadHandler(dynamicHeads));
         }
-        if (CollUtil.isNotEmpty(extendHead)) {
-            sheetBuilder.registerWriteHandler(new ExtendColumnHandler(datas, extendHead));
-        }
+        sheetBuilder.registerWriteHandler(new ExtendColumnHandler(datas, extendHead));
         if (CollUtil.isNotEmpty(multiRowHeadStyles)) {
             sheetBuilder.registerWriteHandler(new HeadStyleHandler()
                     .setMultiRowHeadCellStyles(multiRowHeadStyles));
@@ -163,7 +161,7 @@ public class ZeusExcelWriterSheetBuilder {
 
     /**
      * @param headNames   表头
-     * @param dataList    要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
+     * @param dataList    没有指定module时要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
      */
     public void doWrite(List<String> headNames, List<List<Object>> dataList) {
         ExcelContext.clear();
@@ -180,7 +178,6 @@ public class ZeusExcelWriterSheetBuilder {
                 excelWriter.finish();
             }
         }
-
     }
 
 }

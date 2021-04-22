@@ -23,8 +23,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -52,7 +52,7 @@ public class ExcelWriteTest {
                 .singleRowHeadStyles(styleProperties)
                 .extendHead(Arrays.asList("扩展1", "扩展2"))
                 .validationInfos(getValidationInfo())
-                .errorInfos(errorInfos)
+//                .errorInfos(errorInfos)
                 .doWrite(DemoData.class, getDataList(10));
 
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");

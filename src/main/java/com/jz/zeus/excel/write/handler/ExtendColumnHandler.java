@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ListUtil;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
@@ -17,7 +18,6 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +57,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
                 dataMap.put(i, dataList.get(i));
             }
         }
-        if (CollUtil.isNotEmpty(extendHead)) {
-            this.extendHead = new ArrayList<>(extendHead);
-        }
+        this.extendHead = ListUtil.toList(extendHead);
     }
 
     @Override
@@ -104,7 +102,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
 
     @Override
     public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        if (CollUtil.isEmpty(extendHead) && CollUtil.isEmpty(dataMap)) {
+        if (CollUtil.isEmpty(dataMap)) {
             return;
         }
         ExcelWriteHeadProperty excelWriteHeadProperty = writeSheetHolder.getExcelWriteHeadProperty();
@@ -127,9 +125,6 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {}
 
     private void addHeadCache(ExcelWriteHeadProperty excelWriteHeadProperty) {
-        if (CollUtil.isEmpty(extendHead)) {
-            extendHead = new ArrayList<>();
-        }
         if (CollUtil.isNotEmpty(dataMap)) {
             Object rawData = dataMap.get(0);
             if (rawData != null) {

@@ -1,7 +1,6 @@
 package com.jz.zeus.excel.read.listener;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.enums.HeadKindEnum;
@@ -14,6 +13,7 @@ import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.read.metadata.holder.ReadRowHolder;
 import com.alibaba.excel.read.metadata.property.ExcelReadHeadProperty;
 import com.jz.zeus.excel.CellErrorInfo;
+import com.jz.zeus.excel.DynamicHead;
 import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.exception.DataConvertException;
 import com.jz.zeus.excel.util.ClassUtils;
@@ -91,6 +91,15 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
      * key 为列索引、value 为表头
      */
     private Map<Integer, String> extendColumnIndexMap = new HashMap<>();
+
+    /**
+     * 动态表头
+     */
+    @Getter
+    private List<DynamicHead> dynamicHeads = new ArrayList<>();
+
+    @Getter
+    private List<String> headNames;
 
     /**
      * Excel 中读取到的数据
@@ -171,11 +180,12 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     @Override
     public void invokeHead(Map<Integer, CellData> headMap, AnalysisContext analysisContext) {
         headError = false;
+        headNames = headMap.values().stream().map(CellData::toString).collect(Collectors.toList());
         headCheck(headMap, analysisContext);
         if (StrUtil.isNotBlank(this.headErrorMsg)) {
             headError = true;
         }
-        initHeadCache(headMap, analysisContext.readSheetHolder().excelReadHeadProperty());
+        initCache(headMap, analysisContext.readSheetHolder().excelReadHeadProperty());
     }
 
     /**
@@ -219,11 +229,13 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         if (CollUtil.isEmpty(cellDataMap)) {
             return;
         }
-        Map<String, String> extendData = new HashMap<>();
-        cellDataMap.forEach((columnIndex, cell) -> {
-            String extendHeadName = extendColumnIndexMap.get(columnIndex);
-            if (StrUtil.isNotBlank(extendHeadName)) {
+        Map<String, String> extendData = new LinkedHashMap<>();
+        extendColumnIndexMap.forEach((columnIndex, extendHeadName) -> {
+            Cell cell = cellDataMap.get(columnIndex);
+            if (cell != null) {
                 extendData.put(extendHeadName, cell.toString());
+            } else {
+                extendData.put(extendHeadName, null);
             }
         });
 
@@ -340,9 +352,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     }
 
     /**
-     * 获取错误数据及其错误信息，若要将其作为Excel的数据源创建新的Excel，并显示错误信息时，
-     * 需修改错误信息的行索引
-     * @return
+     * 错误数据及其错误信息，可以将其直接写入新的Excel
      */
     public Pair<List<T>, List<CellErrorInfo>> getErrorRecord() {
         if (CollUtil.isEmpty(errorDataMap)) {
@@ -388,9 +398,12 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
                 });
     }
 
-    protected void initHeadCache(Map<Integer, CellData> headMap, ExcelReadHeadProperty excelHeadPropertyData) {
+    protected void initCache(Map<Integer, CellData> headMap, ExcelReadHeadProperty excelHeadPropertyData) {
         fieldColumnIndexMap.clear();
         extendColumnIndexMap.clear();
+        dynamicHeads.clear();
+        errorDataMap.clear();
+        errorInfoMap.clear();
         extendField = null;
 
         readAfterHeadRowNum = excelHeadPropertyData.getHeadRowNumber();
@@ -409,6 +422,10 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
                 columnIndexSet.add(columnIndex);
                 if (StrUtil.isNotBlank(head.getFieldName())) {
                     fieldColumnIndexMap.put(head.getFieldName(), columnIndex);
+                    String realHeadName = headMap.get(columnIndex).toString();
+                    if (head.getHeadNameList().stream().noneMatch(headName -> headName.equals(realHeadName))) {
+                        dynamicHeads.add(DynamicHead.buildNewName(head.getFieldName(), realHeadName));
+                    }
                 }
             });
         }

@@ -82,7 +82,7 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
             return;
         }
         ExcelWriteHeadProperty excelWriteHeadProperty = writeSheetHolder.getExcelWriteHeadProperty();
-        Class headClass = excelWriteHeadProperty.getClass();
+        Class headClass = excelWriteHeadProperty.getHeadClazz();
         Map<Integer, Head> headMap = excelWriteHeadProperty.getHeadMap();
         Sheet sheet = writeSheetHolder.getSheet();
         int rawColumnNum = headMap.size();

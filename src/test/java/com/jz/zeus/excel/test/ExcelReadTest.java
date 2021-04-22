@@ -20,8 +20,8 @@ import java.util.List;
  */
 public class ExcelReadTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 //    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
 //    private static String path = "C:\\Users\\Administrator\\Desktop\\2545.xlsx";
 
@@ -41,6 +41,7 @@ public class ExcelReadTest {
         if (CollUtil.isNotEmpty(errorRecord.getKey())) {
             ZeusExcel.write(path)
                     .sheet("错误数据")
+                    .dynamicHeads(readListener.getDynamicHeads())
                     .errorInfos(errorRecord.getValue())
                     .doWrite(DemoData.class, errorRecord.getKey());
         }
