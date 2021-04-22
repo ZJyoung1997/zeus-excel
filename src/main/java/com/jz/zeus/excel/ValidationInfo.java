@@ -93,6 +93,13 @@ public class ValidationInfo {
         return null;
     }
 
+    public static ValidationInfo buildColumnByField(Class<?> clazz, String fieldName, Integer rowNum, List<String> options) {
+        if (ClassUtils.getFieldInfoByFieldName(clazz, fieldName).isPresent()) {
+            return buildColumn(fieldName, null, null, rowNum, options);
+        }
+        return null;
+    }
+
     public static ValidationInfo buildColumn(String fieldName, String headName, Integer columnIndex, Integer rowNum, String... options) {
         if (ArrayUtil.isEmpty(options)) {
             return buildColumn(fieldName, headName, columnIndex, rowNum, new ArrayList<>(0));
