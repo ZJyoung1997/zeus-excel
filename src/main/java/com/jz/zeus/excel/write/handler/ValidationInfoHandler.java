@@ -57,7 +57,6 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             } else {
                 ClassUtils.getValidationInfoInfos(writeSheetHolder.getClazz())
                         .forEach(boxInfo -> {
-                            List<Object> li = validationInfoList.stream().filter(info -> Objects.equals(boxInfo, info)).collect(Collectors.toList());
                             if (validationInfoList.stream().noneMatch(info -> Objects.equals(boxInfo, info))) {
                                 validationInfoList.add(boxInfo);
                             }
@@ -72,7 +71,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         Integer headRowNum = writeSheetHelper.getHeadRowNum();
         Workbook workbook = writeWorkbookHolder.getWorkbook();
         Sheet sheet = writeSheetHolder.getSheet();
-        validationInfoList.forEach(boxInfo -> {
+        int length = validationInfoList.size();
+        for (int i = 0; i < length; i++) {
+            ValidationInfo boxInfo = validationInfoList.get(i);
             Integer rowIndex = boxInfo.getRowIndex();
             Integer columnIndex = boxInfo.getColumnIndex();
             if (columnIndex == null) {
@@ -83,34 +84,27 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                 }
             }
             if (rowIndex == null && columnIndex != null) {
-                addValidationData(workbook, sheet, headRowNum, headRowNum+boxInfo.getRowNum(), columnIndex, columnIndex, boxInfo.getOptions());
+                addValidationData(workbook, sheet, headRowNum, headRowNum+boxInfo.getRowNum(), columnIndex, columnIndex, boxInfo.getOptions(), i);
             } else if (rowIndex != null && columnIndex == null) {
-                addValidationData(workbook, sheet, rowIndex, rowIndex, 0, boxInfo.getColumnNum(), boxInfo.getOptions());
+                addValidationData(workbook, sheet, rowIndex, rowIndex, 0, boxInfo.getColumnNum(), boxInfo.getOptions(), i);
             } else if (rowIndex != null && columnIndex != null) {
-                addValidationData(workbook, sheet, rowIndex, rowIndex, columnIndex, columnIndex, boxInfo.getOptions());
+                addValidationData(workbook, sheet, rowIndex, rowIndex, columnIndex, columnIndex, boxInfo.getOptions(), i);
             }
-        });
+        }
     }
 
-    private void addValidationData(Workbook workbook, Sheet sheet, int firstRow, int lastRow, int firstCol, int lastCol, List<String> options) {
+    private void addValidationData(Workbook workbook, Sheet sheet, int firstRow, int lastRow, int firstCol, int lastCol, List<String> options, int index) {
         if (CollUtil.isEmpty(options)) {
             return;
         }
-        String hiddenSheetName = "hidden".concat(String.valueOf(System.currentTimeMillis()));
-        Sheet hiddenSheet = workbook.createSheet(hiddenSheetName);
-//        workbook.setSheetHidden(workbook.getSheetIndex(hiddenSheet), true);
-        int optionsSize = options.size();
-        for (int i = 0; i < optionsSize; i++) {
-            hiddenSheet.createRow(optionsSize + i)
-                    .createCell(firstCol).setCellValue(options.get(i));
-        }
-        Name categoryName = workbook.createName();
-        categoryName.setNameName(hiddenSheetName);
-        categoryName.setRefersToFormula(hiddenSheetName + "!A2:A" + lastRow);
 
         DataValidationHelper helper = sheet.getDataValidationHelper();
-//        DataValidationConstraint constraint = helper.createExplicitListConstraint(options.toArray(new String[0]));
-        DataValidationConstraint constraint = helper.createFormulaListConstraint(hiddenSheetName);
+        DataValidationConstraint constraint = null;
+        if (options.size() > 10) {
+            constraint = helper.createFormulaListConstraint(addHiddenValidationData(workbook, firstCol, options, index));
+        } else {
+            constraint = helper.createExplicitListConstraint(options.toArray(new String[0]));
+        }
         DataValidation dataValidation = helper.createValidation(constraint,
                 new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol));
         if (dataValidation instanceof XSSFDataValidation) {
@@ -120,6 +114,28 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             dataValidation.setSuppressDropDownArrow(false);
         }
         sheet.addValidationData(dataValidation);
+    }
+
+    private String addHiddenValidationData(Workbook workbook, Integer columnIndex, List<String> options, int index) {
+        String hiddenSheetName = "hidden".concat(String.valueOf(System.currentTimeMillis() + index));
+        Sheet hiddenSheet = workbook.createSheet(hiddenSheetName);
+        workbook.setSheetHidden(workbook.getSheetIndex(hiddenSheet), true);
+        int optionsSize = options.size();
+        for (int i = 0; i < optionsSize; i++) {
+            hiddenSheet.createRow(i)
+                    .createCell(columnIndex).setCellValue(options.get(i));
+        }
+
+        String s1 = hiddenSheet.getRow(0).getCell(columnIndex).getAddress().formatAsString();
+        String s2 = hiddenSheet.getRow(optionsSize-1).getCell(columnIndex).getAddress().formatAsString();
+        Name categoryName = workbook.createName();
+        categoryName.setNameName(hiddenSheetName);
+        String refersToFormula = StrUtil.builder().append(hiddenSheetName)
+                .append("!$").append(s1.charAt(0)).append('$')
+                .append(s1.charAt(1)).append(":$").append(s2.charAt(0))
+                .append('$').append(s2.charAt(1)).toString();
+        categoryName.setRefersToFormula(refersToFormula);
+        return hiddenSheetName;
     }
 
     public void addValidationInfo(ValidationInfo validationInfo) {

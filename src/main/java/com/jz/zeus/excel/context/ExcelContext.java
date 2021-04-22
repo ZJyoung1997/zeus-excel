@@ -1,8 +1,6 @@
 package com.jz.zeus.excel.context;
 
-import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.map.MapUtil;
-import com.jz.zeus.excel.DynamicHead;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -35,16 +33,16 @@ public class ExcelContext {
         return result;
     }
 
-    public static void setDynamicHead(List<DynamicHead> dynamicHeads) {
-        EXCEL_CONTEXT.get().put(DYNAMIC_HEAD, dynamicHeads);
+    public static void setDynamicHead(Map<String, Integer> dynamicHeadIndexMap) {
+        EXCEL_CONTEXT.get().put(DYNAMIC_HEAD, dynamicHeadIndexMap);
     }
 
-    public static List<DynamicHead> getDynamicHead() {
-        List<DynamicHead> dynamicHeads = (List<DynamicHead>) EXCEL_CONTEXT.get().get(DYNAMIC_HEAD);
-        if (dynamicHeads == null) {
-            return CollUtil.newArrayList();
+    public static Map<String, Integer> getDynamicHead() {
+        Map<String, Integer> dynamicHeadIndexMap = (Map<String, Integer>) EXCEL_CONTEXT.get().get(DYNAMIC_HEAD);
+        if (dynamicHeadIndexMap == null) {
+            return MapUtil.newHashMap();
         }
-        return dynamicHeads;
+        return dynamicHeadIndexMap;
     }
 
     public static void setHeadClass(Class<?> headClass) {

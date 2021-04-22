@@ -2,6 +2,7 @@ package com.jz.zeus.excel.write.helper;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.map.MapUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
@@ -110,6 +111,9 @@ public class WriteSheetHelper {
             for (String extendHead : ExcelContext.getExtendHead()) {
                 headNameIndexMap.put(extendHead, ++columnIndexMax);
             }
+        }
+        if (MapUtil.isNotEmpty(ExcelContext.getDynamicHead())) {
+            headNameIndexMap.putAll(ExcelContext.getDynamicHead());
         }
     }
 

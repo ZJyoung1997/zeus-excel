@@ -33,12 +33,16 @@ public class DynamicHeadHandler extends AbstractCellWriteHandler {
 
     private Map<Integer, DynamicHead> indexHeadMap;
 
+    Map<String, Integer> dynamicHeadIndexMap;
+
     public DynamicHeadHandler(List<DynamicHead> dynamicHeads) {
         isEmpty = CollUtil.isEmpty(dynamicHeads);
         if (isEmpty) {
             return;
         }
-        ExcelContext.setDynamicHead(dynamicHeads);
+
+        dynamicHeadIndexMap = new HashMap<>(dynamicHeads.size());
+        ExcelContext.setDynamicHead(dynamicHeadIndexMap);
 
         fieldHeadMap = new HashMap<>();
         headNameMap = new HashMap<>();
@@ -65,9 +69,11 @@ public class DynamicHeadHandler extends AbstractCellWriteHandler {
         DynamicHead dynamicHead = indexHeadMap.get(columnIndex);
         if (columnIndex != null && dynamicHead != null && Objects.equals(dynamicHead.getRowIndex(), rowIndex)) {
             cell.setCellValue(dynamicHead.getFinalHeadName(cell.toString()));
+            dynamicHeadIndexMap.put(cell.toString(), cell.getColumnIndex());
         } else if (StrUtil.isNotBlank(fieldName) && (dynamicHead = fieldHeadMap.get(fieldName)) != null
                 && Objects.equals(dynamicHead.getRowIndex(), rowIndex)) {
             cell.setCellValue(dynamicHead.getFinalHeadName(cell.toString()));
+            dynamicHeadIndexMap.put(cell.toString(), cell.getColumnIndex());
         } else if (CollUtil.isNotEmpty(headNames)) {
             for (int i = 0; i < headNames.size(); i++) {
                 dynamicHead = headNameMap.get(headNames.get(i));
@@ -75,6 +81,7 @@ public class DynamicHeadHandler extends AbstractCellWriteHandler {
                     continue;
                 }
                 cell.setCellValue(dynamicHead.getFinalHeadName(cell.toString()));
+                dynamicHeadIndexMap.put(cell.toString(), cell.getColumnIndex());
             }
         }
 
