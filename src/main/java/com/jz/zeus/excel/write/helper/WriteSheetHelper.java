@@ -7,7 +7,6 @@ import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
 import com.jz.zeus.excel.context.ExcelContext;
-import com.sun.istack.internal.NotNull;
 import lombok.Getter;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
@@ -43,12 +42,12 @@ public class WriteSheetHelper {
     private WriteSheetHolder writeSheetHolder;
 
 
-    public WriteSheetHelper(@NotNull WriteSheetHolder writeSheetHolder) {
+    public WriteSheetHelper(WriteSheetHolder writeSheetHolder) {
         this(writeSheetHolder, null);
     }
 
 
-    public WriteSheetHelper(@NotNull WriteSheetHolder writeSheetHolder, Integer headRowNum) {
+    public WriteSheetHelper(WriteSheetHolder writeSheetHolder, Integer headRowNum) {
         Assert.notNull(writeSheetHolder, "WriteSheetHolder can't be null");
         this.headRowNum = headRowNum;
         this.writeSheetHolder = writeSheetHolder;
