@@ -43,11 +43,22 @@ public class ValidationInfo {
         return buildColumn(null, null, columnIndex, null, options);
     }
 
+    public static ValidationInfo buildColumnByIndex(int columnIndex, List<String> options) {
+        return buildColumn(null, null, columnIndex, null, options);
+    }
+
     public static ValidationInfo buildColumnByIndex(int columnIndex, Integer rowNum, String... options) {
         return buildColumn(null, null, columnIndex, rowNum, options);
     }
 
+    public static ValidationInfo buildColumnByIndex(int columnIndex, Integer rowNum, List<String> options) {
+        return buildColumn(null, null, columnIndex, rowNum, options);
+    }
+
     public static ValidationInfo buildColumnByHead(String headName, String... options) {
+        return buildColumn(null, headName, null, null, options);
+    }
+    public static ValidationInfo buildColumnByHead(String headName, List<String> options) {
         return buildColumn(null, headName, null, null, options);
     }
 
@@ -55,11 +66,23 @@ public class ValidationInfo {
         return buildColumn(null, headName, null, rowNum, options);
     }
 
+    public static ValidationInfo buildColumnByHead(String headName, Integer rowNum, List<String> options) {
+        return buildColumn(null, headName, null, rowNum, options);
+    }
+
     public static ValidationInfo buildColumnByField(String fieldName, String... options) {
         return buildColumn(fieldName, null, null, null, options);
     }
 
+    public static ValidationInfo buildColumnByField(String fieldName, List<String> options) {
+        return buildColumn(fieldName, null, null, null, options);
+    }
+
     public static ValidationInfo buildColumnByField(String fieldName, Integer rowNum, String... options) {
+        return buildColumn(fieldName, null, null, rowNum, options);
+    }
+
+    public static ValidationInfo buildColumnByField(String fieldName, Integer rowNum, List<String> options) {
         return buildColumn(fieldName, null, null, rowNum, options);
     }
 
