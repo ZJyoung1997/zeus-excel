@@ -66,7 +66,7 @@ public class ExcelWriteTest {
                 .singleRowHeadStyles(styleProperties)
                 .extendHead(Arrays.asList("扩展1", "扩展2"))
                 .validationInfos(getValidationInfo()).build(DemoData.class, getDataList(10));
-        WriteSheet writeSheet2 = ZeusExcel.writeSheet(0, "模板")
+        WriteSheet writeSheet2 = ZeusExcel.writeSheet(1, "模板1")
                 .build(DemoData.class, getDataList(3));
         excelWriter.write(getDataList(10), writeSheet1);
         excelWriter.write(getDataList(3), writeSheet2);
