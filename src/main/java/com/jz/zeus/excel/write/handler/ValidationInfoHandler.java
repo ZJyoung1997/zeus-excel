@@ -1,13 +1,13 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.Filter;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.write.handler.AbstractSheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.jz.zeus.excel.ValidationInfo;
+import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.write.helper.WriteSheetHelper;
 import org.apache.poi.ss.usermodel.*;
@@ -24,6 +24,8 @@ import java.util.Objects;
  */
 public class ValidationInfoHandler extends AbstractSheetWriteHandler {
 
+    private ExcelContext excelContext;
+
     private Integer headRowNum;
 
     private WriteSheetHelper writeSheetHelper;
@@ -33,11 +35,12 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
      */
     private List<ValidationInfo> validationInfoList;
 
-    public ValidationInfoHandler(List<ValidationInfo> validationInfoList) {
-        this(null, validationInfoList);
+    public ValidationInfoHandler(ExcelContext excelContext, List<ValidationInfo> validationInfoList) {
+        this(excelContext, null, validationInfoList);
     }
 
-    public ValidationInfoHandler(Integer headRowNum, List<ValidationInfo> validationInfoList) {
+    public ValidationInfoHandler(ExcelContext excelContext, Integer headRowNum, List<ValidationInfo> validationInfoList) {
+        this.excelContext = excelContext;
         this.headRowNum = headRowNum;
         this.validationInfoList = validationInfoList;
     }
@@ -63,7 +66,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         if (CollUtil.isEmpty(validationInfoList)) {
             return;
         }
-        writeSheetHelper = new WriteSheetHelper(writeSheetHolder, headRowNum);
+        writeSheetHelper = new WriteSheetHelper(excelContext, writeSheetHolder, headRowNum);
 
         Integer headRowNum = writeSheetHelper.getHeadRowNum();
         Workbook workbook = writeWorkbookHolder.getWorkbook();

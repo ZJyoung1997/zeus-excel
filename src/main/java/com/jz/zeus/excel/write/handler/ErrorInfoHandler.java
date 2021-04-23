@@ -9,6 +9,7 @@ import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.jz.zeus.excel.CellErrorInfo;
+import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.helper.WriteSheetHelper;
 import lombok.Setter;
@@ -26,6 +27,8 @@ import java.util.stream.Collectors;
  */
 public class ErrorInfoHandler extends AbstractCellWriteHandler implements SheetWriteHandler {
 
+    private ExcelContext excelContext;
+
     private WriteSheetHelper writeSheetHelper;
 
     private Integer headRowNum;
@@ -38,15 +41,16 @@ public class ErrorInfoHandler extends AbstractCellWriteHandler implements SheetW
 
     private Map<Integer, List<CellErrorInfo>> rowErrorInfoMap;
 
-    public ErrorInfoHandler(List<CellErrorInfo> errorInfoList) {
-        this(null, errorInfoList);
+    public ErrorInfoHandler(ExcelContext excelContext, List<CellErrorInfo> errorInfoList) {
+        this(excelContext, null, errorInfoList);
     }
 
     /**
      * @param headRowNum     仅对用表头名作为列坐标时有影响，有误会导致加载不到对应表头，导致对应单元格无法添加错误信息
      * @param errorInfoList
      */
-    public ErrorInfoHandler(Integer headRowNum, List<CellErrorInfo> errorInfoList) {
+    public ErrorInfoHandler(ExcelContext excelContext, Integer headRowNum, List<CellErrorInfo> errorInfoList) {
+        this.excelContext = excelContext;
         this.headRowNum = headRowNum;
         if (CollUtil.isNotEmpty(errorInfoList)) {
             this.rowErrorInfoMap = errorInfoList.stream()
@@ -84,7 +88,7 @@ public class ErrorInfoHandler extends AbstractCellWriteHandler implements SheetW
         if (CollUtil.isEmpty(rowErrorInfoMap)) {
             return;
         }
-        writeSheetHelper = new WriteSheetHelper(writeSheetHolder, headRowNum);
+        writeSheetHelper = new WriteSheetHelper(excelContext, writeSheetHolder, headRowNum);
     }
 
     @Override

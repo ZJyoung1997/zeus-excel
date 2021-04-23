@@ -24,6 +24,8 @@ public class WriteSheetHelper {
 
     private static final Integer DEFAULT_HEAD_ROW_NUM = 1;
 
+    private ExcelContext excelContext;
+
     /**
      * 表头行数，一般不用设置，调用initHeadRowNum()方法会自动判断
      */
@@ -43,13 +45,14 @@ public class WriteSheetHelper {
     private WriteSheetHolder writeSheetHolder;
 
 
-    public WriteSheetHelper(WriteSheetHolder writeSheetHolder) {
-        this(writeSheetHolder, null);
+    public WriteSheetHelper(ExcelContext excelContext, WriteSheetHolder writeSheetHolder) {
+        this(excelContext, writeSheetHolder, null);
     }
 
 
-    public WriteSheetHelper(WriteSheetHolder writeSheetHolder, Integer headRowNum) {
+    public WriteSheetHelper(ExcelContext excelContext, WriteSheetHolder writeSheetHolder, Integer headRowNum) {
         Assert.notNull(writeSheetHolder, "WriteSheetHolder can't be null");
+        this.excelContext = excelContext;
         this.headRowNum = headRowNum;
         this.writeSheetHolder = writeSheetHolder;
         initCache();
@@ -107,13 +110,13 @@ public class WriteSheetHelper {
             }
         }
         int columnIndexMax = headNameIndexMap.values().stream().max(Integer::compareTo).orElse(-1);
-        if (CollUtil.isNotEmpty(ExcelContext.getExtendHead())) {
-            for (String extendHead : ExcelContext.getExtendHead()) {
+        if (CollUtil.isNotEmpty(excelContext.getExtendHead())) {
+            for (String extendHead : excelContext.getExtendHead()) {
                 headNameIndexMap.put(extendHead, ++columnIndexMax);
             }
         }
-        if (MapUtil.isNotEmpty(ExcelContext.getDynamicHead())) {
-            headNameIndexMap.putAll(ExcelContext.getDynamicHead());
+        if (MapUtil.isNotEmpty(excelContext.getDynamicHead())) {
+            headNameIndexMap.putAll(excelContext.getDynamicHead());
         }
     }
 

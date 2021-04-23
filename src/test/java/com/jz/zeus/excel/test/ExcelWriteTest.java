@@ -1,11 +1,15 @@
 package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.ExcelWriter;
+import com.alibaba.excel.write.metadata.WriteSheet;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DynamicHead;
 import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.ZeusExcel;
+import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.test.data.DemoData;
+import com.jz.zeus.excel.write.builder.ZeusExcelWriterSheetBuilder;
 import com.jz.zeus.excel.write.handler.ErrorInfoHandler;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import lombok.SneakyThrows;
@@ -46,14 +50,28 @@ public class ExcelWriteTest {
             add(CellErrorInfo.buildByHead(7, "destPlus（选填）", "金额有误"));
         }};
 
-        ZeusExcel.write(path)
-                .sheet("模板")
+//        ZeusExcel.write(path)
+//                .sheet("模板")
+//                .dynamicHeads(dynamicHeads)
+//                .singleRowHeadStyles(styleProperties)
+//                .extendHead(Arrays.asList("扩展1", "扩展2"))
+//                .validationInfos(getValidationInfo())
+////                .errorInfos(errorInfos)
+//                .doWrite(DemoData.class, getDataList(10));
+
+        ExcelWriter excelWriter = ZeusExcel.write(path).build();
+
+        WriteSheet writeSheet1 = ZeusExcel.writeSheet(0, "模板")
                 .dynamicHeads(dynamicHeads)
                 .singleRowHeadStyles(styleProperties)
                 .extendHead(Arrays.asList("扩展1", "扩展2"))
-                .validationInfos(getValidationInfo())
-//                .errorInfos(errorInfos)
-                .doWrite(DemoData.class, getDataList(10));
+                .validationInfos(getValidationInfo()).build(DemoData.class, getDataList(10));
+        WriteSheet writeSheet2 = ZeusExcel.writeSheet(0, "模板")
+                .build(DemoData.class, getDataList(3));
+        excelWriter.write(getDataList(10), writeSheet1);
+        excelWriter.write(getDataList(3), writeSheet2);
+        excelWriter.finish();
+
 
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
         System.out.println("写入Excel后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -66,7 +84,7 @@ public class ExcelWriteTest {
         EasyExcel.write(outputStream)
                 .withTemplate(inputStream)
                 .sheet("模板")
-                .registerWriteHandler(new ErrorInfoHandler(cellErrorInfoList))
+                .registerWriteHandler(new ErrorInfoHandler(new ExcelContext(), cellErrorInfoList))
                 .doWrite(Collections.emptyList());
         inputStream.close();
         outputStream.close();

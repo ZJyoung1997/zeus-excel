@@ -5,11 +5,8 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.handler.AbstractCellWriteHandler;
-import com.alibaba.excel.write.handler.AbstractSheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
-import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
-import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
 import com.jz.zeus.excel.DynamicHead;
 import com.jz.zeus.excel.context.ExcelContext;
 import org.apache.poi.ss.usermodel.Cell;
@@ -25,6 +22,8 @@ import java.util.Objects;
  */
 public class DynamicHeadHandler extends AbstractCellWriteHandler {
 
+    private ExcelContext excelContext;
+
     private boolean isEmpty;
 
     private Map<String, DynamicHead> fieldHeadMap;
@@ -35,14 +34,15 @@ public class DynamicHeadHandler extends AbstractCellWriteHandler {
 
     Map<String, Integer> dynamicHeadIndexMap;
 
-    public DynamicHeadHandler(List<DynamicHead> dynamicHeads) {
+    public DynamicHeadHandler(ExcelContext excelContext, List<DynamicHead> dynamicHeads) {
+        this.excelContext = excelContext;
         isEmpty = CollUtil.isEmpty(dynamicHeads);
         if (isEmpty) {
             return;
         }
 
         dynamicHeadIndexMap = new HashMap<>(dynamicHeads.size());
-        ExcelContext.setDynamicHead(dynamicHeadIndexMap);
+        excelContext.setDynamicHead(dynamicHeadIndexMap);
 
         fieldHeadMap = new HashMap<>();
         headNameMap = new HashMap<>();

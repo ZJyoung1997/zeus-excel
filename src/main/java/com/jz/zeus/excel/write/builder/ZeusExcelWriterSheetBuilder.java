@@ -99,60 +99,60 @@ public class ZeusExcelWriterSheetBuilder {
     }
 
     public WriteSheet build(List<List<String>> headNames) {
+        ExcelContext excelContext = new ExcelContext();
         ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
         sheetBuilder.head(headNames);
         if (CollUtil.isNotEmpty(validationInfos)) {
-            sheetBuilder.registerWriteHandler(new ValidationInfoHandler(validationInfos));
+            sheetBuilder.registerWriteHandler(new ValidationInfoHandler(excelContext, validationInfos));
         }
         if (CollUtil.isNotEmpty(errorInfos)) {
-            sheetBuilder.registerWriteHandler(new ErrorInfoHandler(errorInfos));
+            sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
         }
         if (CollUtil.isNotEmpty(multiRowHeadStyles)) {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler().setMultiRowHeadCellStyles(multiRowHeadStyles));
+            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext).setMultiRowHeadCellStyles(multiRowHeadStyles));
         } else if (CollUtil.isNotEmpty(singleRowHeadStyles)) {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler(singleRowHeadStyles));
+            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, singleRowHeadStyles));
         } else {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler(headStyle));
+            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyle));
         }
         return sheetBuilder.build();
     }
 
     public WriteSheet build(Class headClass, List datas) {
+        ExcelContext excelContext = new ExcelContext();
         ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
         sheetBuilder.head(headClass);
         if (CollUtil.isNotEmpty(excludeColumnFiledNames)) {
             sheetBuilder.excludeColumnFiledNames(excludeColumnFiledNames);
         }
         if (CollUtil.isNotEmpty(dynamicHeads)) {
-            sheetBuilder.registerWriteHandler(new DynamicHeadHandler(dynamicHeads));
+            sheetBuilder.registerWriteHandler(new DynamicHeadHandler(excelContext, dynamicHeads));
         }
-        sheetBuilder.registerWriteHandler(new ExtendColumnHandler(datas, extendHead));
+        sheetBuilder.registerWriteHandler(new ExtendColumnHandler(excelContext, datas, extendHead));
         if (CollUtil.isNotEmpty(multiRowHeadStyles)) {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler()
+            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext)
                     .setMultiRowHeadCellStyles(multiRowHeadStyles));
         } else if (CollUtil.isNotEmpty(singleRowHeadStyles)) {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler(singleRowHeadStyles));
+            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, singleRowHeadStyles));
         } else {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler(headStyle));
+            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyle));
         }
         if (CollUtil.isNotEmpty(validationInfos)) {
-            sheetBuilder.registerWriteHandler(new ValidationInfoHandler(validationInfos));
+            sheetBuilder.registerWriteHandler(new ValidationInfoHandler(excelContext, validationInfos));
         }
         if (CollUtil.isNotEmpty(errorInfos)) {
-            sheetBuilder.registerWriteHandler(new ErrorInfoHandler(errorInfos));
+            sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
         }
         return sheetBuilder.build();
     }
 
     public <T> void doWrite(Class<T> headClass, List<? extends T> datas) {
-        ExcelContext.clear();
         if (excelWriter == null) {
             throw new ExcelGenerateException("Must use 'ZeusExcel.write().sheet()' to call this method");
         }
         try {
             excelWriter.write(datas, build(headClass, datas));
         } finally {
-            ExcelContext.clear();
             if (excelWriter != null) {
                 excelWriter.finish();
             }
@@ -164,7 +164,6 @@ public class ZeusExcelWriterSheetBuilder {
      * @param dataList    没有指定module时要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
      */
     public void doWrite(List<String> headNames, List<List<Object>> dataList) {
-        ExcelContext.clear();
         if (excelWriter == null) {
             throw new ExcelGenerateException("Must use 'ZeusExcel.write().sheet()' to call this method");
         }
@@ -173,7 +172,6 @@ public class ZeusExcelWriterSheetBuilder {
             headNames.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
             excelWriter.write(dataList, build(heads));
         } finally {
-            ExcelContext.clear();
             if (excelWriter != null) {
                 excelWriter.finish();
             }

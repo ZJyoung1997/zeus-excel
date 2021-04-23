@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
  */
 public class ExtendColumnHandler extends AbstractRowWriteHandler implements SheetWriteHandler {
 
+    private ExcelContext excelContext;
+
     private Field extendColumnField;
 
     private boolean isNotClassHead;
@@ -50,7 +52,8 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
 
     private UnsafeFieldAccessor fieldAccessor;
 
-    public ExtendColumnHandler(List dataList, List<String> extendHead) {
+    public ExtendColumnHandler(ExcelContext excelContext, List dataList, List<String> extendHead) {
+        this.excelContext = excelContext;
         dataMap = new HashMap<>(dataList == null ? 0 : dataList.size());
         if (CollUtil.isNotEmpty(dataList)) {
             for (int i = 0; i < dataList.size(); i++) {
@@ -117,8 +120,8 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
             fieldAccessor = new UnsafeFieldAccessor(extendColumnField);
             addHeadCache(excelWriteHeadProperty);
         });
-        ExcelContext.setExtendHead(extendHead);
-        ExcelContext.setHeadClass(writeSheetHolder.getClazz());
+        excelContext.setExtendHead(extendHead);
+        excelContext.setHeadClass(writeSheetHolder.getClazz());
     }
 
     @Override

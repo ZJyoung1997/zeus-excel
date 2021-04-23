@@ -25,6 +25,8 @@ import java.util.Map;
  */
 public class HeadStyleHandler extends AbstractRowWriteHandler {
 
+    private ExcelContext excelContext;
+
     /**
      * 是否自适应列宽，默认开启
      */
@@ -48,19 +50,29 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
      * 若使用class表示表头且指定样式时，优先使用自定义样式，若无则使用class指定样式，若没有指定任何样式则使用默认样式。
      * 若是用list自定义表头则赋予默认表头样式
      */
-    public HeadStyleHandler() {}
+    private HeadStyleHandler() {}
+
+    /**
+     * 若使用class表示表头且指定样式时，优先使用自定义样式，若无则使用class指定样式，若没有指定任何样式则使用默认样式。
+     * 若是用list自定义表头则赋予默认表头样式
+     */
+    public HeadStyleHandler(ExcelContext excelContext) {
+        this.excelContext = excelContext;
+    }
 
     /**
      * 为所有设置表头同一样式
      */
-    public HeadStyleHandler(CellStyleProperty allHeadStyle) {
+    public HeadStyleHandler(ExcelContext excelContext, CellStyleProperty allHeadStyle) {
+        this.excelContext = excelContext;
         this.allHeadStyle = allHeadStyle;
     }
 
     /**
      * 设置行索引为 0 的表头的样式
      */
-    public HeadStyleHandler(List<CellStyleProperty> singleRowHeadCellStyles) {
+    public HeadStyleHandler(ExcelContext excelContext, List<CellStyleProperty> singleRowHeadCellStyles) {
+        this.excelContext = excelContext;
         if (CollUtil.isNotEmpty(singleRowHeadCellStyles)) {
             this.multiRowHeadCellStyles = new ArrayList<>(1);
             this.multiRowHeadCellStyles.add(singleRowHeadCellStyles);
@@ -86,8 +98,8 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
         Map<Integer, Head> headMap = excelWriteHeadProperty.getHeadMap();
         Sheet sheet = writeSheetHolder.getSheet();
         int rawColumnNum = headMap.size();
-        int realColumnNum = rawColumnNum + (CollUtil.isEmpty(ExcelContext.getExtendHead()) || headClass != ExcelContext.getHeadClass() ?
-                0 : ExcelContext.getExtendHead().size());
+        int realColumnNum = rawColumnNum + (CollUtil.isEmpty(excelContext.getExtendHead()) || headClass != excelContext.getHeadClass() ?
+                0 : excelContext.getExtendHead().size());
         for (int i = 0; i < realColumnNum; i++) {
             Cell cell = row.getCell(i);
             if (cell == null) {

@@ -4,8 +4,8 @@ import cn.hutool.core.util.ArrayUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.util.IoUtils;
 import com.jz.zeus.excel.CellErrorInfo;
+import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
-import com.jz.zeus.excel.read.listener.NoModelReadListener;
 import com.jz.zeus.excel.write.handler.ErrorInfoHandler;
 import com.jz.zeus.excel.write.handler.ExtendColumnHandler;
 import lombok.SneakyThrows;
@@ -103,11 +103,12 @@ public class ExcelUtils {
     @SneakyThrows
     public void addErrorInfo(OutputStream resultOutputStream, InputStream sourceInputStream, String sheetName,
                              Integer headRowNum, List<CellErrorInfo> errorInfos) {
+        ExcelContext excelContext = new ExcelContext();
         EasyExcel.write(resultOutputStream)
                 .withTemplate(sourceInputStream)
                 .sheet(sheetName)
-                .registerWriteHandler(new ExtendColumnHandler(Collections.emptyList(), null))
-                .registerWriteHandler(new ErrorInfoHandler(headRowNum, errorInfos))
+                .registerWriteHandler(new ExtendColumnHandler(excelContext, Collections.emptyList(), null))
+                .registerWriteHandler(new ErrorInfoHandler(excelContext, headRowNum, errorInfos))
                 .doWrite(Collections.emptyList());
     }
 
@@ -124,7 +125,7 @@ public class ExcelUtils {
         EasyExcel.write(resultOutputStream)
                 .withTemplate(new ByteArrayInputStream(sourceExcelBytes))
                 .sheet(sheetName)
-                .registerWriteHandler(new ErrorInfoHandler(headRowNum, errorInfos))
+                .registerWriteHandler(new ErrorInfoHandler(new ExcelContext(), headRowNum, errorInfos))
                 .doWrite(Collections.emptyList());
     }
 
