@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Filter;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.write.handler.AbstractSheetWriteHandler;
@@ -117,19 +118,25 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         Sheet hiddenSheet = workbook.createSheet(hiddenSheetName);
         workbook.setSheetHidden(workbook.getSheetIndex(hiddenSheet), true);
         int optionsSize = options.size();
+        int endIndex = optionsSize - 1;
+        String s1 = null, s2 = null;
         for (int i = 0; i < optionsSize; i++) {
-            hiddenSheet.createRow(i)
-                    .createCell(columnIndex).setCellValue(options.get(i));
+            Cell newCell = hiddenSheet.createRow(i).createCell(columnIndex);
+            if (i == 0) {
+                s1 = newCell.getAddress().formatAsString();
+            }
+            if (i == endIndex) {
+                s2 = newCell.getAddress().formatAsString();
+            }
+            newCell.setCellValue(options.get(i));
         }
-
-        String s1 = hiddenSheet.getRow(0).getCell(columnIndex).getAddress().formatAsString();
-        String s2 = hiddenSheet.getRow(optionsSize-1).getCell(columnIndex).getAddress().formatAsString();
         Name categoryName = workbook.createName();
         categoryName.setNameName(hiddenSheetName);
         String refersToFormula = StrUtil.builder().append(hiddenSheetName)
-                .append("!$").append(s1.charAt(0)).append('$')
-                .append(s1.charAt(1)).append(":$").append(s2.charAt(0))
-                .append('$').append(s2.charAt(1)).toString();
+                .append("!$").append(StrUtil.filter(s1, Character::isLetter))
+                .append('$').append(StrUtil.filter(s1, Character::isDigit))
+                .append(":$").append(StrUtil.filter(s2, Character::isLetter))
+                .append('$').append(StrUtil.filter(s2, Character::isDigit)).toString();
         categoryName.setRefersToFormula(refersToFormula);
         return hiddenSheetName;
     }

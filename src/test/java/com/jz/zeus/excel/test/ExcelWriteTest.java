@@ -23,8 +23,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -88,12 +88,12 @@ public class ExcelWriteTest {
 
     public static List<ValidationInfo> getValidationInfo() {
         List<String> list = new ArrayList<>();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 600; i++) {
             list.add("jjj" + i);
         }
         return new ArrayList<ValidationInfo>() {{
-            add(ValidationInfo.buildColumnByField("id", "是", "否"));
-            add(ValidationInfo.buildColumnByHead("destPlus（选填）", list));
+            add(ValidationInfo.buildColumnByField("id", list));
+            add(ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"));
             add(ValidationInfo.buildColumnByHead("自定义1", "是自定义", "不是自定义"));
         }};
     }
