@@ -1,5 +1,6 @@
 package com.jz.zeus.excel.context;
 
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.map.MapUtil;
 
 import java.util.ArrayList;
@@ -18,6 +19,8 @@ public class ExcelContext {
     private final String EXTEND_HEAD = "extend_head";
 
     private final String DYNAMIC_HEAD = "dynamic_head";
+
+    private final String SHEET_DATA = "sheet_data";
 
     private Map<String, Object> EXCEL_CONTEXT = new HashMap<>();
 
@@ -51,6 +54,18 @@ public class ExcelContext {
 
     public Class getHeadClass() {
         return (Class) EXCEL_CONTEXT.get(HEAD_CLASS);
+    }
+
+    public void setSheetData(List data) {
+        EXCEL_CONTEXT.put(SHEET_DATA, data);
+    }
+
+    public List getSheetData() {
+        List data = (List) EXCEL_CONTEXT.get(SHEET_DATA);
+        if (data == null) {
+            return ListUtil.list(false);
+        }
+        return data;
     }
 
     public void clear() {

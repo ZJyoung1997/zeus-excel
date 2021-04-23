@@ -1,5 +1,6 @@
 package com.jz.zeus.excel.write.builder;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
@@ -24,7 +25,7 @@ public class ZeusExcelWriterSheetBuilder {
 
     private static final Integer SHEET_INDEX_DEFAULT = 0;
 
-    private ExcelWriter excelWriter;
+    private ZeusExcelWriter excelWriter;
 
     private Integer sheetIndex;
 
@@ -52,7 +53,7 @@ public class ZeusExcelWriterSheetBuilder {
         this.sheetName = sheetName;
     }
 
-    public ZeusExcelWriterSheetBuilder(ExcelWriter excelWriter, Integer sheetIndex, String sheetName) {
+    public ZeusExcelWriterSheetBuilder(ZeusExcelWriter excelWriter, Integer sheetIndex, String sheetName) {
         this.excelWriter = excelWriter;
         this.sheetIndex = sheetIndex == null ? SHEET_INDEX_DEFAULT : sheetIndex;
         this.sheetName = sheetName;
@@ -118,7 +119,7 @@ public class ZeusExcelWriterSheetBuilder {
         return sheetBuilder.build();
     }
 
-    public WriteSheet build(Class headClass, List datas) {
+    public WriteSheet build(Class headClass) {
         ExcelContext excelContext = new ExcelContext();
         ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
         sheetBuilder.head(headClass);
@@ -143,7 +144,9 @@ public class ZeusExcelWriterSheetBuilder {
         if (CollUtil.isNotEmpty(errorInfos)) {
             sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
         }
-        return sheetBuilder.build();
+        ZeusWriterSheet zeusWriterSheet = new ZeusWriterSheet();
+        BeanUtil.copyProperties(sheetBuilder.build(), zeusWriterSheet);
+        return zeusWriterSheet;
     }
 
     public <T> void doWrite(Class<T> headClass, List<? extends T> datas) {

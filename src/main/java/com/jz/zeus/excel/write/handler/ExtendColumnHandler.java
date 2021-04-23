@@ -105,7 +105,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
 
     @Override
     public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        if (CollUtil.isEmpty(dataMap)) {
+        if (CollUtil.isEmpty(dataMap))
             return;
         }
         ExcelWriteHeadProperty excelWriteHeadProperty = writeSheetHolder.getExcelWriteHeadProperty();

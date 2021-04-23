@@ -74,7 +74,7 @@ public class ZeusExcelWriterBuilder {
     }
 
     @SneakyThrows
-    public ExcelWriter build() {
+    public ZeusExcelWriter build() {
         ExcelWriterBuilder writerBuilder = new ExcelWriterBuilder();
         writerBuilder.useDefaultStyle(false);
         if (StrUtil.isNotBlank(excelPath)) {
@@ -108,7 +108,7 @@ public class ZeusExcelWriterBuilder {
         } else if (templateInputStream != null) {
             writerBuilder.withTemplate(templateInputStream);
         }
-        return writerBuilder.build();
+        return new ZeusExcelWriter(writerBuilder.build());
     }
 
 }
