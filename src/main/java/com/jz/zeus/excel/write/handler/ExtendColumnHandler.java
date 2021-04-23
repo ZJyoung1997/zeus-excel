@@ -1,7 +1,7 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.collection.ListUtil;
+import cn.hutool.core.lang.Assert;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
@@ -18,10 +18,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * 当存在动态表头时，该 handler应该最先被注册，已保证将动态表头添加到配置中
@@ -32,8 +29,6 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
 
     private ExcelContext excelContext;
 
-    private Field extendColumnField;
-
     private boolean isNotClassHead;
 
     private Map<String, Integer> extendHeadIndexMap = new HashMap<>();
@@ -43,33 +38,33 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
      */
     private int headRowNum;
 
+    /**
+     * 待写入Excel数据，key 行索引、value 数据
+     */
     private Map<Integer, Object> dataMap;
 
     /**
-     * 动态表头
+     * 扩展表头
      */
     private List<String> extendHead;
 
+    /**
+     * 扩展字段访问器
+     */
     private UnsafeFieldAccessor fieldAccessor;
 
-    public ExtendColumnHandler(ExcelContext excelContext, List dataList, List<String> extendHead) {
+    public ExtendColumnHandler(ExcelContext excelContext) {
+        Assert.notNull(excelContext, "ExcelContext must not be null");
         this.excelContext = excelContext;
-        dataMap = new HashMap<>(dataList == null ? 0 : dataList.size());
-        if (CollUtil.isNotEmpty(dataList)) {
-            for (int i = 0; i < dataList.size(); i++) {
-                dataMap.put(i, dataList.get(i));
-            }
-        }
-        this.extendHead = ListUtil.toList(extendHead);
     }
 
     @Override
     public void afterRowDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Integer relativeRowIndex, Boolean isHead) {
-        if (CollUtil.isEmpty(extendHead) || isNotClassHead || extendColumnField == null) {
+        if (isNotClassHead || fieldAccessor == null || CollUtil.isEmpty(extendHead)) {
             return;
         }
         if (Boolean.TRUE.equals(isHead)) {
-            createExtendHead(writeSheetHolder, row);
+            writeExtendHead(writeSheetHolder, row);
             return;
         }
         writeExtendData(writeSheetHolder, row);
@@ -93,7 +88,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
         });
     }
 
-    private void createExtendHead(WriteSheetHolder writeSheetHolder, Row row) {
+    private void writeExtendHead(WriteSheetHolder writeSheetHolder, Row row) {
         Map<Integer, Head> headMap = writeSheetHolder.excelWriteHeadProperty().getHeadMap();
         int rawColumnNum = headMap.size();
         int realColumnNum = rawColumnNum + extendHead.size();
@@ -105,41 +100,54 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
 
     @Override
     public void beforeSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        if (CollUtil.isEmpty(dataMap))
-            return;
-        }
         ExcelWriteHeadProperty excelWriteHeadProperty = writeSheetHolder.getExcelWriteHeadProperty();
         isNotClassHead = HeadKindEnum.CLASS != excelWriteHeadProperty.getHeadKind();
+        if (isNotClassHead) {
+            return;
+        }
+
+        List dataList = excelContext.getSheetData();
+        dataMap = new HashMap<>(dataList == null ? 0 : dataList.size());
+        if (CollUtil.isNotEmpty(dataList)) {
+            for (int i = 0; i < dataList.size(); i++) {
+                dataMap.put(i, dataList.get(i));
+            }
+        }
         headRowNum = excelWriteHeadProperty.getHeadRowNumber();
 
         List<FieldInfo> fieldInfos = ClassUtils.getClassFieldInfo(writeSheetHolder.getClazz());
         fieldInfos.stream().filter(FieldInfo::isExtendColumn)
                 .findFirst().ifPresent(fieldInfo -> {
-            extendColumnField = fieldInfo.getField();
+            Field extendColumnField = fieldInfo.getField();
             extendColumnField.setAccessible(true);
             fieldAccessor = new UnsafeFieldAccessor(extendColumnField);
             addHeadCache(excelWriteHeadProperty);
         });
         excelContext.setExtendHead(extendHead);
-        excelContext.setHeadClass(writeSheetHolder.getClazz());
     }
 
     @Override
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {}
 
     private void addHeadCache(ExcelWriteHeadProperty excelWriteHeadProperty) {
-        if (CollUtil.isNotEmpty(dataMap)) {
-            Object rawData = dataMap.get(0);
-            if (rawData != null) {
-                Map<String, String> extendData = getExtendData(rawData);
-                if (CollUtil.isNotEmpty(extendData)) {
-                    extendHead.addAll(extendData.keySet());
-                    extendHead = extendHead.stream().distinct()
-                            .collect(Collectors.toList());
-                }
+        if (CollUtil.isEmpty(dataMap) || fieldAccessor == null) {
+            return;
+        }
+        Object rawData = null;
+        for (Object value : dataMap.values()) {
+            if (value != null) {
+                rawData = value;
+                break;
             }
         }
-        if (extendHead.size() == 0) {
+        if (rawData == null) {
+            return;
+        }
+        Map<String, String> extendData = getExtendData(rawData);
+        if (CollUtil.isNotEmpty(extendData)) {
+            extendHead = new ArrayList<>(extendData.keySet());
+        }
+        if (CollUtil.isEmpty(extendHead)) {
             return;
         }
         int index = excelWriteHeadProperty.getHeadMap().size();

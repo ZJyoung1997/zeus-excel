@@ -107,7 +107,7 @@ public class ExcelUtils {
         EasyExcel.write(resultOutputStream)
                 .withTemplate(sourceInputStream)
                 .sheet(sheetName)
-                .registerWriteHandler(new ExtendColumnHandler(excelContext, Collections.emptyList(), null))
+                .registerWriteHandler(new ExtendColumnHandler(excelContext))
                 .registerWriteHandler(new ErrorInfoHandler(excelContext, headRowNum, errorInfos))
                 .doWrite(Collections.emptyList());
     }

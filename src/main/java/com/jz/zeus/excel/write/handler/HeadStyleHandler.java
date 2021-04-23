@@ -2,6 +2,7 @@ package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.lang.Assert;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
@@ -50,13 +51,8 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
      * 若使用class表示表头且指定样式时，优先使用自定义样式，若无则使用class指定样式，若没有指定任何样式则使用默认样式。
      * 若是用list自定义表头则赋予默认表头样式
      */
-    private HeadStyleHandler() {}
-
-    /**
-     * 若使用class表示表头且指定样式时，优先使用自定义样式，若无则使用class指定样式，若没有指定任何样式则使用默认样式。
-     * 若是用list自定义表头则赋予默认表头样式
-     */
     public HeadStyleHandler(ExcelContext excelContext) {
+        Assert.notNull(excelContext, "ExcelContext must not be null");
         this.excelContext = excelContext;
     }
 
@@ -64,6 +60,7 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
      * 为所有设置表头同一样式
      */
     public HeadStyleHandler(ExcelContext excelContext, CellStyleProperty allHeadStyle) {
+        Assert.notNull(excelContext, "ExcelContext must not be null");
         this.excelContext = excelContext;
         this.allHeadStyle = allHeadStyle;
     }
@@ -72,6 +69,7 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
      * 设置行索引为 0 的表头的样式
      */
     public HeadStyleHandler(ExcelContext excelContext, List<CellStyleProperty> singleRowHeadCellStyles) {
+        Assert.notNull(excelContext, "ExcelContext must not be null");
         this.excelContext = excelContext;
         if (CollUtil.isNotEmpty(singleRowHeadCellStyles)) {
             this.multiRowHeadCellStyles = new ArrayList<>(1);
@@ -98,7 +96,7 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
         Map<Integer, Head> headMap = excelWriteHeadProperty.getHeadMap();
         Sheet sheet = writeSheetHolder.getSheet();
         int rawColumnNum = headMap.size();
-        int realColumnNum = rawColumnNum + (CollUtil.isEmpty(excelContext.getExtendHead()) || headClass != excelContext.getHeadClass() ?
+        int realColumnNum = rawColumnNum + (CollUtil.isEmpty(excelContext.getExtendHead()) ?
                 0 : excelContext.getExtendHead().size());
         for (int i = 0; i < realColumnNum; i++) {
             Cell cell = row.getCell(i);
@@ -188,7 +186,7 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
         for (String s : strs) {
             int chineseNum = StringUtils.chineseNum(s);
             int dataLength = (int) ((s.length() - chineseNum) + chineseNum * 1.5);
-            int columnWidth = dataLength * 40 * fontSize;
+            int columnWidth = dataLength * 42 * fontSize;
             columnWidth = columnWidth > Constants.MAX_COLUMN_WIDTH ? Constants.MAX_COLUMN_WIDTH : columnWidth;
             if (columnWidth > result) {
                 result = columnWidth;

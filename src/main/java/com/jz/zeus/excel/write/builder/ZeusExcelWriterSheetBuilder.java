@@ -3,10 +3,8 @@ package com.jz.zeus.excel.write.builder;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.exception.ExcelGenerateException;
 import com.alibaba.excel.write.builder.ExcelWriterSheetBuilder;
-import com.alibaba.excel.write.metadata.WriteSheet;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DynamicHead;
 import com.jz.zeus.excel.ValidationInfo;
@@ -27,11 +25,11 @@ public class ZeusExcelWriterSheetBuilder {
 
     private ZeusExcelWriter excelWriter;
 
+    private ExcelContext excelContext = new ExcelContext();
+
     private Integer sheetIndex;
 
     private String sheetName;
-
-    private List<String> extendHead;
 
     private List<DynamicHead> dynamicHeads;
 
@@ -57,11 +55,6 @@ public class ZeusExcelWriterSheetBuilder {
         this.excelWriter = excelWriter;
         this.sheetIndex = sheetIndex == null ? SHEET_INDEX_DEFAULT : sheetIndex;
         this.sheetName = sheetName;
-    }
-
-    public ZeusExcelWriterSheetBuilder extendHead(List<String> extendHead) {
-        this.extendHead = extendHead;
-        return this;
     }
 
     public ZeusExcelWriterSheetBuilder dynamicHeads(List<DynamicHead> dynamicHeads) {
@@ -99,8 +92,7 @@ public class ZeusExcelWriterSheetBuilder {
         return this;
     }
 
-    public WriteSheet build(List<List<String>> headNames) {
-        ExcelContext excelContext = new ExcelContext();
+    public ZeusWriteSheet build(List<List<String>> headNames) {
         ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
         sheetBuilder.head(headNames);
         if (CollUtil.isNotEmpty(validationInfos)) {
@@ -116,11 +108,12 @@ public class ZeusExcelWriterSheetBuilder {
         } else {
             sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyle));
         }
-        return sheetBuilder.build();
+        ZeusWriteSheet zeusWriteSheet = new ZeusWriteSheet(excelContext);
+        BeanUtil.copyProperties(sheetBuilder.build(), zeusWriteSheet);
+        return zeusWriteSheet;
     }
 
-    public WriteSheet build(Class headClass) {
-        ExcelContext excelContext = new ExcelContext();
+    public ZeusWriteSheet build(Class headClass) {
         ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
         sheetBuilder.head(headClass);
         if (CollUtil.isNotEmpty(excludeColumnFiledNames)) {
@@ -129,7 +122,7 @@ public class ZeusExcelWriterSheetBuilder {
         if (CollUtil.isNotEmpty(dynamicHeads)) {
             sheetBuilder.registerWriteHandler(new DynamicHeadHandler(excelContext, dynamicHeads));
         }
-        sheetBuilder.registerWriteHandler(new ExtendColumnHandler(excelContext, datas, extendHead));
+        sheetBuilder.registerWriteHandler(new ExtendColumnHandler(excelContext));
         if (CollUtil.isNotEmpty(multiRowHeadStyles)) {
             sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext)
                     .setMultiRowHeadCellStyles(multiRowHeadStyles));
@@ -144,17 +137,19 @@ public class ZeusExcelWriterSheetBuilder {
         if (CollUtil.isNotEmpty(errorInfos)) {
             sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
         }
-        ZeusWriterSheet zeusWriterSheet = new ZeusWriterSheet();
-        BeanUtil.copyProperties(sheetBuilder.build(), zeusWriterSheet);
-        return zeusWriterSheet;
+        ZeusWriteSheet zeusWriteSheet = new ZeusWriteSheet(excelContext);
+        BeanUtil.copyProperties(sheetBuilder.build(), zeusWriteSheet);
+        return zeusWriteSheet;
     }
 
-    public <T> void doWrite(Class<T> headClass, List<? extends T> datas) {
+    public <T> void doWrite(Class<T> headClass, List<T> datas) {
         if (excelWriter == null) {
             throw new ExcelGenerateException("Must use 'ZeusExcel.write().sheet()' to call this method");
         }
         try {
-            excelWriter.write(datas, build(headClass, datas));
+            excelContext.setSheetData(datas);
+            excelContext.setHeadClass(headClass);
+            excelWriter.write(datas, build(headClass));
         } finally {
             if (excelWriter != null) {
                 excelWriter.finish();
@@ -164,16 +159,17 @@ public class ZeusExcelWriterSheetBuilder {
 
     /**
      * @param headNames   表头
-     * @param dataList    没有指定module时要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
+     * @param datas       没有指定module时要写入的数据，外层list下标表示行索引，内层list表示该行所有列的数据
      */
-    public void doWrite(List<String> headNames, List<List<Object>> dataList) {
+    public void doWrite(List<String> headNames, List<List<Object>> datas) {
         if (excelWriter == null) {
             throw new ExcelGenerateException("Must use 'ZeusExcel.write().sheet()' to call this method");
         }
         try {
             List<List<String>> heads = new ArrayList<>(headNames.size());
             headNames.forEach(head -> heads.add(new ArrayList<String>(1) {{add(head);}}));
-            excelWriter.write(dataList, build(heads));
+            excelContext.setSheetData(datas);
+            excelWriter.write(datas, build(heads));
         } finally {
             if (excelWriter != null) {
                 excelWriter.finish();

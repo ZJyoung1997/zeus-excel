@@ -9,7 +9,9 @@ import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.ZeusExcel;
 import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.test.data.DemoData;
+import com.jz.zeus.excel.write.builder.ZeusExcelWriter;
 import com.jz.zeus.excel.write.builder.ZeusExcelWriterSheetBuilder;
+import com.jz.zeus.excel.write.builder.ZeusWriteSheet;
 import com.jz.zeus.excel.write.handler.ErrorInfoHandler;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import lombok.SneakyThrows;
@@ -27,8 +29,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -50,27 +52,26 @@ public class ExcelWriteTest {
             add(CellErrorInfo.buildByHead(7, "destPlus（选填）", "金额有误"));
         }};
 
-//        ZeusExcel.write(path)
-//                .sheet("模板")
-//                .dynamicHeads(dynamicHeads)
-//                .singleRowHeadStyles(styleProperties)
-//                .extendHead(Arrays.asList("扩展1", "扩展2"))
-//                .validationInfos(getValidationInfo())
-////                .errorInfos(errorInfos)
-//                .doWrite(DemoData.class, getDataList(10));
-
-        ExcelWriter excelWriter = ZeusExcel.write(path).build();
-
-        WriteSheet writeSheet1 = ZeusExcel.writeSheet(0, "模板")
+        ZeusExcel.write(path)
+                .sheet("模板")
                 .dynamicHeads(dynamicHeads)
                 .singleRowHeadStyles(styleProperties)
-                .extendHead(Arrays.asList("扩展1", "扩展2"))
-                .validationInfos(getValidationInfo()).build(DemoData.class, getDataList(10));
-        WriteSheet writeSheet2 = ZeusExcel.writeSheet(1, "模板1")
-                .build(DemoData.class, getDataList(3));
-        excelWriter.write(getDataList(10), writeSheet1);
-        excelWriter.write(getDataList(3), writeSheet2);
-        excelWriter.finish();
+                .validationInfos(getValidationInfo())
+                .errorInfos(errorInfos)
+                .doWrite(DemoData.class, getDataList("测0_", 10));
+
+//        ZeusExcelWriter excelWriter = ZeusExcel.write(path).build();
+//
+//        ZeusWriteSheet writeSheet1 = ZeusExcel.writeSheet(0, "模板")
+//                .dynamicHeads(dynamicHeads)
+//                .singleRowHeadStyles(styleProperties)
+//                .validationInfos(getValidationInfo())
+//                .build(DemoData.class);
+//        ZeusWriteSheet writeSheet2 = ZeusExcel.writeSheet(1, "模板1")
+//                .build(DemoData.class);
+//        excelWriter.write(getDataList("测1_", 10), writeSheet1);
+//        excelWriter.write(getDataList("测2_", 3), writeSheet2);
+//        excelWriter.finish();
 
 
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
@@ -125,20 +126,20 @@ public class ExcelWriteTest {
         return cellErrorInfoList;
     }
 
-    private static List<DemoData> getDataList(int num) {
+    private static List<DemoData> getDataList(String prefix, int num) {
         List<DemoData> dataList = new ArrayList<>();
         for (int i = 0; i < num; i++) {
             DemoData demoData = new DemoData();
             demoData.setId(Long.valueOf(i));
-            demoData.setDest("dest" + i);
-            demoData.setSrc("src" + i);
-            demoData.setFunc("func" + i);
+            demoData.setDest(prefix + "dest" + i);
+            demoData.setSrc(prefix + "src" + i);
+            demoData.setFunc(prefix + "func" + i);
             demoData.setPrice(3.94);
 
             Map<String, String> map = new LinkedHashMap<>();
-            map.put("自定义1", "12");
-            map.put("自定义2", "jfak");
-            map.put("自定义3", "集分宝");
+            map.put("自定义1", prefix + "12");
+            map.put("自定义2", prefix + "jfak");
+            map.put("自定义3", prefix + "集分宝");
             demoData.setExtendColumnMap(map);
             dataList.add(demoData);
         }

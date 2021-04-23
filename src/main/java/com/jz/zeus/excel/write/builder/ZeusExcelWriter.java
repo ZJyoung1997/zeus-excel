@@ -35,7 +35,7 @@ public class ZeusExcelWriter {
      *            Write to this sheet
      * @return this current writer
      */
-    public ZeusExcelWriter write(List data, ZeusWriterSheet writeSheet) {
+    public ZeusExcelWriter write(List data, ZeusWriteSheet writeSheet) {
         return write(data, writeSheet, null);
     }
 
@@ -50,7 +50,7 @@ public class ZeusExcelWriter {
      *            Write to this table
      * @return this
      */
-    public ZeusExcelWriter write(List data, ZeusWriterSheet writeSheet, WriteTable writeTable) {
+    public ZeusExcelWriter write(List data, ZeusWriteSheet writeSheet, WriteTable writeTable) {
         writeSheet.updateDatas(data);
         excelWriter.write(data, writeSheet, writeTable);
         return this;
