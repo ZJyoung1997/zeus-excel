@@ -25,4 +25,8 @@ public class ZeusWriteSheet extends WriteSheet {
         excelContext.setSheetData(data);
     }
 
+    public void addDatas(List data) {
+        excelContext.addSheetData(data);
+    }
+
 }

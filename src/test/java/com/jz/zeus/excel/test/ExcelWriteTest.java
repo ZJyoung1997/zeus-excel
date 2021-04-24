@@ -1,8 +1,6 @@
 package com.jz.zeus.excel.test;
 
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.ExcelWriter;
-import com.alibaba.excel.write.metadata.WriteSheet;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DynamicHead;
 import com.jz.zeus.excel.ValidationInfo;
@@ -10,7 +8,6 @@ import com.jz.zeus.excel.ZeusExcel;
 import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.write.builder.ZeusExcelWriter;
-import com.jz.zeus.excel.write.builder.ZeusExcelWriterSheetBuilder;
 import com.jz.zeus.excel.write.builder.ZeusWriteSheet;
 import com.jz.zeus.excel.write.handler.ErrorInfoHandler;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
@@ -52,26 +49,27 @@ public class ExcelWriteTest {
             add(CellErrorInfo.buildByHead(7, "destPlus（选填）", "金额有误"));
         }};
 
-        ZeusExcel.write(path)
-                .sheet("模板")
-                .dynamicHeads(dynamicHeads)
-                .singleRowHeadStyles(styleProperties)
-                .validationInfos(getValidationInfo())
-                .errorInfos(errorInfos)
-                .doWrite(DemoData.class, getDataList("测0_", 10));
-
-//        ZeusExcelWriter excelWriter = ZeusExcel.write(path).build();
-//
-//        ZeusWriteSheet writeSheet1 = ZeusExcel.writeSheet(0, "模板")
+//        ZeusExcel.write(path)
+//                .sheet("模板")
 //                .dynamicHeads(dynamicHeads)
 //                .singleRowHeadStyles(styleProperties)
 //                .validationInfos(getValidationInfo())
-//                .build(DemoData.class);
-//        ZeusWriteSheet writeSheet2 = ZeusExcel.writeSheet(1, "模板1")
-//                .build(DemoData.class);
-//        excelWriter.write(getDataList("测1_", 10), writeSheet1);
+//                .errorInfos(errorInfos)
+//                .doWrite(DemoData.class, getDataList("测0_", 10));
+
+        ZeusExcelWriter excelWriter = ZeusExcel.write(path).build();
+
+        ZeusWriteSheet writeSheet1 = ZeusExcel.writeSheet(0, "模板")
+                .dynamicHeads(dynamicHeads)
+                .singleRowHeadStyles(styleProperties)
+                .validationInfos(getValidationInfo())
+                .build(DemoData.class);
+        ZeusWriteSheet writeSheet2 = ZeusExcel.writeSheet(1, "模板1")
+                .build(DemoData.class);
+        excelWriter.write(getDataList("测1_", 10), writeSheet1);
+        excelWriter.write(getDataList("测3_", 10), writeSheet1);
 //        excelWriter.write(getDataList("测2_", 3), writeSheet2);
-//        excelWriter.finish();
+        excelWriter.finish();
 
 
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");

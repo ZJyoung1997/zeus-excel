@@ -18,7 +18,10 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 当存在动态表头时，该 handler应该最先被注册，已保证将动态表头添加到配置中
@@ -39,9 +42,9 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
     private int headRowNum;
 
     /**
-     * 待写入Excel数据，key 行索引、value 数据
+     * 待写入Excel数据
      */
-    private Map<Integer, Object> dataMap;
+    private List dataList;
 
     /**
      * 扩展表头
@@ -71,7 +74,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
     }
 
     private void writeExtendData(WriteSheetHolder writeSheetHolder, Row row) {
-        Object rawData = dataMap.get(row.getRowNum()-headRowNum);
+        Object rawData = dataList.get(row.getRowNum()-headRowNum);
         if (rawData == null) {
             return;
         }
@@ -106,13 +109,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
             return;
         }
 
-        List dataList = excelContext.getSheetData();
-        dataMap = new HashMap<>(dataList == null ? 0 : dataList.size());
-        if (CollUtil.isNotEmpty(dataList)) {
-            for (int i = 0; i < dataList.size(); i++) {
-                dataMap.put(i, dataList.get(i));
-            }
-        }
+        dataList = excelContext.getSheetData();
         headRowNum = excelWriteHeadProperty.getHeadRowNumber();
 
         List<FieldInfo> fieldInfos = ClassUtils.getClassFieldInfo(writeSheetHolder.getClazz());
@@ -130,11 +127,11 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
     public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {}
 
     private void addHeadCache(ExcelWriteHeadProperty excelWriteHeadProperty) {
-        if (CollUtil.isEmpty(dataMap) || fieldAccessor == null) {
+        if (CollUtil.isEmpty(dataList) || fieldAccessor == null) {
             return;
         }
         Object rawData = null;
-        for (Object value : dataMap.values()) {
+        for (Object value : dataList) {
             if (value != null) {
                 rawData = value;
                 break;

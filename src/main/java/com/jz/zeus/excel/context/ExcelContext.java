@@ -57,7 +57,16 @@ public class ExcelContext {
     }
 
     public void setSheetData(List data) {
-        EXCEL_CONTEXT.put(SHEET_DATA, data);
+        EXCEL_CONTEXT.put(SHEET_DATA, ListUtil.toList(data));
+    }
+
+    public void addSheetData(List data) {
+        List rawData = (List) EXCEL_CONTEXT.get(SHEET_DATA);
+        if (rawData == null) {
+            EXCEL_CONTEXT.put(SHEET_DATA, ListUtil.toList(data));
+        } else {
+            rawData.addAll(data);
+        }
     }
 
     public List getSheetData() {

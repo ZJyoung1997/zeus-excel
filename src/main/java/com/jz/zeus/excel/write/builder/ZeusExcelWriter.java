@@ -4,11 +4,12 @@ import cn.hutool.core.lang.Assert;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.context.WriteContext;
 import com.alibaba.excel.write.metadata.WriteTable;
-import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author JZ
@@ -18,7 +19,8 @@ public class ZeusExcelWriter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZeusExcelWriter.class);
 
-    @Getter
+    private Map<ZeusWriteSheet, Boolean> writeSheetMap = new HashMap<>();
+
     private ExcelWriter excelWriter;
 
     public ZeusExcelWriter(ExcelWriter excelWriter) {
@@ -51,8 +53,14 @@ public class ZeusExcelWriter {
      * @return this
      */
     public ZeusExcelWriter write(List data, ZeusWriteSheet writeSheet, WriteTable writeTable) {
-        writeSheet.updateDatas(data);
+        Assert.notNull(writeSheet, "Sheet argument cannot be null");
+        if (writeSheetMap.get(writeSheet) == null) {
+            writeSheet.updateDatas(data);
+        } else {
+            writeSheet.addDatas(data);
+        }
         excelWriter.write(data, writeSheet, writeTable);
+        writeSheetMap.put(writeSheet, Boolean.TRUE);
         return this;
     }
 
