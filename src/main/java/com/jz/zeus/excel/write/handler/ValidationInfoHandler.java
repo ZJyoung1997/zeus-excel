@@ -1,6 +1,8 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.write.handler.AbstractSheetWriteHandler;
@@ -101,7 +103,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         DataValidationHelper helper = sheet.getDataValidationHelper();
         DataValidationConstraint constraint = null;
         if (options.size() > 10) {
-            constraint = helper.createFormulaListConstraint(addHiddenValidationData(workbook, firstCol, options, index));
+            constraint = helper.createFormulaListConstraint(addHiddenValidationData(workbook, options, index));
         } else {
             constraint = helper.createExplicitListConstraint(options.toArray(new String[0]));
         }
@@ -116,22 +118,25 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         sheet.addValidationData(dataValidation);
     }
 
-    private String addHiddenValidationData(Workbook workbook, Integer columnIndex, List<String> options, int index) {
+    private String addHiddenValidationData(Workbook workbook, List<String> options, int index) {
+        int columnIndex = RandomUtil.randomInt(200);
         String hiddenSheetName = "hidden".concat(String.valueOf(System.currentTimeMillis() + index));
         Sheet hiddenSheet = workbook.createSheet(hiddenSheetName);
+        hiddenSheet.setColumnHidden(columnIndex, true);
+        hiddenSheet.protectSheet(IdUtil.fastSimpleUUID());
         workbook.setSheetHidden(workbook.getSheetIndex(hiddenSheet), true);
-        int optionsSize = options.size();
-        int endIndex = optionsSize - 1;
+        int beginIndex = RandomUtil.randomInt(1000);
+        int endIndex = beginIndex + options.size() - 1;
         String s1 = null, s2 = null;
-        for (int i = 0; i < optionsSize; i++) {
+        for (int i = beginIndex; i <= endIndex; i++) {
             Cell newCell = hiddenSheet.createRow(i).createCell(columnIndex);
-            if (i == 0) {
+            if (i == beginIndex) {
                 s1 = newCell.getAddress().formatAsString();
             }
             if (i == endIndex) {
                 s2 = newCell.getAddress().formatAsString();
             }
-            newCell.setCellValue(options.get(i));
+            newCell.setCellValue(options.get(i - beginIndex));
         }
         Name categoryName = workbook.createName();
         categoryName.setNameName(hiddenSheetName);
