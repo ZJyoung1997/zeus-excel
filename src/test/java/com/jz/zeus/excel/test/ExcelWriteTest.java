@@ -26,8 +26,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -49,27 +49,27 @@ public class ExcelWriteTest {
             add(CellErrorInfo.buildByHead(7, "destPlus（选填）", "金额有误"));
         }};
 
-//        ZeusExcel.write(path)
-//                .sheet("模板")
-//                .dynamicHeads(dynamicHeads)
-//                .singleRowHeadStyles(styleProperties)
-//                .validationInfos(getValidationInfo())
-//                .errorInfos(errorInfos)
-//                .doWrite(DemoData.class, getDataList("测0_", 10));
-
-        ZeusExcelWriter excelWriter = ZeusExcel.write(path).build();
-
-        ZeusWriteSheet writeSheet1 = ZeusExcel.writeSheet(0, "模板")
+        ZeusExcel.write(path)
+                .sheet("模板")
                 .dynamicHeads(dynamicHeads)
                 .singleRowHeadStyles(styleProperties)
                 .validationInfos(getValidationInfo())
-                .build(DemoData.class);
-        ZeusWriteSheet writeSheet2 = ZeusExcel.writeSheet(1, "模板1")
-                .build(DemoData.class);
-        excelWriter.write(getDataList("测1_", 10), writeSheet1);
-        excelWriter.write(getDataList("测3_", 10), writeSheet1);
-//        excelWriter.write(getDataList("测2_", 3), writeSheet2);
-        excelWriter.finish();
+                .errorInfos(errorInfos)
+                .doWrite(DemoData.class, getDataList("测0_", 10));
+
+//        ZeusExcelWriter excelWriter = ZeusExcel.write(path).build();
+//
+//        ZeusWriteSheet writeSheet1 = ZeusExcel.writeSheet(0, "模板")
+//                .dynamicHeads(dynamicHeads)
+//                .singleRowHeadStyles(styleProperties)
+//                .validationInfos(getValidationInfo())
+//                .build(DemoData.class);
+//        ZeusWriteSheet writeSheet2 = ZeusExcel.writeSheet(1, "模板1")
+//                .build(DemoData.class);
+//        excelWriter.write(getDataList("测1_", 10), writeSheet1);
+//        excelWriter.write(getDataList("测3_", 10), writeSheet1);
+////        excelWriter.write(getDataList("测2_", 3), writeSheet2);
+//        excelWriter.finish();
 
 
         System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
@@ -111,7 +111,7 @@ public class ExcelWriteTest {
         return new ArrayList<ValidationInfo>() {{
             add(ValidationInfo.buildColumnByField("id", list));
             add(ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"));
-            add(ValidationInfo.buildColumnByHead("自定义1", "是自定义", "不是自定义"));
+            add(ValidationInfo.buildColumnByHead("自定义1", "是自定义", "不是自定义").setAsDicSheet(true).setSheetName("字典表"));
         }};
     }
 

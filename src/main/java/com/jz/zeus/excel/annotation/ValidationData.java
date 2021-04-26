@@ -12,6 +12,16 @@ import java.lang.annotation.*;
 public @interface ValidationData {
 
     /**
+     * 将下拉框信息写入到单独sheet中
+     */
+    boolean asDicSheet() default false;
+
+    /**
+     * sheet 名称
+     */
+    String sheetName() default "";
+
+    /**
      * 下拉框中的选项
      */
     String[] options();

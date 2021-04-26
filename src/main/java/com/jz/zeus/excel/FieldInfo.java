@@ -1,10 +1,10 @@
 package com.jz.zeus.excel;
 
-import com.alibaba.excel.annotation.write.style.*;
 import com.alibaba.excel.metadata.property.ColumnWidthProperty;
 import com.alibaba.excel.metadata.property.FontProperty;
 import com.alibaba.excel.metadata.property.LoopMergeProperty;
 import com.alibaba.excel.metadata.property.StyleProperty;
+import com.jz.zeus.excel.annotation.ValidationData;
 import lombok.Data;
 
 import java.lang.reflect.Field;
@@ -28,14 +28,9 @@ public class FieldInfo {
     private Integer headColumnIndex;
 
     /**
-     * 下拉框内容
+     * 下拉框信息
      */
-    private String[] dropDownBoxOptions;
-
-    /**
-     * 下拉框需要填充的行数
-     */
-    private Integer dropDownBoxRowNum;
+    private ValidationData validationData;
 
     /**
      * 是否为动态列

@@ -1,40 +1,62 @@
 package com.jz.zeus.excel;
 
-import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import com.jz.zeus.excel.util.ClassUtils;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author JZ
  * @Date 2021/3/23 18:27
  */
-@Getter
 @Setter
+@Getter
+@Accessors(chain = true)
 public class ValidationInfo {
 
     private static final Integer DEFAULT_ROW_NUM = 10000;
 
     private static final Integer DEFAULT_COLUMN_NUM = 100;
 
+    @Setter(AccessLevel.NONE)
     private Integer rowIndex;
 
+    @Setter(AccessLevel.NONE)
     private Integer rowNum;
 
+    @Setter(AccessLevel.NONE)
     private Integer columnIndex;
 
+    @Setter(AccessLevel.NONE)
     private Integer columnNum = 100;
 
+    @Setter(AccessLevel.NONE)
     private String fieldName;
 
+    @Setter(AccessLevel.NONE)
     private String headName;
 
+    @Setter(AccessLevel.NONE)
     private List<String> options;
+
+    /**
+     * sheet 名称
+     */
+    private String sheetName;
+
+    /**
+     * 为 true 不论选项条数是否超过设定值，该下拉信息都将生成到sheet中且不会被隐藏
+     */
+    private boolean asDicSheet;
 
     private ValidationInfo() {}
 
@@ -118,7 +140,7 @@ public class ValidationInfo {
         if (ArrayUtil.isEmpty(options)) {
             return buildColumn(fieldName, headName, columnIndex, rowNum, new ArrayList<>(0));
         }
-        return buildColumn(fieldName, headName, columnIndex, rowNum, CollUtil.toList(options));
+        return buildColumn(fieldName, headName, columnIndex, rowNum, ListUtil.toList(options));
     }
 
     public static ValidationInfo buildColumn(String fieldName, String headName, Integer columnIndex, Integer rowNum, List<String> options) {
@@ -131,11 +153,11 @@ public class ValidationInfo {
             Assert.isTrue(columnIndex >= 0, "ColumnIndex has to be greater than or equal to 0");
         }
         ValidationInfo validationInfo = new ValidationInfo();
-        validationInfo.setColumnIndex(columnIndex);
-        validationInfo.setFieldName(fieldName);
-        validationInfo.setHeadName(headName);
-        validationInfo.setRowNum(rowNum == null ? DEFAULT_ROW_NUM : rowNum);
-        validationInfo.setOptions(options);
+        validationInfo.columnIndex = columnIndex;
+        validationInfo.fieldName = fieldName;
+        validationInfo.headName = headName;
+        validationInfo.rowNum = (rowNum == null ? DEFAULT_ROW_NUM : rowNum);
+        validationInfo.options = options;
         return validationInfo;
     }
 
@@ -189,9 +211,9 @@ public class ValidationInfo {
     public static ValidationInfo buildRow(Integer rowIndex, Integer columnNum, String... options) {
         Assert.isTrue(rowIndex != null, "RowIndex can't be null");
         ValidationInfo info = new ValidationInfo();
-        info.setRowIndex(rowIndex);
-        info.setColumnNum(columnNum == null ? DEFAULT_COLUMN_NUM : columnNum);
-        info.setOptions(options == null ? Collections.emptyList() : Arrays.asList(options));
+        info.rowIndex = rowIndex;
+        info.columnNum = (columnNum == null ? DEFAULT_COLUMN_NUM : columnNum);
+        info.options = ListUtil.toList(options);
         return info;
     }
 
@@ -201,9 +223,9 @@ public class ValidationInfo {
     public static ValidationInfo buildPrecise(Integer rowIndex, Integer columnIndex, String... options) {
         Assert.isTrue(rowIndex != null && columnIndex != null, "RowIndex and ColumnIndex can't both be null");
         ValidationInfo info = new ValidationInfo();
-        info.setRowIndex(rowIndex);
-        info.setColumnIndex(columnIndex);
-        info.setOptions(options == null ? Collections.emptyList() : Arrays.asList(options));
+        info.rowIndex = rowIndex;
+        info.columnIndex = columnIndex;
+        info.options = ListUtil.toList(options);
         return info;
     }
 
@@ -213,11 +235,13 @@ public class ValidationInfo {
     public static ValidationInfo buildPrecise(Integer rowIndex, String headName, String... options) {
         Assert.isTrue(rowIndex != null && StrUtil.isNotBlank(headName), "RowIndex and HeadName can't both be empty");
         ValidationInfo info = new ValidationInfo();
-        info.setRowIndex(rowIndex);
-        info.setHeadName(headName);
-        info.setOptions(options == null ? Collections.emptyList() : Arrays.asList(options));
+        info.rowIndex = rowIndex;
+        info.headName = headName;
+        info.options = ListUtil.toList(options);
         return info;
     }
+
+
 
     @Override
     public boolean equals(Object o) {

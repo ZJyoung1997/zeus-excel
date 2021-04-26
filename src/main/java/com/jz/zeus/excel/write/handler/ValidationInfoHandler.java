@@ -26,6 +26,11 @@ import java.util.Objects;
  */
 public class ValidationInfoHandler extends AbstractSheetWriteHandler {
 
+    /**
+     * 下拉框超过该值后将写入到单独sheet中
+     */
+    private static final int MAX_GENERAL_OPTION_NUM = 20;
+
     private ExcelContext excelContext;
 
     private Integer headRowNum;
@@ -86,24 +91,24 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                 }
             }
             if (rowIndex == null && columnIndex != null) {
-                addValidationData(workbook, sheet, headRowNum, headRowNum+boxInfo.getRowNum(), columnIndex, columnIndex, boxInfo.getOptions(), i);
+                addValidationData(workbook, sheet, headRowNum, headRowNum+boxInfo.getRowNum(), columnIndex, columnIndex, boxInfo);
             } else if (rowIndex != null && columnIndex == null) {
-                addValidationData(workbook, sheet, rowIndex, rowIndex, 0, boxInfo.getColumnNum(), boxInfo.getOptions(), i);
+                addValidationData(workbook, sheet, rowIndex, rowIndex, 0, boxInfo.getColumnNum(), boxInfo);
             } else if (rowIndex != null && columnIndex != null) {
-                addValidationData(workbook, sheet, rowIndex, rowIndex, columnIndex, columnIndex, boxInfo.getOptions(), i);
+                addValidationData(workbook, sheet, rowIndex, rowIndex, columnIndex, columnIndex, boxInfo);
             }
         }
     }
 
-    private void addValidationData(Workbook workbook, Sheet sheet, int firstRow, int lastRow, int firstCol, int lastCol, List<String> options, int index) {
+    private void addValidationData(Workbook workbook, Sheet sheet, int firstRow, int lastRow, int firstCol, int lastCol, ValidationInfo boxInfo) {
+        List<String> options = boxInfo.getOptions();
         if (CollUtil.isEmpty(options)) {
             return;
         }
-
         DataValidationHelper helper = sheet.getDataValidationHelper();
-        DataValidationConstraint constraint = null;
-        if (options.size() > 10) {
-            constraint = helper.createFormulaListConstraint(addHiddenValidationData(workbook, options, index));
+        DataValidationConstraint constraint;
+        if (boxInfo.isAsDicSheet() || options.size() > MAX_GENERAL_OPTION_NUM) {
+            constraint = helper.createFormulaListConstraint(addHiddenValidationData(workbook, boxInfo));
         } else {
             constraint = helper.createExplicitListConstraint(options.toArray(new String[0]));
         }
@@ -118,35 +123,43 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         sheet.addValidationData(dataValidation);
     }
 
-    private String addHiddenValidationData(Workbook workbook, List<String> options, int index) {
-        int columnIndex = RandomUtil.randomInt(200);
-        String hiddenSheetName = "hidden".concat(String.valueOf(System.currentTimeMillis() + index));
-        Sheet hiddenSheet = workbook.createSheet(hiddenSheetName);
-        hiddenSheet.setColumnHidden(columnIndex, true);
-        hiddenSheet.protectSheet(IdUtil.fastSimpleUUID());
-        workbook.setSheetHidden(workbook.getSheetIndex(hiddenSheet), true);
-        int beginIndex = RandomUtil.randomInt(1000);
-        int endIndex = beginIndex + options.size() - 1;
+    private String addHiddenValidationData(Workbook workbook, ValidationInfo boxInfo) {
+        int columnIndex = 0;
+        int beginRowIndex = 0;
+        String sheetName = boxInfo.getSheetName();
+        if (StrUtil.isBlank(sheetName)) {
+            sheetName = "dic_".concat(IdUtil.fastSimpleUUID());
+        }
+        Sheet sheet = workbook.createSheet(sheetName);
+        sheet.protectSheet(IdUtil.fastSimpleUUID());
+        if (!boxInfo.isAsDicSheet()) {
+            columnIndex = RandomUtil.randomInt(200);
+            beginRowIndex = RandomUtil.randomInt(1000);
+            sheet.setColumnHidden(columnIndex, true);
+            workbook.setSheetHidden(workbook.getSheetIndex(sheet), true);
+        }
+        List<String> options = boxInfo.getOptions();
+        int endIndex = beginRowIndex + options.size() - 1;
         String s1 = null, s2 = null;
-        for (int i = beginIndex; i <= endIndex; i++) {
-            Cell newCell = hiddenSheet.createRow(i).createCell(columnIndex);
-            if (i == beginIndex) {
+        for (int i = beginRowIndex; i <= endIndex; i++) {
+            Cell newCell = sheet.createRow(i).createCell(columnIndex);
+            if (i == beginRowIndex) {
                 s1 = newCell.getAddress().formatAsString();
             }
             if (i == endIndex) {
                 s2 = newCell.getAddress().formatAsString();
             }
-            newCell.setCellValue(options.get(i - beginIndex));
+            newCell.setCellValue(options.get(i - beginRowIndex));
         }
         Name categoryName = workbook.createName();
-        categoryName.setNameName(hiddenSheetName);
-        String refersToFormula = StrUtil.builder().append(hiddenSheetName)
+        categoryName.setNameName(sheetName);
+        String refersToFormula = StrUtil.strBuilder().append(sheetName)
                 .append("!$").append(StrUtil.filter(s1, Character::isLetter))
                 .append('$').append(StrUtil.filter(s1, Character::isDigit))
                 .append(":$").append(StrUtil.filter(s2, Character::isLetter))
                 .append('$').append(StrUtil.filter(s2, Character::isDigit)).toString();
         categoryName.setRefersToFormula(refersToFormula);
-        return hiddenSheetName;
+        return sheetName;
     }
 
     public void addValidationInfo(ValidationInfo validationInfo) {

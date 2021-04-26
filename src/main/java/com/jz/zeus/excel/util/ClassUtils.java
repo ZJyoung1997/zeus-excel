@@ -1,7 +1,6 @@
 package com.jz.zeus.excel.util;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.alibaba.excel.annotation.write.style.*;
@@ -50,17 +49,13 @@ public class ClassUtils {
             FieldInfo fieldInfo = new FieldInfo();
             fieldInfo.setField(field);
             fieldInfo.setFieldName(field.getName());
+            fieldInfo.setValidationData(field.getAnnotation(ValidationData.class));
             ExcelProperty excelProperty = field.getAnnotation(ExcelProperty.class);
             if (excelProperty != null) {
                 fieldInfo.setHeadName(excelProperty.value()[0]);
                 if (excelProperty.index() != -1) {
                     fieldInfo.setHeadColumnIndex(excelProperty.index());
                 }
-            }
-            ValidationData validationData = field.getAnnotation(ValidationData.class);
-            if (validationData != null) {
-                fieldInfo.setDropDownBoxOptions(validationData.options());
-                fieldInfo.setDropDownBoxRowNum(validationData.rowNum());
             }
             ExtendColumn extendColumn = field.getAnnotation(ExtendColumn.class);
             if (extendColumn != null) {
@@ -88,14 +83,19 @@ public class ClassUtils {
         if (CollUtil.isEmpty(fieldInfos)) {
             return new ArrayList<>();
         }
-        return fieldInfos.stream().filter(fieldInfo -> ArrayUtil.isNotEmpty(fieldInfo.getDropDownBoxOptions()))
+        return fieldInfos.stream().filter(fieldInfo -> Objects.nonNull(fieldInfo.getValidationData()))
                 .map(fieldInfo -> {
+                    ValidationData validationData = fieldInfo.getValidationData();
+                    ValidationInfo result;
                     if (StrUtil.isNotBlank(fieldInfo.getFieldName())) {
-                        return ValidationInfo.buildColumnByField(fieldInfo.getFieldName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                        result = ValidationInfo.buildColumnByField(fieldInfo.getFieldName(), validationData.rowNum(), validationData.options());
                     } else if (fieldInfo.getHeadColumnIndex() != null) {
-                        return ValidationInfo.buildColumnByIndex(fieldInfo.getHeadColumnIndex(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                        result = ValidationInfo.buildColumnByIndex(fieldInfo.getHeadColumnIndex(), validationData.rowNum(), validationData.options());
+                    } else {
+                        result = ValidationInfo.buildColumnByHead(fieldInfo.getHeadName(), validationData.rowNum(), validationData.options());
                     }
-                    return ValidationInfo.buildColumnByHead(fieldInfo.getHeadName(), fieldInfo.getDropDownBoxRowNum(), fieldInfo.getDropDownBoxOptions());
+                    return result.setAsDicSheet(validationData.asDicSheet())
+                            .setSheetName(validationData.sheetName());
                 }).collect(Collectors.toList());
     }
 
