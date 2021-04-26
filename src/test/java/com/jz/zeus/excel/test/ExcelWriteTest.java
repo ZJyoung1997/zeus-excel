@@ -7,8 +7,6 @@ import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.ZeusExcel;
 import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.test.data.DemoData;
-import com.jz.zeus.excel.write.builder.ZeusExcelWriter;
-import com.jz.zeus.excel.write.builder.ZeusWriteSheet;
 import com.jz.zeus.excel.write.handler.ErrorInfoHandler;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import lombok.SneakyThrows;
@@ -111,7 +109,7 @@ public class ExcelWriteTest {
         return new ArrayList<ValidationInfo>() {{
             add(ValidationInfo.buildColumnByField("id", list));
             add(ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"));
-            add(ValidationInfo.buildColumnByHead("自定义1", "是自定义", "不是自定义").setAsDicSheet(true).setSheetName("字典表"));
+            add(ValidationInfo.buildColumnByHead("自定义1", "是自定义", "不是自定义").asDicSheet("字典表"));
         }};
     }
 

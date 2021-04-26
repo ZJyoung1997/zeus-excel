@@ -78,9 +78,10 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         Integer headRowNum = writeSheetHelper.getHeadRowNum();
         Workbook workbook = writeWorkbookHolder.getWorkbook();
         Sheet sheet = writeSheetHolder.getSheet();
-        int length = validationInfoList.size();
-        for (int i = 0; i < length; i++) {
-            ValidationInfo boxInfo = validationInfoList.get(i);
+        for (ValidationInfo boxInfo : validationInfoList) {
+            if (CollUtil.isEmpty(boxInfo.getOptions())) {
+                continue;
+            }
             Integer rowIndex = boxInfo.getRowIndex();
             Integer columnIndex = boxInfo.getColumnIndex();
             if (columnIndex == null) {
@@ -102,15 +103,12 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
 
     private void addValidationData(Workbook workbook, Sheet sheet, int firstRow, int lastRow, int firstCol, int lastCol, ValidationInfo boxInfo) {
         List<String> options = boxInfo.getOptions();
-        if (CollUtil.isEmpty(options)) {
-            return;
-        }
         DataValidationHelper helper = sheet.getDataValidationHelper();
         DataValidationConstraint constraint;
-        if (boxInfo.isAsDicSheet() || options.size() > MAX_GENERAL_OPTION_NUM) {
-            constraint = helper.createFormulaListConstraint(addHiddenValidationData(workbook, boxInfo));
-        } else {
+        if (!boxInfo.isAsDicSheet() && options.size() <= MAX_GENERAL_OPTION_NUM) {
             constraint = helper.createExplicitListConstraint(options.toArray(new String[0]));
+        } else {
+            constraint = helper.createFormulaListConstraint(addHiddenValidationData(workbook, boxInfo));
         }
         DataValidation dataValidation = helper.createValidation(constraint,
                 new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol));
@@ -128,7 +126,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         int beginRowIndex = 0;
         String sheetName = boxInfo.getSheetName();
         if (StrUtil.isBlank(sheetName)) {
-            sheetName = "dic_".concat(IdUtil.fastSimpleUUID());
+            sheetName = "dic_".concat(RandomUtil.randomString(16));
         }
         Sheet sheet = workbook.createSheet(sheetName);
         sheet.protectSheet(IdUtil.fastSimpleUUID());
