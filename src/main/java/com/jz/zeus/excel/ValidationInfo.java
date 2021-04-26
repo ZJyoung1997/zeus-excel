@@ -242,9 +242,10 @@ public class ValidationInfo {
     }
 
 
-    public void asDicSheet(String sheetName) {
+    public ValidationInfo asDicSheet(String sheetName) {
         this.asDicSheet = true;
         this.sheetName = sheetName;
+        return this;
     }
 
     @Override
