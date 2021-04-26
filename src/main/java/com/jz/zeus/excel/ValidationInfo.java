@@ -242,6 +242,10 @@ public class ValidationInfo {
     }
 
 
+    public void asDicSheet(String sheetName) {
+        this.asDicSheet = true;
+        this.sheetName = sheetName;
+    }
 
     @Override
     public boolean equals(Object o) {
