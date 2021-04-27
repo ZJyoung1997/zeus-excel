@@ -21,6 +21,11 @@ public class DynamicHead {
 
     private String fieldName;
 
+    /**
+     * 需要变更的表头
+     */
+    private String headName;
+
     private String newName;
 
     private String appendInfo;
@@ -80,7 +85,7 @@ public class DynamicHead {
         return dynamicHead;
     }
 
-    public String getFinalHeadName(String oldHeadName) {
+    public String buildFinalHeadName(String oldHeadName) {
         if (StrUtil.isBlank(newName)) {
             return StrUtil.concat(true, oldHeadName, appendInfo);
         }

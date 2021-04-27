@@ -8,6 +8,7 @@ import com.jz.zeus.excel.annotation.ValidationData;
 import lombok.Data;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 /**
  * @Author JZ
@@ -23,7 +24,7 @@ public class FieldInfo {
      */
     private String fieldName;
 
-    private String headName;
+    private List<String> headNames;
 
     private Integer headColumnIndex;
 

@@ -24,8 +24,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
@@ -43,8 +43,9 @@ public class ExcelWriteTest {
         }};
         List<CellErrorInfo> errorInfos = new ArrayList<CellErrorInfo>() {{
             add(CellErrorInfo.buildByField(5, "id", "不合法id"));
-            add(CellErrorInfo.buildByColumnIndex(7, 2, "金额有误"));
-            add(CellErrorInfo.buildByHead(7, "destPlus（选填）", "金额有误"));
+            add(CellErrorInfo.buildByColumnIndex(7, 6, "金额有误"));
+            add(CellErrorInfo.buildByHead(7, "destPlus（选填）", "动态表头数据有误"));
+            add(CellErrorInfo.buildByHead(3, "自定义1", "自定义表头数据有误"));
         }};
 
         ZeusExcel.write(path)

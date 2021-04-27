@@ -3,7 +3,6 @@ package com.jz.zeus.excel.context;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.map.MapUtil;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,16 +21,16 @@ public class ExcelContext {
 
     private final String SHEET_DATA = "sheet_data";
 
-    private Map<String, Object> EXCEL_CONTEXT = new HashMap<>();
+    private Map<String, Object> EXCEL_CONTEXT = new HashMap<>(4);
 
-    public void setExtendHead(List<String> extendHeads) {
-        EXCEL_CONTEXT.put(EXTEND_HEAD, extendHeads);
+    public void setExtendHead(Map<String, Integer> extendHeadMap) {
+        EXCEL_CONTEXT.put(EXTEND_HEAD, extendHeadMap);
     }
 
-    public List<String> getExtendHead() {
-        List<String> result = (List<String>) EXCEL_CONTEXT.get(EXTEND_HEAD);
+    public Map<String, Integer> getExtendHead() {
+        Map<String, Integer> result = (Map<String, Integer>) EXCEL_CONTEXT.get(EXTEND_HEAD);
         if (result == null) {
-            return new ArrayList<>(0);
+            return MapUtil.newHashMap(0);
         }
         return result;
     }

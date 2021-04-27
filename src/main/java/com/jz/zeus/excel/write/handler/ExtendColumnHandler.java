@@ -4,8 +4,6 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.metadata.Head;
-import com.alibaba.excel.write.handler.AbstractRowWriteHandler;
-import com.alibaba.excel.write.handler.SheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
@@ -28,7 +26,7 @@ import java.util.Map;
  * @Author JZ
  * @Date 2021/4/12 15:23
  */
-public class ExtendColumnHandler extends AbstractRowWriteHandler implements SheetWriteHandler {
+public class ExtendColumnHandler extends AbstractRowWriteHandler {
 
     private ExcelContext excelContext;
 
@@ -62,7 +60,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
     }
 
     @Override
-    public void afterRowDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Integer relativeRowIndex, Boolean isHead) {
+    public void afterRowCreate(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Integer relativeRowIndex, Boolean isHead) {
         if (isNotClassHead || fieldAccessor == null || CollUtil.isEmpty(extendHead)) {
             return;
         }
@@ -120,7 +118,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler implements Shee
             fieldAccessor = new UnsafeFieldAccessor(extendColumnField);
             addHeadCache(excelWriteHeadProperty);
         });
-        excelContext.setExtendHead(extendHead);
+        excelContext.setExtendHead(new HashMap<>(extendHeadIndexMap));
     }
 
     @Override

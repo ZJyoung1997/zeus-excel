@@ -81,17 +81,6 @@ public class WriteSheetHelper {
         }
         initHeadRowNum();
 
-        if (CollUtil.isNotEmpty(headMap)) {
-            headMap.values().forEach(head -> {
-                Integer columnIndex = head.getColumnIndex();
-                head.getHeadNameList().forEach(headName -> {
-                    headNameIndexMap.put(headName, columnIndex);
-                });
-                if (StrUtil.isNotBlank(head.getFieldName())) {
-                    fieldNameIndexMap.put(head.getFieldName(), columnIndex);
-                }
-            });
-        }
         if (lastRowNum > 0) {
             Sheet sheet = writeSheetHolder.getCachedSheet();
             for (int i = 0; i < headRowNum; i++) {
@@ -108,12 +97,20 @@ public class WriteSheetHelper {
                     }
                 }
             }
+        } else if (CollUtil.isNotEmpty(headMap)) {
+            headMap.values().forEach(head -> {
+                Integer columnIndex = head.getColumnIndex();
+                head.getHeadNameList().forEach(headName -> {
+                    headNameIndexMap.put(headName, columnIndex);
+                });
+                if (StrUtil.isNotBlank(head.getFieldName())) {
+                    fieldNameIndexMap.put(head.getFieldName(), columnIndex);
+                }
+            });
         }
-        int columnIndexMax = headNameIndexMap.values().stream().max(Integer::compareTo).orElse(-1);
+
         if (CollUtil.isNotEmpty(excelContext.getExtendHead())) {
-            for (String extendHead : excelContext.getExtendHead()) {
-                headNameIndexMap.put(extendHead, ++columnIndexMax);
-            }
+            headNameIndexMap.putAll(excelContext.getExtendHead());
         }
         if (MapUtil.isNotEmpty(excelContext.getDynamicHead())) {
             headNameIndexMap.putAll(excelContext.getDynamicHead());
