@@ -154,6 +154,7 @@ public class ZeusExcelWriterSheetBuilder {
             if (excelWriter != null) {
                 excelWriter.finish();
             }
+            excelContext.clear();
         }
     }
 
@@ -174,6 +175,7 @@ public class ZeusExcelWriterSheetBuilder {
             if (excelWriter != null) {
                 excelWriter.finish();
             }
+            excelContext.clear();
         }
     }
 

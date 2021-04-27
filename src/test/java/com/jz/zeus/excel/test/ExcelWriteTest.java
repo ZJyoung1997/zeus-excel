@@ -1,5 +1,8 @@
 package com.jz.zeus.excel.test;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.TimeInterval;
+import cn.hutool.core.lang.Console;
 import com.alibaba.excel.EasyExcel;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DynamicHead;
@@ -28,8 +31,8 @@ public class ExcelWriteTest {
     private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
-        System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
-        long startTime = System.currentTimeMillis();
+        Console.log("写入Excel前内存：{}M", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024));
+        TimeInterval timer = DateUtil.timer();
 
         CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
         styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
@@ -71,9 +74,9 @@ public class ExcelWriteTest {
 //        excelWriter.finish();
 
 
-        System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
-        System.out.println("写入Excel后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
-        System.out.println("end");
+        Console.log("写入耗时：{}s", timer.intervalSecond());
+        Console.log("写入Excel后内存：{}M", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024));
+        Console.log("end");
     }
 
     @SneakyThrows

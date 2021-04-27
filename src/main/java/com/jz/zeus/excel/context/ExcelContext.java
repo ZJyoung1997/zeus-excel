@@ -1,8 +1,10 @@
 package com.jz.zeus.excel.context;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.map.MapUtil;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +79,16 @@ public class ExcelContext {
     }
 
     public void clear() {
+        for (Map.Entry<String, Object> entry : EXCEL_CONTEXT.entrySet()) {
+            Object cache = entry.getValue();
+            if (cache instanceof Collection) {
+                CollUtil.clear((Collection) cache);
+            } else if (cache instanceof Map) {
+                MapUtil.clear((Map) cache);
+            } else {
+                EXCEL_CONTEXT.put(entry.getKey(), null);
+            }
+        }
         EXCEL_CONTEXT.clear();
     }
 

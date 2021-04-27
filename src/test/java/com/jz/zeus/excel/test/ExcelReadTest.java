@@ -1,12 +1,13 @@
 package com.jz.zeus.excel.test;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.TimeInterval;
+import cn.hutool.core.lang.Console;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.ReadListener;
-import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
-import javafx.util.Pair;
 import lombok.SneakyThrows;
 
 import java.util.ArrayList;
@@ -26,8 +27,8 @@ public class ExcelReadTest {
 
     @SneakyThrows
     public static void main(String[] args) {
-        System.out.println("解析Excel前内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
-        long startTime = System.currentTimeMillis();
+        Console.log("解析Excel前内存：{}M", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024));
+        TimeInterval timer = DateUtil.timer();
 
         ExcelReadListener readListener = new DemoExcelReadListener();
 //        NoModelReadListener readListener = new TestNoModelReadListener();
@@ -46,9 +47,8 @@ public class ExcelReadTest {
 //        }
 
 
-
-        System.out.println("耗时：" + (System.currentTimeMillis() - startTime) / 1000 + "s");
-        System.out.println("解析Excel后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
+        Console.log("读取耗时：{}s", timer.intervalSecond());
+        Console.log("解析Excel后内存：{}M", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024));
     }
 
     public static void read(String path, ReadListener readListener) {
