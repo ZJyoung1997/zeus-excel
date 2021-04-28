@@ -97,6 +97,8 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                 addValidationData(workbook, sheet, rowIndex, rowIndex, 0, boxInfo.getColumnNum(), boxInfo);
             } else if (rowIndex != null && columnIndex != null) {
                 addValidationData(workbook, sheet, rowIndex, rowIndex, columnIndex, columnIndex, boxInfo);
+            } else if (boxInfo.isAsDicSheet()) {
+                addDictionarySheet(workbook, boxInfo);
             }
         }
     }
@@ -158,6 +160,22 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                 .append('$').append(StrUtil.filter(s2, Character::isDigit)).toString();
         categoryName.setRefersToFormula(refersToFormula);
         return sheetName;
+    }
+
+    private void addDictionarySheet(Workbook workbook, ValidationInfo boxInfo) {
+        if (!boxInfo.isAsDicSheet()) {
+            return;
+        }
+        String sheetName = boxInfo.getSheetName();
+        if (StrUtil.isBlank(sheetName)) {
+            sheetName = "dic_".concat(RandomUtil.randomString(16));
+        }
+        Sheet sheet = workbook.createSheet(sheetName);
+        sheet.protectSheet(IdUtil.fastSimpleUUID());
+        List<String> options = boxInfo.getOptions();
+        for (int i = 0; i < options.size(); i++) {
+            sheet.createRow(i).createCell(0).setCellValue(options.get(i));
+        }
     }
 
     public void addValidationInfo(ValidationInfo validationInfo) {
