@@ -241,6 +241,16 @@ public class ValidationInfo {
         return info;
     }
 
+    /**
+     * 构建字典表
+     */
+    public static ValidationInfo buildDictionaryTable(String sheetName) {
+        ValidationInfo info = new ValidationInfo();
+        info.sheetName = sheetName;
+        info.asDicSheet = true;
+        return info;
+    }
+
 
     public ValidationInfo asDicSheet(String sheetName) {
         this.asDicSheet = true;
