@@ -244,10 +244,22 @@ public class ValidationInfo {
     /**
      * 构建字典表
      */
-    public static ValidationInfo buildDictionaryTable(String sheetName) {
+    public static ValidationInfo buildDictionaryTable(String sheetName, List<String> options) {
         ValidationInfo info = new ValidationInfo();
-        info.sheetName = sheetName;
         info.asDicSheet = true;
+        info.sheetName = sheetName;
+        info.options = options;
+        return info;
+    }
+
+    /**
+     * 构建字典表
+     */
+    public static ValidationInfo buildDictionaryTable(String sheetName, String... options) {
+        ValidationInfo info = new ValidationInfo();
+        info.asDicSheet = true;
+        info.sheetName = sheetName;
+        info.options = ListUtil.toList(options);
         return info;
     }
 
