@@ -95,9 +95,7 @@ public class ZeusExcelWriterSheetBuilder {
     public ZeusWriteSheet build(List<List<String>> headNames) {
         ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
         sheetBuilder.head(headNames);
-        if (CollUtil.isNotEmpty(validationInfos)) {
-            sheetBuilder.registerWriteHandler(new ValidationInfoHandler(excelContext, validationInfos));
-        }
+        sheetBuilder.registerWriteHandler(new ValidationInfoHandler(excelContext, validationInfos));
         if (CollUtil.isNotEmpty(errorInfos)) {
             sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
         }
@@ -131,9 +129,7 @@ public class ZeusExcelWriterSheetBuilder {
         } else {
             sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyle));
         }
-        if (CollUtil.isNotEmpty(validationInfos)) {
-            sheetBuilder.registerWriteHandler(new ValidationInfoHandler(excelContext, validationInfos));
-        }
+        sheetBuilder.registerWriteHandler(new ValidationInfoHandler(excelContext, validationInfos));
         if (CollUtil.isNotEmpty(errorInfos)) {
             sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
         }
