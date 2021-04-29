@@ -2,7 +2,9 @@ package com.jz.zeus.excel;
 
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ArrayUtil;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.jz.zeus.excel.util.ClassUtils;
 import lombok.AccessLevel;
@@ -49,8 +51,19 @@ public class ValidationInfo {
     private List<String> options;
 
     /**
+     * 错误信息box的标题
+     */
+    private String errorTitle;
+
+    /**
+     * 当输入的数据不是下拉框中数据时的提示信息
+     */
+    private String errorMsg;
+
+    /**
      * sheet 名称
      */
+    @Getter(AccessLevel.NONE)
     private String sheetName;
 
     /**
@@ -267,6 +280,19 @@ public class ValidationInfo {
     public ValidationInfo asDicSheet(String sheetName) {
         this.asDicSheet = true;
         this.sheetName = sheetName;
+        return this;
+    }
+
+    public String getSheetName() {
+        if (CharSequenceUtil.isBlank(sheetName)) {
+            sheetName = "dic_" + RandomUtil.randomString(16);
+        }
+        return sheetName;
+    }
+
+    public ValidationInfo setErrorBox(String errorTitle, String errorMsg) {
+        this.errorTitle = errorTitle;
+        this.errorMsg = errorMsg;
         return this;
     }
 

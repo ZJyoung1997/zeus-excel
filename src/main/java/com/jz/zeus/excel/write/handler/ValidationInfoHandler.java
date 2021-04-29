@@ -115,8 +115,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         DataValidation dataValidation = helper.createValidation(constraint,
                 new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol));
         if (dataValidation instanceof XSSFDataValidation) {
-            dataValidation.setSuppressDropDownArrow(true);
             dataValidation.setShowErrorBox(true);
+            dataValidation.createErrorBox(boxInfo.getErrorTitle(), boxInfo.getErrorMsg());
+            dataValidation.setSuppressDropDownArrow(true);
         } else {
             dataValidation.setSuppressDropDownArrow(false);
         }
@@ -127,9 +128,6 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         int columnIndex = 0;
         int beginRowIndex = 0;
         String sheetName = boxInfo.getSheetName();
-        if (StrUtil.isBlank(sheetName)) {
-            sheetName = "dic_".concat(RandomUtil.randomString(16));
-        }
         Sheet sheet = workbook.createSheet(sheetName);
         sheet.protectSheet(IdUtil.fastSimpleUUID());
         if (!boxInfo.isAsDicSheet()) {

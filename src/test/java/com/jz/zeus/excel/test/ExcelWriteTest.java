@@ -111,7 +111,7 @@ public class ExcelWriteTest {
             list.add("jjj" + i);
         }
         return new ArrayList<ValidationInfo>() {{
-            add(ValidationInfo.buildColumnByField("id", list));
+            add(ValidationInfo.buildColumnByField("id", list).setErrorBox("Error", "请选择正确的ID"));
             add(ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"));
             add(ValidationInfo.buildColumnByHead("自定义1", "是自定义", "不是自定义").asDicSheet("字典表"));
         }};
