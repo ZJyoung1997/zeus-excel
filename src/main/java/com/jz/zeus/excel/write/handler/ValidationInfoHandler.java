@@ -19,6 +19,7 @@ import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * @Author JZ
@@ -128,7 +129,8 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         int columnIndex = 0;
         int beginRowIndex = 0;
         String sheetName = boxInfo.getSheetName();
-        Sheet sheet = workbook.createSheet(sheetName);
+        Sheet sheet = Optional.ofNullable(workbook.getSheet(sheetName))
+                .orElse(workbook.createSheet(sheetName));
         sheet.protectSheet(IdUtil.fastSimpleUUID());
         if (!boxInfo.isAsDicSheet()) {
             columnIndex = RandomUtil.randomInt(200);
