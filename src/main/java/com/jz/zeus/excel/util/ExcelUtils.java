@@ -1,5 +1,6 @@
 package com.jz.zeus.excel.util;
 
+import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import lombok.experimental.UtilityClass;
 import org.apache.poi.ss.usermodel.*;
@@ -12,6 +13,40 @@ import org.apache.poi.xssf.usermodel.XSSFRichTextString;
  */
 @UtilityClass
 public class ExcelUtils {
+
+    public static int columnToIndex(String column) {
+        if (!column.matches("[A-Z]+")) {
+            try {
+                throw new Exception("Invalid parameter");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        int index = 0;
+        char[] chars = column.toUpperCase().toCharArray();
+        for (int i = 0; i < chars.length; i++) {
+            index += ((int) chars[i] - (int) 'A' + 1)
+                    * (int) Math.pow(26, chars.length - i - 1);
+        }
+        return index;
+    }
+
+    /**
+     * Excel列索引转字母
+     * @param columnIndex      列索引,从 0 开始
+     */
+    public String columnIndexToStr(int columnIndex) {
+        Assert.isTrue(columnIndex >= 0);
+        StringBuilder column = new StringBuilder();
+        do {
+            if (column.length() > 0) {
+                columnIndex--;
+            }
+            column.insert(0, ((char) (columnIndex % 26 + (int) 'A')));
+            columnIndex = ((columnIndex - columnIndex % 26) / 26);
+        } while (columnIndex > 0);
+        return column.toString();
+    }
 
     public void setCommentErrorInfo(Sheet sheet, Integer rowIndex, Integer columnIndex, String... errorMessages) {
         setCommentErrorInfo(sheet, rowIndex, columnIndex, "- ", "", errorMessages);

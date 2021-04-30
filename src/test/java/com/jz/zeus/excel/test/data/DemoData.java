@@ -48,6 +48,15 @@ public class DemoData {
     @ExcelProperty(index = 4, value = "FUNC")
     private String func;
 
+    @ExcelProperty(index = 5, value = "省")
+    private String provinces;
+
+    @ExcelProperty(index = 6, value = "市")
+    private String city;
+
+    @ExcelProperty(index = 7, value = "镇")
+    private String town;
+
     @ExcelIgnore
     @ExtendColumn
     @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)

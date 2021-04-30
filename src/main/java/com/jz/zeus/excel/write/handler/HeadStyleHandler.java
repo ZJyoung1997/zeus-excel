@@ -185,14 +185,11 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
         int result = 0;
         for (String s : strs) {
             int chineseNum = StringUtils.chineseNum(s);
-            int dataLength = (int) ((s.length() - chineseNum) + chineseNum * 1.5);
-            int columnWidth = dataLength * 42 * fontSize;
-            columnWidth = columnWidth > Constants.MAX_COLUMN_WIDTH ? Constants.MAX_COLUMN_WIDTH : columnWidth;
-            if (columnWidth > result) {
-                result = columnWidth;
-            }
+            int englishNum = s.length() - chineseNum;
+            int columnWidth = (int) ((englishNum * 1.2 + chineseNum * 2) * 34 * fontSize);
+            result = Math.max(result, columnWidth);
         }
-        return result;
+        return result > Constants.MAX_COLUMN_WIDTH ? Constants.MAX_COLUMN_WIDTH : result;
     }
 
     public HeadStyleHandler isAutoColumnWidth(boolean isAutoColumnWidth) {
