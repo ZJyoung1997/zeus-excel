@@ -161,7 +161,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         StrBuilder formulaBuild = StrUtil.strBuilder();
         String columnStr = ExcelUtils.columnIndexToStr(getColumnIndex(parentBoxInfo));
         for (int i = writeSheetHelper.getHeadRowNum(); i < boxInfo.getRowNum(); i++) {
-            formulaBuild.append("INDIRECT(CONCAT($").append(columnStr).append('$').append(i + 1)
+            formulaBuild.append("INDIRECT(CONCATENATE($").append(columnStr).append('$').append(i + 1)
                     .append(",\"").append(parentSheetName).append("\"))");
             DataValidationConstraint constraint = helper.createFormulaListConstraint(formulaBuild.toString());
             CellRangeAddressList rangeAddressList = new CellRangeAddressList(i, i, firstCol, lastCol);
