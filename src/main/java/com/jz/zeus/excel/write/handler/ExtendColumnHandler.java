@@ -121,9 +121,6 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler {
         excelContext.setExtendHead(new HashMap<>(extendHeadIndexMap));
     }
 
-    @Override
-    public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {}
-
     private void addHeadCache(ExcelWriteHeadProperty excelWriteHeadProperty) {
         if (CollUtil.isEmpty(dataList) || fieldAccessor == null) {
             return;

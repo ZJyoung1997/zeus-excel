@@ -17,6 +17,30 @@ public class CellStyleProperty extends StyleProperty {
     public static final short DEFAULT_FONT_SIZE = 12;
 
     /**
+     * 单元格行索引
+     */
+    @Getter
+    private Integer rowIndex;
+
+    /**
+     * 单元格列索引
+     */
+    @Getter
+    private Integer columnIndex;
+
+    /**
+     * 属性名
+     */
+    @Getter
+    private String fieldName;
+
+    /**
+     * 表头
+     */
+    @Getter
+    private String headName;
+
+    /**
      * 列宽
      */
     @Getter
@@ -35,6 +59,36 @@ public class CellStyleProperty extends StyleProperty {
         } else {
             this.width = width;
         }
+    }
+
+    public CellStyleProperty setLocation(int rowIndex, int columnIndex) {
+        this.rowIndex = rowIndex;
+        this.columnIndex = columnIndex;
+        return this;
+    }
+
+    public CellStyleProperty setLocation(int rowIndex, String fieldName) {
+        this.rowIndex = rowIndex;
+        this.fieldName = fieldName;
+        return this;
+    }
+
+    public CellStyleProperty setLocationByHead(int rowIndex, String headName) {
+        this.rowIndex = rowIndex;
+        this.headName = headName;
+        return this;
+    }
+
+    public static CellStyleProperty getDefaultHeadProperty(int rowIndex, int columnIndex) {
+        return getDefaultHeadProperty().setLocation(rowIndex, columnIndex);
+    }
+
+    public static CellStyleProperty getDefaultHeadProperty(int rowIndex, String fieldName) {
+        return getDefaultHeadProperty().setLocation(rowIndex, fieldName);
+    }
+
+    public static CellStyleProperty getDefaultHeadPropertyByHead(int rowIndex, String headName) {
+        return getDefaultHeadProperty().setLocationByHead(rowIndex, headName);
     }
 
     /**

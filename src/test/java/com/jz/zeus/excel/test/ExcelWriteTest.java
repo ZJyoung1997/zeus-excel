@@ -30,18 +30,21 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         Console.log("写入Excel前内存：{}M", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024));
         TimeInterval timer = DateUtil.timer();
 
-        CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty();
+        CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty(0, "town");
         styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
         styleProperty.setFillForegroundColor(IndexedColors.RED.index);
-        List<CellStyleProperty> styleProperties = new ArrayList<>();
-        styleProperties.add(styleProperty);
+
+        CellStyleProperty styleProperty1 = CellStyleProperty.getDefaultHeadPropertyByHead(0, "自定义1");
+        styleProperty1.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
+        styleProperty1.setFillForegroundColor(IndexedColors.RED.index);
+        List<CellStyleProperty> styleProperties = ListUtil.toList(styleProperty, styleProperty1);
 
         List<DynamicHead> dynamicHeads = new ArrayList<DynamicHead>() {{
             add(DynamicHead.buildAppendInfo("src", "（必填）"));
@@ -57,7 +60,7 @@ public class ExcelWriteTest {
         ZeusExcel.write(path)
                 .sheet("模板")
                 .dynamicHeads(dynamicHeads)
-                .singleRowHeadStyles(styleProperties)
+                .headStyles(styleProperties)
                 .validationInfos(getValidationInfo())
                 .errorInfos(errorInfos)
 //                .doWrite(ListUtil.toList("s"), null);

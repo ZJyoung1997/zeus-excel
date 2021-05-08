@@ -39,9 +39,7 @@ public class ZeusExcelWriterSheetBuilder {
 
     private CellStyleProperty headStyle;
 
-    private List<CellStyleProperty> singleRowHeadStyles;
-
-    private List<List<CellStyleProperty>> multiRowHeadStyles;
+    private List<CellStyleProperty> headStyles;
 
     private List<String> excludeColumnFiledNames;
 
@@ -77,13 +75,8 @@ public class ZeusExcelWriterSheetBuilder {
         return this;
     }
 
-    public ZeusExcelWriterSheetBuilder singleRowHeadStyles(List<CellStyleProperty> singleRowHeadStyles) {
-        this.singleRowHeadStyles = singleRowHeadStyles;
-        return this;
-    }
-
-    public ZeusExcelWriterSheetBuilder multiRowHeadStyles(List<List<CellStyleProperty>> multiRowHeadStyles) {
-        this.multiRowHeadStyles = multiRowHeadStyles;
+    public ZeusExcelWriterSheetBuilder headStyles(List<CellStyleProperty> headStyles) {
+        this.headStyles = headStyles;
         return this;
     }
 
@@ -99,10 +92,8 @@ public class ZeusExcelWriterSheetBuilder {
         if (CollUtil.isNotEmpty(errorInfos)) {
             sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
         }
-        if (CollUtil.isNotEmpty(multiRowHeadStyles)) {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext).setMultiRowHeadCellStyles(multiRowHeadStyles));
-        } else if (CollUtil.isNotEmpty(singleRowHeadStyles)) {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, singleRowHeadStyles));
+        if (CollUtil.isNotEmpty(headStyles)) {
+            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyles));
         } else {
             sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyle));
         }
@@ -121,11 +112,8 @@ public class ZeusExcelWriterSheetBuilder {
             sheetBuilder.registerWriteHandler(new DynamicHeadHandler(excelContext, dynamicHeads));
         }
         sheetBuilder.registerWriteHandler(new ExtendColumnHandler(excelContext));
-        if (CollUtil.isNotEmpty(multiRowHeadStyles)) {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext)
-                    .setMultiRowHeadCellStyles(multiRowHeadStyles));
-        } else if (CollUtil.isNotEmpty(singleRowHeadStyles)) {
-            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, singleRowHeadStyles));
+        if (CollUtil.isNotEmpty(headStyles)) {
+            sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyles));
         } else {
             sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyle));
         }
