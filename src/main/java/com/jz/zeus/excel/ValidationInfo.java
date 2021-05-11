@@ -51,6 +51,11 @@ public class ValidationInfo {
     private List<String> options;
 
     /**
+     * 是否校验数据是否为下拉框内容，若为false {@link #errorTitle} 和 {@link #errorMsg} 将无效
+     */
+    private boolean checkDatavalidity = true;
+
+    /**
      * 错误信息box的标题
      */
     private String errorTitle;

@@ -31,4 +31,19 @@ public @interface ValidationData {
      */
     int rowNum() default 10000;
 
+    /**
+     * 是否校验数据是否为下拉框内容，若为false {@link #errorTitle} 和 {@link #errorMsg} 将无效
+     */
+    boolean checkDatavalidity() default true;
+
+    /**
+     * 错误信息box的标题
+     */
+    String errorTitle() default "";
+
+    /**
+     * 当输入的数据不是下拉框中数据时的提示信息
+     */
+    String errorMsg() default "";
+
 }

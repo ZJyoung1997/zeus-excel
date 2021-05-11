@@ -89,7 +89,9 @@ public class ClassUtils {
                     ValidationData validationData = fieldInfo.getValidationData();
                     return ValidationInfo.buildColumnByField(fieldInfo.getFieldName(), validationData.rowNum(), validationData.options())
                             .setAsDicSheet(validationData.asDicSheet())
-                            .setSheetName(validationData.sheetName());
+                            .setSheetName(validationData.sheetName())
+                            .setCheckDatavalidity(validationData.checkDatavalidity())
+                            .setErrorBox(validationData.errorTitle(),validationData.errorMsg());
                 }).collect(Collectors.toList());
     }
 

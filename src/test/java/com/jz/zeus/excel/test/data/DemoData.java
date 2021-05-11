@@ -44,7 +44,7 @@ public class DemoData {
     private String dest;
 
 //    @IsLong
-    @ValidationData(options = {"aa", "bb", "cc"})
+    @ValidationData(options = {"aa", "bb", "cc"}, errorTitle = "FUNC错误", errorMsg = "非法值")
     @ExcelProperty(index = 4, value = "FUNC")
     private String func;
 

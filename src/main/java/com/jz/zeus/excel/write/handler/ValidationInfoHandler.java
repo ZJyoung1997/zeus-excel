@@ -1,7 +1,6 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -225,11 +224,13 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
     private DataValidation createDataValidation(DataValidationHelper helper, DataValidationConstraint constraint, CellRangeAddressList cellRangeAddressList, ValidationInfo boxInfo) {
         DataValidation dataValidation = helper.createValidation(constraint, cellRangeAddressList);
         if (dataValidation instanceof XSSFDataValidation) {
-            dataValidation.setShowErrorBox(true);
-            dataValidation.createErrorBox(boxInfo.getErrorTitle(), boxInfo.getErrorMsg());
             dataValidation.setSuppressDropDownArrow(true);
         } else {
             dataValidation.setSuppressDropDownArrow(false);
+        }
+        if (boxInfo.isCheckDatavalidity()) {
+            dataValidation.setShowErrorBox(true);
+            dataValidation.createErrorBox(boxInfo.getErrorTitle(), boxInfo.getErrorMsg());
         }
         return dataValidation;
     }
