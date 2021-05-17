@@ -2,6 +2,7 @@ package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.ReflectUtil;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
@@ -11,7 +12,6 @@ import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
 import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ClassUtils;
-import com.jz.zeus.excel.util.UnsafeFieldAccessor;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 
@@ -50,9 +50,9 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler {
     private List<String> extendHead;
 
     /**
-     * 扩展字段访问器
+     * 扩展字段
      */
-    private UnsafeFieldAccessor fieldAccessor;
+    private Field extendColumnField;
 
     public ExtendColumnHandler(ExcelContext excelContext) {
         Assert.notNull(excelContext, "ExcelContext must not be null");
@@ -61,7 +61,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler {
 
     @Override
     public void afterRowCreate(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Integer relativeRowIndex, Boolean isHead) {
-        if (isNotClassHead || fieldAccessor == null || CollUtil.isEmpty(extendHead)) {
+        if (isNotClassHead || CollUtil.isEmpty(extendHead)) {
             return;
         }
         if (Boolean.TRUE.equals(isHead)) {
@@ -110,19 +110,22 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler {
         dataList = excelContext.getSheetData();
         headRowNum = excelWriteHeadProperty.getHeadRowNumber();
 
+        extendColumnField = null;
         List<FieldInfo> fieldInfos = ClassUtils.getClassFieldInfo(writeSheetHolder.getClazz());
         fieldInfos.stream().filter(FieldInfo::isExtendColumn)
                 .findFirst().ifPresent(fieldInfo -> {
-            Field extendColumnField = fieldInfo.getField();
-            extendColumnField.setAccessible(true);
-            fieldAccessor = new UnsafeFieldAccessor(extendColumnField);
+            extendColumnField = fieldInfo.getField();
             addHeadCache(excelWriteHeadProperty);
         });
+        if (extendColumnField == null) {
+            isNotClassHead = true;
+            return;
+        }
         excelContext.setExtendHead(new HashMap<>(extendHeadIndexMap));
     }
 
     private void addHeadCache(ExcelWriteHeadProperty excelWriteHeadProperty) {
-        if (CollUtil.isEmpty(dataList) || fieldAccessor == null) {
+        if (CollUtil.isEmpty(dataList) || extendColumnField == null) {
             return;
         }
         Object rawData = null;
@@ -149,7 +152,7 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler {
     }
 
     private Map<String, String> getExtendData(Object rawData) {
-        return (Map<String, String>) fieldAccessor.getObject(rawData);
+        return (Map<String, String>) ReflectUtil.getFieldValue(rawData, extendColumnField);
     }
 
 }

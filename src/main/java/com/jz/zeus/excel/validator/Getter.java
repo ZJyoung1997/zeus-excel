@@ -1,23 +1,22 @@
 package com.jz.zeus.excel.validator;
 
+import cn.hutool.core.util.ReflectUtil;
 import lombok.SneakyThrows;
 
+import java.io.Serializable;
 import java.lang.invoke.SerializedLambda;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
-public interface Getter<T, R> extends Function<T, R> {
+public interface Getter<T, R> extends Function<T, R>, Serializable {
 
     @SneakyThrows
     default String getFieldName() {
-        Method method = this.getClass().getDeclaredMethod("writeReplace");
+        Method method = ReflectUtil.getMethodByName(this.getClass(), "writeReplace");
         method.setAccessible(true);
         SerializedLambda serializedLambda = (SerializedLambda) method.invoke(this);
         String fieldName = serializedLambda.getImplMethodName().substring("get".length());
         fieldName = fieldName.replaceFirst(fieldName.charAt(0) + "", (fieldName.charAt(0) + "").toLowerCase());
-        Field field = Class.forName(serializedLambda.getImplClass().replace("/", "."))
-                .getDeclaredField(fieldName);
         return fieldName;
     }
 

@@ -2,6 +2,7 @@ package com.jz.zeus.excel.read.listener;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Pair;
+import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.enums.HeadKindEnum;
@@ -18,7 +19,6 @@ import com.jz.zeus.excel.DynamicHead;
 import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.exception.DataConvertException;
 import com.jz.zeus.excel.util.ClassUtils;
-import com.jz.zeus.excel.util.UnsafeFieldAccessor;
 import com.jz.zeus.excel.util.ValidatorUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -239,9 +239,8 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             }
         });
 
-        UnsafeFieldAccessor accessor = new UnsafeFieldAccessor(extendField);
         if (Map.class == extendField.getType()) {
-            accessor.setObject(data, extendData);
+            ReflectUtil.setFieldValue(data, extendField, extendData);
         }
     }
 
