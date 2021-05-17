@@ -9,7 +9,6 @@ import com.alibaba.excel.annotation.write.style.HeadStyle;
 import com.jz.zeus.excel.annotation.ExtendColumn;
 import com.jz.zeus.excel.annotation.ValidationData;
 import com.jz.zeus.excel.test.converter.LongConverter;
-import com.jz.zeus.excel.validation.IsLong;
 import lombok.Data;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
@@ -31,7 +30,6 @@ public class DemoData {
     @ExcelProperty(index = 0, value = "订单ID\n（不可修改）", converter = LongConverter.class)
     private Long id;
 
-    @IsLong
     @ExcelProperty(index = 1, value = {"SRC"})
     private String src;
 
@@ -43,7 +41,6 @@ public class DemoData {
     @ExcelProperty(index = 3, value = "DEST")
     private String dest;
 
-//    @IsLong
     @ValidationData(options = {"aa", "bb", "cc"}, errorTitle = "FUNC错误", errorMsg = "非法值")
     @ExcelProperty(index = 4, value = "FUNC")
     private String func;

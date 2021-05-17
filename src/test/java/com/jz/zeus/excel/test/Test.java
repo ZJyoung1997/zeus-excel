@@ -4,7 +4,9 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.lang.Console;
 import cn.hutool.core.util.StrUtil;
+import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.util.ExcelUtils;
+import com.jz.zeus.excel.validator.BeanValidator;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -23,7 +25,9 @@ public class Test {
 
     @SneakyThrows
     public static void main(String[] args) {
-        Console.log(ExcelUtils.columnIndexToStr(43));
+        DemoData demoData = new DemoData();
+        Console.log(BeanValidator.build(demoData)
+                    .nonNull(DemoData::getDest));
     }
 
 
