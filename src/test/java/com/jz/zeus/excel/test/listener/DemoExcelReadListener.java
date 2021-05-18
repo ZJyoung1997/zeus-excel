@@ -1,5 +1,6 @@
 package com.jz.zeus.excel.test.listener;
 
+import cn.hutool.core.lang.Console;
 import com.alibaba.excel.context.AnalysisContext;
 import com.jz.zeus.excel.read.listener.AbstractExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
@@ -24,9 +25,9 @@ public class DemoExcelReadListener extends AbstractExcelReadListener<DemoData> {
 
     @Override
     protected void verify(Map<Integer, DemoData> dataMap, AnalysisContext analysisContext) {
-//        dataMap.forEach((rowIndex, data) -> {
-//            addErrorInfoByHead(rowIndex, "自定义1", "格式错误");
-//        });
+        dataMap.forEach((rowIndex, data) -> {
+            Console.log();
+        });
     }
 
     @Override

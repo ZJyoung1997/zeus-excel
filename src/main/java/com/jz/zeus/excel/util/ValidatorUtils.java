@@ -1,5 +1,6 @@
 package com.jz.zeus.excel.util;
 
+import com.jz.zeus.excel.validator.VerifyResult;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
@@ -15,10 +16,19 @@ import java.util.*;
 @UtilityClass
 public class ValidatorUtils {
 
-    private static final Validator validator = Validation.byProvider(HibernateValidator.class)
+    private static final Validator FAST_FAIL_VALIDATOR = Validation.byProvider(HibernateValidator.class)
             .configure()
-            .addProperty("hibernate.validator.fail_fast", "true")
+            .failFast(true)
+//            .addProperty("hibernate.validator.fail_fast", "true")
             .buildValidatorFactory().getValidator();
+
+    private static final Validator VALIDATOR = Validation.byProvider(HibernateValidator.class)
+            .configure()
+            .buildValidatorFactory().getValidator();
+
+    public <T> VerifyResult validate(T bean) {
+        return validate(bean, false);
+    }
 
     /**
      * 校验bean中是否符合注解中的条件
@@ -26,25 +36,20 @@ public class ValidatorUtils {
      * @param <T>
      * @return 错误信息，key 校验失败字段名、value 错误信息
      */
-    public <T> Map<String, List<String>> validate(T bean) {
+    public <T> VerifyResult validate(T bean, boolean isFastFail) {
         if (bean == null) {
-            return Collections.emptyMap();
+            return null;
         }
-        Set<ConstraintViolation<T>> constraintViolations = validator.validate(bean);
+        Set<ConstraintViolation<T>> constraintViolations = (isFastFail ? FAST_FAIL_VALIDATOR : VALIDATOR).validate(bean);
         if (constraintViolations == null) {
-            return Collections.emptyMap();
+            return null;
         }
-        Map<String, List<String>> errorMessageMap = new HashMap<>();
+        VerifyResult verifyResult = new VerifyResult();
         constraintViolations.forEach(violation -> {
             String fieldName = violation.getPropertyPath().toString();
-            List<String> errorMessages = errorMessageMap.get(fieldName);
-            if (errorMessages == null) {
-                errorMessages = new ArrayList<>();
-                errorMessageMap.put(fieldName, errorMessages);
-            }
-            errorMessages.add(violation.getMessage());
+            verifyResult.addErrorInfo(fieldName, violation.getMessage());
         });
-        return errorMessageMap;
+        return verifyResult;
     }
 
 }

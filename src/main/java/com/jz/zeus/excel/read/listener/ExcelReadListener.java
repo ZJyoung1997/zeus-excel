@@ -20,6 +20,7 @@ import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.exception.DataConvertException;
 import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.ValidatorUtils;
+import com.jz.zeus.excel.validator.VerifyResult;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -377,12 +378,12 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
         if (!enabledAnnotationValidation) {
             return;
         }
-        Map<String, List<String>> errorMessageMap = ValidatorUtils.validate(data);
-        if (CollUtil.isEmpty(errorMessageMap)) {
+        VerifyResult verifyResult = ValidatorUtils.validate(data);
+        if (Objects.isNull(verifyResult)) {
             return;
         }
         List<CellErrorInfo> errorMesInfoList = new ArrayList<>();
-        errorMessageMap.forEach((fieldName, errorMessages) -> {
+        verifyResult.getErrorInfoMap().forEach((fieldName, errorMessages) -> {
             errorMesInfoList.add(CellErrorInfo.buildByColumnIndex(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName), errorMessages));
         });
         errorMesInfoList.stream().collect(Collectors.groupingBy(CellErrorInfo::getRowIndex))

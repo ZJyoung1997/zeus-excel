@@ -3,8 +3,10 @@ package com.jz.zeus.excel.test;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.core.lang.Console;
+import cn.hutool.core.lang.Pair;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.ReadListener;
+import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.read.listener.ExcelReadListener;
 import com.jz.zeus.excel.test.data.DemoData;
 import com.jz.zeus.excel.test.listener.DemoExcelReadListener;
@@ -19,8 +21,8 @@ import java.util.List;
  */
 public class ExcelReadTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
 //    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
 //    private static String path = "C:\\Users\\Administrator\\Desktop\\2545.xlsx";
@@ -37,7 +39,7 @@ public class ExcelReadTest {
 //        System.out.println("解析为字节后内存："+(Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024)+"M");
 
         read(path, readListener);
-//        Pair<List<DemoData>, List<CellErrorInfo>> errorRecord = readListener.getErrorRecord();
+        Pair<List<DemoData>, List<CellErrorInfo>> errorRecord = readListener.getErrorRecord();
 //        if (CollUtil.isNotEmpty(errorRecord.getKey())) {
 //            ZeusExcel.write(path)
 //                    .sheet("错误数据")

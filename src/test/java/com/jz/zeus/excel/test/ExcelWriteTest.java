@@ -161,9 +161,9 @@ public class ExcelWriteTest {
             demoData.setPrice(3.94);
 
             Map<String, String> map = new LinkedHashMap<>();
-            map.put("自定义1", prefix + "12");
-            map.put("自定义2", prefix + "jfak");
-            map.put("自定义3", prefix + "集分宝");
+//            map.put("自定义1", prefix + "12");
+//            map.put("自定义2", prefix + "jfak");
+//            map.put("自定义3", prefix + "集分宝");
             demoData.setExtendColumnMap(map);
             dataList.add(demoData);
         }

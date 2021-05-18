@@ -107,9 +107,9 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
                 continue;
             } else if (CollUtil.isNotEmpty(headCellStyleMap)) {
                 List<CellStyleProperty> rowHeadCellStyles = headCellStyleMap.get(row.getRowNum());
-                int finalI = i;
+                Integer finalI = i;
                 CellStyleProperty styleProperty = CollUtil.isEmpty(rowHeadCellStyles) ? null :
-                        rowHeadCellStyles.stream().filter(e -> finalI == getColumnIndex(e)).findFirst().orElse(null);
+                        rowHeadCellStyles.stream().filter(e -> finalI.equals(getColumnIndex(e))).findFirst().orElse(null);
                 if (styleProperty != null) {
                     setCellStyle(sheet, cell, styleProperty);
                     continue;
