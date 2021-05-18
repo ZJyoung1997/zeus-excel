@@ -56,8 +56,8 @@ public class ValidatorTest {
         VerifyResult verifyResult1 = BeanValidator.build(a)
                 .verifyBean(A::getB, beanValidator)
                 .verifyByAnnotation(A::getB)
-                .doVerify();
-        Console.log();
+                .doVerify(true);
+        Console.log(verifyResult1);
     }
 
     public static void test1() {

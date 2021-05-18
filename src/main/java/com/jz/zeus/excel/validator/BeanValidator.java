@@ -68,23 +68,34 @@ public class BeanValidator<T> {
         return this;
     }
 
-    public VerifyResult doVerify(T bean) {
+    public VerifyResult doVerify(T bean, boolean enabledFastFail) {
         this.bean = bean;
-        return doVerify();
+        return doVerify(enabledFastFail);
     }
 
     public VerifyResult doVerify() {
+        return doVerify(false);
+    }
+
+    public VerifyResult doVerify(boolean enabledFastFail) {
         Assert.notNull(this.bean, "Bean can not be null");
+        this.enabledFastFail = enabledFastFail;
         verifyResult = new VerifyResult();
         for (VerifyInfo verifyInfo : verifyInfos) {
             String fieldName = verifyInfo.getter.getFieldName();
             Object value = verifyInfo.getter.apply(bean);
             if (verifyInfo.isAnnoationVerify) {
                 verifyResult.addVerifyResult(ValidatorUtils.validate(value, enabledFastFail), fieldName, StrUtil.DOT);
+                if (stopVerify()) {
+                    return verifyResult;
+                }
             }
             if (Objects.isNull(verifyInfo.childValidator)) {
                 if (Objects.nonNull(verifyInfo.condition) && !verifyInfo.condition.test(value)) {
                     verifyResult.addErrorInfo(fieldName, verifyInfo.errorMsg);
+                }
+                if (stopVerify()) {
+                    return verifyResult;
                 }
                 continue;
             }
@@ -94,14 +105,21 @@ public class BeanValidator<T> {
                 Iterator<?> iterator = ((Iterable<?>) value).iterator();
                 while (iterator.hasNext()) {
                     Object element = iterator.next();
-                    verifyResult.addVerifyResult(childValidator.doVerify(element), fieldName,
+                    verifyResult.addVerifyResult(childValidator.doVerify(element, enabledFastFail), fieldName,
                             String.format(COLLECTION_FIELD_SUFFIX, index++));
                 }
             } else {
-                verifyResult.addVerifyResult(childValidator.doVerify(value), fieldName, StrUtil.DOT);
+                verifyResult.addVerifyResult(childValidator.doVerify(value, enabledFastFail), fieldName, StrUtil.DOT);
+            }
+            if (stopVerify()) {
+                return verifyResult;
             }
         }
         return verifyResult;
+    }
+
+    private boolean stopVerify() {
+        return enabledFastFail && verifyResult.hasError();
     }
 
     private class VerifyInfo {

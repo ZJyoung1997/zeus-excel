@@ -56,4 +56,11 @@ public class VerifyResult {
         }
     }
 
+    public boolean hasError() {
+        if (CollUtil.isEmpty(errorInfoMap)) {
+            return false;
+        }
+        return errorInfoMap.values().stream().anyMatch(CollUtil::isNotEmpty);
+    }
+
 }
