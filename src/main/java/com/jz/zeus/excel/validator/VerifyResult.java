@@ -17,12 +17,12 @@ import java.util.*;
 public class VerifyResult {
 
     @Getter
-    private Map<String, Set<String>> errorInfoMap = new HashMap<>();
+    private Map<String, List<String>> errorInfoMap = new HashMap<>();
 
     public void addErrorInfo(String fieldName, String errorMsg) {
-        Set<String> errorMsgs = errorInfoMap.get(fieldName);
+        List<String> errorMsgs = errorInfoMap.get(fieldName);
         if (Objects.isNull(errorMsgs)) {
-            errorMsgs = new HashSet<>();
+            errorMsgs = new ArrayList<>();
             errorInfoMap.put(fieldName, errorMsgs);
         }
         if (CharSequenceUtil.isNotBlank(errorMsg)) {
@@ -30,11 +30,11 @@ public class VerifyResult {
         }
     }
 
-    public void addErrorInfo(String fieldName, Set<String> errorMsgSet) {
-        if (CollUtil.isEmpty(errorMsgSet)) {
+    public void addErrorInfo(String fieldName, List<String> errorMsgs) {
+        if (CollUtil.isEmpty(errorMsgs)) {
             return;
         }
-        for (String errorMsg : errorMsgSet) {
+        for (String errorMsg : errorMsgs) {
             addErrorInfo(fieldName, errorMsg);
         }
     }
@@ -43,7 +43,7 @@ public class VerifyResult {
         if (Objects.isNull(verifyResult) || CollUtil.isEmpty(verifyResult.errorInfoMap)) {
             return;
         }
-        for (Map.Entry<String, Set<String>> entry : verifyResult.errorInfoMap.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : verifyResult.errorInfoMap.entrySet()) {
             addErrorInfo(entry.getKey(), entry.getValue());
         }
     }
@@ -53,7 +53,7 @@ public class VerifyResult {
             return;
         }
         StrBuilder fieldName = StrUtil.strBuilder();
-        for (Map.Entry<String, Set<String>> entry : verifyResult.errorInfoMap.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : verifyResult.errorInfoMap.entrySet()) {
             fieldName.append(parentFieldName).append(parentFieldNameSuffix).append(entry.getKey());
             addErrorInfo(fieldName.toStringAndReset(), entry.getValue());
         }
