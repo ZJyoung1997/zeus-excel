@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.validator;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.StrUtil;
 import lombok.Getter;
@@ -24,7 +25,9 @@ public class VerifyResult {
             errorMsgs = new HashSet<>();
             errorInfoMap.put(fieldName, errorMsgs);
         }
-        errorMsgs.add(errorMsg);
+        if (CharSequenceUtil.isNotBlank(errorMsg)) {
+            errorMsgs.add(errorMsg);
+        }
     }
 
     public void addErrorInfo(String fieldName, Set<String> errorMsgSet) {
