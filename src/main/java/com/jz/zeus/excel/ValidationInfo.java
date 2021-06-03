@@ -92,23 +92,15 @@ public class ValidationInfo {
     private ValidationInfo() {}
 
     public static ValidationInfo buildCascadeByHead(String headName, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
-        return buildCascade(null, (String) null, headName, null, parent, parentChildMap);
+        return buildCascade(null, null, headName, null, parent, parentChildMap);
     }
 
     public static ValidationInfo buildCascadeByHead(String headName, Integer rowNum, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
-        return buildCascade(null, (String) null, headName, rowNum, parent, parentChildMap);
+        return buildCascade(null, null, headName, rowNum, parent, parentChildMap);
     }
 
     public static ValidationInfo buildCascadeByField(String fieldName, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
         return buildCascade(null, fieldName, null, null, parent, parentChildMap);
-    }
-
-    public static ValidationInfo buildCascadeByField(com.jz.zeus.excel.interfaces.Getter fieldNameGetter, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
-        return buildCascade(null, fieldNameGetter, null, null, parent, parentChildMap);
-    }
-
-    public static ValidationInfo buildCascadeByField(com.jz.zeus.excel.interfaces.Getter fieldNameGetter, Integer rowNum, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
-        return buildCascade(null, fieldNameGetter, null, rowNum, parent, parentChildMap);
     }
 
     public static ValidationInfo buildCascadeByField(String fieldName, Integer rowNum, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
@@ -116,17 +108,11 @@ public class ValidationInfo {
     }
 
     public static ValidationInfo buildCascadeByIndex(int columnIndex, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
-        return buildCascade(columnIndex, (String) null, null, null, parent, parentChildMap);
+        return buildCascade(columnIndex, null, null, null, parent, parentChildMap);
     }
 
     public static ValidationInfo buildCascadeByIndex(int columnIndex, Integer rowNum, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
-        return buildCascade(columnIndex, (String) null, null, rowNum, parent, parentChildMap);
-    }
-
-    private static ValidationInfo buildCascade(Integer columnIndex, com.jz.zeus.excel.interfaces.Getter fieldNameGetter,
-                                               String headName, Integer rowNum, ValidationInfo parent,
-                                               Map<String, List<String>> parentChildMap) {
-        return buildCascade(columnIndex, fieldNameGetter.getFieldName(), headName, rowNum, parent, parentChildMap);
+        return buildCascade(columnIndex, null, null, rowNum, parent, parentChildMap);
     }
 
     private static ValidationInfo buildCascade(Integer columnIndex, String fieldName, String headName, Integer rowNum,
@@ -143,7 +129,7 @@ public class ValidationInfo {
     }
 
     public static ValidationInfo buildColumnByIndex(int columnIndex, String... options) {
-        return buildColumn((String) null, null, columnIndex, null, options);
+        return buildColumn(null, null, columnIndex, null, options);
     }
 
     public static ValidationInfo buildColumnByIndex(int columnIndex, List<String> options) {
@@ -151,7 +137,7 @@ public class ValidationInfo {
     }
 
     public static ValidationInfo buildColumnByIndex(int columnIndex, Integer rowNum, String... options) {
-        return buildColumn((String) null, null, columnIndex, rowNum, options);
+        return buildColumn(null, null, columnIndex, rowNum, options);
     }
 
     public static ValidationInfo buildColumnByIndex(int columnIndex, Integer rowNum, List<String> options) {
@@ -159,14 +145,14 @@ public class ValidationInfo {
     }
 
     public static ValidationInfo buildColumnByHead(String headName, String... options) {
-        return buildColumn((String) null, headName, null, null, options);
+        return buildColumn(null, headName, null, null, options);
     }
     public static ValidationInfo buildColumnByHead(String headName, List<String> options) {
         return buildColumn(null, headName, null, null, options);
     }
 
     public static ValidationInfo buildColumnByHead(String headName, Integer rowNum, String... options) {
-        return buildColumn((String) null, headName, null, rowNum, options);
+        return buildColumn(null, headName, null, rowNum, options);
     }
 
     public static ValidationInfo buildColumnByHead(String headName, Integer rowNum, List<String> options) {
@@ -177,32 +163,16 @@ public class ValidationInfo {
         return buildColumn(fieldName, null, null, null, options);
     }
 
-    public static ValidationInfo buildColumnByField(com.jz.zeus.excel.interfaces.Getter fieldNameGetter, String... options) {
-        return buildColumn(fieldNameGetter, null, null, null, options);
-    }
-
     public static ValidationInfo buildColumnByField(String fieldName, List<String> options) {
         return buildColumn(fieldName, null, null, null, options);
-    }
-
-    public static ValidationInfo buildColumnByField(com.jz.zeus.excel.interfaces.Getter fieldNameGetter, List<String> options) {
-        return buildColumn(fieldNameGetter.getFieldName(), null, null, null, options);
     }
 
     public static ValidationInfo buildColumnByField(String fieldName, Integer rowNum, String... options) {
         return buildColumn(fieldName, null, null, rowNum, options);
     }
 
-    public static ValidationInfo buildColumnByField(com.jz.zeus.excel.interfaces.Getter fieldNameGetter, Integer rowNum, String... options) {
-        return buildColumn(fieldNameGetter, null, null, rowNum, options);
-    }
-
     public static ValidationInfo buildColumnByField(String fieldName, Integer rowNum, List<String> options) {
         return buildColumn(fieldName, null, null, rowNum, options);
-    }
-
-    public static ValidationInfo buildColumnByField(com.jz.zeus.excel.interfaces.Getter fieldNameGetter, Integer rowNum, List<String> options) {
-        return buildColumn(fieldNameGetter.getFieldName(), null, null, rowNum, options);
     }
 
     public static ValidationInfo buildColumnByField(Class<?> clazz, String fieldName, String... options) {
@@ -231,13 +201,6 @@ public class ValidationInfo {
             return buildColumn(fieldName, null, null, rowNum, options);
         }
         throw new NoSuchFieldException(String.format("field %s is not fond", fieldName));
-    }
-
-    private static ValidationInfo buildColumn(com.jz.zeus.excel.interfaces.Getter fieldNameGetter, String headName, Integer columnIndex, Integer rowNum, String... options) {
-        if (ArrayUtil.isEmpty(options)) {
-            return buildColumn(fieldNameGetter.getFieldName(), headName, columnIndex, rowNum, new ArrayList<>(0));
-        }
-        return buildColumn(fieldNameGetter.getFieldName(), headName, columnIndex, rowNum, ListUtil.toList(options));
     }
 
     private static ValidationInfo buildColumn(String fieldName, String headName, Integer columnIndex, Integer rowNum, String... options) {

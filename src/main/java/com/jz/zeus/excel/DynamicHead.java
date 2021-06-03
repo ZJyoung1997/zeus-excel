@@ -52,10 +52,6 @@ public class DynamicHead {
         return build(DEFAULT_ROW_INDEX, columnIndex, newName, appendInfo);
     }
 
-    public static DynamicHead build(com.jz.zeus.excel.interfaces.Getter fieldNameGetter, String newName, String appendInfo) {
-        return build(DEFAULT_ROW_INDEX, fieldNameGetter.getFieldName(), newName, appendInfo);
-    }
-
     public static DynamicHead build(String fieldName, String newName, String appendInfo) {
         return build(DEFAULT_ROW_INDEX, fieldName, newName, appendInfo);
     }
