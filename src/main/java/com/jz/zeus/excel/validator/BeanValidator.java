@@ -3,6 +3,7 @@ package com.jz.zeus.excel.validator;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
+import com.jz.zeus.excel.interfaces.Getter;
 import com.jz.zeus.excel.util.ValidatorUtils;
 
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package com.jz.zeus.excel.validator;
+package com.jz.zeus.excel.interfaces;
 
 import cn.hutool.core.util.ReflectUtil;
 import lombok.SneakyThrows;

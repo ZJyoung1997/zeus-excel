@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
+import com.jz.zeus.excel.interfaces.Getter;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
@@ -43,8 +44,16 @@ public class CellErrorInfo implements Cloneable {
         return build(rowIndex, fieldName, null, null, errorMsgs);
     }
 
+    public static CellErrorInfo buildByField(int rowIndex, Getter fieldNameGetter, String... errorMsgs) {
+        return build(rowIndex, fieldNameGetter.getFieldName(), null, null, errorMsgs);
+    }
+
     public static CellErrorInfo buildByField(int rowIndex, String fieldName,  Collection<String> errorMsgs) {
         return build(rowIndex, fieldName, null, null, errorMsgs);
+    }
+
+    public static CellErrorInfo buildByField(int rowIndex, Getter fieldNameGetter,  Collection<String> errorMsgs) {
+        return build(rowIndex, fieldNameGetter.getFieldName(), null, null, errorMsgs);
     }
 
     public static CellErrorInfo buildByColumnIndex(int rowIndex, int columnIndex, String... errorMsgs) {
@@ -55,14 +64,14 @@ public class CellErrorInfo implements Cloneable {
         return build(rowIndex, null, null, columnIndex, errorMsgs);
     }
 
-    public static CellErrorInfo build(int rowIndex, String fieldName, String headName, Integer columnIndex, String... errorMsgs) {
+    private static CellErrorInfo build(int rowIndex, String fieldName, String headName, Integer columnIndex, String... errorMsgs) {
         if (ArrayUtil.isNotEmpty(errorMsgs)) {
             return build(rowIndex, fieldName, headName, columnIndex, CollUtil.toList(errorMsgs));
         }
         return build(rowIndex, fieldName, headName, columnIndex, (Collection<String>) null);
     }
 
-    public static CellErrorInfo build(int rowIndex, String fieldName, String headName, Integer columnIndex, Collection<String> errorMsgs) {
+    private static CellErrorInfo build(int rowIndex, String fieldName, String headName, Integer columnIndex, Collection<String> errorMsgs) {
         Assert.isTrue(rowIndex >= 0, "RowIndex has to be greater than or equal to 0");
         Assert.isFalse(columnIndex == null && StrUtil.isBlank(fieldName) && StrUtil.isBlank(headName),
                 "ColumnIndex and FieldName and HeadName not all empty");
