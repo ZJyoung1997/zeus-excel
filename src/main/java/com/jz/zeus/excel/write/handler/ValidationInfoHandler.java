@@ -15,7 +15,6 @@ import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.helper.WriteSheetHelper;
-import com.jz.zeus.excel.write.property.CellStyleProperty;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
@@ -190,7 +189,8 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             dicTitleCell.setCellValue(boxInfo.getDicTitle());
             CellStyle cellStyle = workbook.createCellStyle();
             Font font = workbook.createFont();
-            CellStyleProperty.getDefaultHeadProperty().setCellStyle(font, cellStyle);
+            font.setBold(true);
+            font.setFontName("微软雅黑");
             cellStyle.setFont(font);
             dicTitleCell.setCellStyle(cellStyle);
             sheet.setColumnWidth(columnIndex, ExcelUtils.calColumnWidth(boxInfo.getDicTitle(), font.getFontHeightInPoints()));

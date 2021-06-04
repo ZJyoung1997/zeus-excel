@@ -136,12 +136,12 @@ public class ExcelWriteTest {
         return ListUtil.toList(
 //            ValidationInfo.buildColumnByField("id", list).setErrorBox("Error", "请选择正确的ID"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"),
-            ValidationInfo.buildColumnByHead("destPlus（选填）", "是自定义", "不是自定义").asDicSheet("字典表", "说明")
+            ValidationInfo.buildColumnByHead("destPlus（选填）", "是自定义", "不是自定义").asDicSheet("字典表", "说明f辅导费")
 //            provinces, city, town
         );
     }
 
-    public static List<CellErrorInfo> getCellErrorInfo() {
+    public static List<CellErrorInfo>   getCellErrorInfo() {
         List<CellErrorInfo> cellErrorInfoList = new ArrayList<>();
         cellErrorInfoList.add(CellErrorInfo.buildByColumnIndex(1, 1, "格式错误"));
         cellErrorInfoList.add(CellErrorInfo.buildByField(4, "price", "关系错误"));
