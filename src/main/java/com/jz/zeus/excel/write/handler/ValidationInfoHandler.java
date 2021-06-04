@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -14,6 +15,7 @@ import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.helper.WriteSheetHelper;
+import com.jz.zeus.excel.write.property.CellStyleProperty;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
@@ -104,7 +106,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             if (!boxInfo.isAsDicSheet() && options.size() <= MAX_GENERAL_OPTION_NUM) {
                 constraint = helper.createExplicitListConstraint(options.toArray(new String[0]));
             } else {
-                constraint = helper.createFormulaListConstraint(addHiddenValidationData(workbook, boxInfo));
+                constraint = helper.createFormulaListConstraint(createValidationDataSheet(workbook, boxInfo));
             }
             DataValidation dataValidation = createDataValidation(helper, constraint,
                     new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol), boxInfo);
@@ -152,9 +154,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                     .append("!$").append(StrUtil.filter(s1, Character::isLetter))
                     .append('$').append(StrUtil.filter(s1, Character::isDigit))
                     .append(":$").append(StrUtil.filter(s2, Character::isLetter))
-                    .append('$').append(StrUtil.filter(s2, Character::isDigit)).toString();
+                    .append('$').append(StrUtil.filter(s2, Character::isDigit))
+                    .toStringAndReset();
             categoryName.setRefersToFormula(refersToFormula);
-            strBuilder.reset();
         }
 
         StrBuilder formulaBuild = StrUtil.strBuilder();
@@ -162,27 +164,36 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         for (int i = writeSheetHelper.getHeadRowNum(); i < boxInfo.getRowNum(); i++) {
             formulaBuild.append("INDIRECT(CONCATENATE($").append(columnStr).append('$').append(i + 1)
                     .append(",\"").append(parentSheetName).append("\"))");
-            DataValidationConstraint constraint = helper.createFormulaListConstraint(formulaBuild.toString());
+            DataValidationConstraint constraint = helper.createFormulaListConstraint(formulaBuild.toStringAndReset());
             CellRangeAddressList rangeAddressList = new CellRangeAddressList(i, i, firstCol, lastCol);
             DataValidation validation = createDataValidation(helper, constraint, rangeAddressList, boxInfo);
             sheet.addValidationData(validation);
-            formulaBuild.reset();
         }
 
     }
 
-    private String addHiddenValidationData(Workbook workbook, ValidationInfo boxInfo) {
+    private String createValidationDataSheet(Workbook workbook, ValidationInfo boxInfo) {
         int columnIndex = 0;
         int beginRowIndex = 0;
         String sheetName = boxInfo.getSheetName();
         Sheet sheet = Optional.ofNullable(workbook.getSheet(sheetName))
                 .orElse(workbook.createSheet(sheetName));
-        sheet.protectSheet(IdUtil.fastSimpleUUID());
         if (!boxInfo.isAsDicSheet()) {
             columnIndex = RandomUtil.randomInt(200);
             beginRowIndex = RandomUtil.randomInt(1000);
             sheet.setColumnHidden(columnIndex, true);
+            sheet.protectSheet(IdUtil.fastSimpleUUID());
             workbook.setSheetHidden(workbook.getSheetIndex(sheet), true);
+        } else if (CharSequenceUtil.isNotBlank(boxInfo.getDicTitle())) {
+            beginRowIndex = 1;
+            Cell dicTitleCell = sheet.createRow(0).createCell(columnIndex);
+            dicTitleCell.setCellValue(boxInfo.getDicTitle());
+            CellStyle cellStyle = workbook.createCellStyle();
+            Font font = workbook.createFont();
+            CellStyleProperty.getDefaultHeadProperty().setCellStyle(font, cellStyle);
+            cellStyle.setFont(font);
+            dicTitleCell.setCellStyle(cellStyle);
+            sheet.setColumnWidth(columnIndex, ExcelUtils.calColumnWidth(boxInfo.getDicTitle(), font.getFontHeightInPoints()));
         }
         List<String> options = boxInfo.getOptions();
         int endIndex = beginRowIndex + options.size() - 1;
@@ -214,7 +225,6 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
     private void addDictionarySheet(Workbook workbook, ValidationInfo boxInfo) {
         String sheetName = boxInfo.getSheetName();
         Sheet sheet = workbook.createSheet(sheetName);
-        sheet.protectSheet(IdUtil.fastSimpleUUID());
         List<String> options = boxInfo.getOptions();
         for (int i = 0; i < options.size(); i++) {
             sheet.createRow(i).createCell(0).setCellValue(options.get(i));

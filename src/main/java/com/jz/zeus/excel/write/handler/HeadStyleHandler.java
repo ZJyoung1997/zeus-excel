@@ -10,10 +10,9 @@ import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
 import com.jz.zeus.excel.FieldInfo;
-import com.jz.zeus.excel.constant.Constants;
 import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ClassUtils;
-import com.jz.zeus.excel.util.StringUtils;
+import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.helper.WriteSheetHelper;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import org.apache.poi.ss.usermodel.*;
@@ -170,25 +169,10 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
             Short fontSize = cellStyleProperty.getFontProperty() == null ? font.getFontHeightInPoints() :
                     (cellStyleProperty.getFontProperty().getFontHeightInPoints() == null ?
                             font.getFontHeightInPoints() : cellStyleProperty.getFontProperty().getFontHeightInPoints());
-            sheet.setColumnWidth(cell.getColumnIndex(), columnWidth(cell.getStringCellValue(), fontSize));
+            sheet.setColumnWidth(cell.getColumnIndex(), ExcelUtils.calColumnWidth(cell.getStringCellValue(), fontSize));
         } else if (cellStyleProperty.getWidth() != null) {
             sheet.setColumnWidth(cell.getColumnIndex(), cellStyleProperty.getWidth());
         }
-    }
-
-    /**
-     * 根据表头计算列宽
-     */
-    private int columnWidth(String value, int fontSize) {
-        String[] strs = value.split("\n");
-        int result = 0;
-        for (String s : strs) {
-            int chineseNum = StringUtils.chineseNum(s);
-            int englishNum = s.length() - chineseNum;
-            int columnWidth = (int) ((englishNum * 1.2 + chineseNum * 2) * 34 * fontSize);
-            result = Math.max(result, columnWidth);
-        }
-        return result > Constants.MAX_COLUMN_WIDTH ? Constants.MAX_COLUMN_WIDTH : result;
     }
 
     private Integer getColumnIndex(CellStyleProperty styleProperty) {

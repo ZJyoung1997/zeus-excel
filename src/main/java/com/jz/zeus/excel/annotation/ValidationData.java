@@ -22,6 +22,11 @@ public @interface ValidationData {
     String sheetName() default "";
 
     /**
+     * 字典表标题
+     */
+    String dicTitle() default "";
+
+    /**
      * 下拉框中的选项
      */
     String[] options();

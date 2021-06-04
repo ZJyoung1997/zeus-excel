@@ -78,6 +78,11 @@ public class ValidationInfo {
     private boolean asDicSheet;
 
     /**
+     * 字典表标题
+     */
+    private String dicTitle;
+
+    /**
      * 父级下拉框
      */
     @Setter(AccessLevel.NONE)
@@ -314,9 +319,17 @@ public class ValidationInfo {
      * 构建字典表
      */
     public static ValidationInfo buildDictionaryTable(String sheetName, List<String> options) {
+        return buildDictionaryTable(sheetName, null, options);
+    }
+
+    /**
+     * 构建字典表
+     */
+    public static ValidationInfo buildDictionaryTable(String sheetName, String dicTitle, List<String> options) {
         ValidationInfo info = new ValidationInfo();
         info.asDicSheet = true;
         info.sheetName = sheetName;
+        info.dicTitle = dicTitle;
         info.options = options;
         return info;
     }
@@ -325,11 +338,27 @@ public class ValidationInfo {
      * 构建字典表
      */
     public static ValidationInfo buildDictionaryTable(String sheetName, String... options) {
+        return buildDictionaryTable(sheetName, null, options);
+    }
+
+    /**
+     * 构建字典表
+     */
+    public static ValidationInfo buildDictionaryTable(String sheetName, String dicTitle, String... options) {
         ValidationInfo info = new ValidationInfo();
         info.asDicSheet = true;
         info.sheetName = sheetName;
+        info.dicTitle = dicTitle;
         info.options = ListUtil.toList(options);
         return info;
+    }
+
+
+    public ValidationInfo asDicSheet(String sheetName, String dicTitle) {
+        this.asDicSheet = true;
+        this.dicTitle = dicTitle;
+        this.sheetName = sheetName;
+        return this;
     }
 
 

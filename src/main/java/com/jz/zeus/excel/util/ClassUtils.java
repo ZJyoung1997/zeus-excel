@@ -90,6 +90,7 @@ public class ClassUtils {
                     return ValidationInfo.buildColumnByField(fieldInfo.getFieldName(), validationData.rowNum(), validationData.options())
                             .setAsDicSheet(validationData.asDicSheet())
                             .setSheetName(validationData.sheetName())
+                            .setDicTitle(validationData.dicTitle())
                             .setCheckDatavalidity(validationData.checkDatavalidity())
                             .setErrorBox(validationData.errorTitle(),validationData.errorMsg());
                 }).collect(Collectors.toList());

@@ -118,7 +118,7 @@ public class ExcelWriteTest {
             list.add("jjj" + i);
         }
         ValidationInfo provinces = ValidationInfo.buildColumnByField("provinces", "上海市", "河南省", "北京市")
-                .asDicSheet("省");
+                .asDicSheet("省").setDicTitle("中国的省");
 
         Map<String, List<String>> cityMap = new HashMap<>();
         cityMap.put("上海市", ListUtil.toList("上海市"));
@@ -136,8 +136,8 @@ public class ExcelWriteTest {
         return ListUtil.toList(
 //            ValidationInfo.buildColumnByField("id", list).setErrorBox("Error", "请选择正确的ID"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"),
-//            ValidationInfo.buildColumnByHead("自定义1", "是自定义", "不是自定义").asDicSheet("字典表"),
-            provinces, city, town
+            ValidationInfo.buildColumnByHead("destPlus（选填）", "是自定义", "不是自定义").asDicSheet("字典表", "说明")
+//            provinces, city, town
         );
     }
 

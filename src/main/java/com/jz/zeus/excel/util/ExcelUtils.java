@@ -2,6 +2,7 @@ package com.jz.zeus.excel.util;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
+import com.jz.zeus.excel.constant.Constants;
 import lombok.experimental.UtilityClass;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
@@ -13,6 +14,21 @@ import org.apache.poi.xssf.usermodel.XSSFRichTextString;
  */
 @UtilityClass
 public class ExcelUtils {
+
+    /**
+     * 根据字符长度和字号计算列宽
+     */
+    public int calColumnWidth(String cellStrValue, int fontSize) {
+        String[] strs = cellStrValue.split("\n");
+        int result = 0;
+        for (String s : strs) {
+            int chineseNum = StringUtils.chineseNum(s);
+            int englishNum = s.length() - chineseNum;
+            int columnWidth = (int) ((englishNum * 1.2 + chineseNum * 2) * 34 * fontSize);
+            result = Math.max(result, columnWidth);
+        }
+        return result > Constants.MAX_COLUMN_WIDTH ? Constants.MAX_COLUMN_WIDTH : result;
+    }
 
     public static int columnToIndex(String column) {
         if (!column.matches("[A-Z]+")) {
