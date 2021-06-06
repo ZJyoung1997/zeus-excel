@@ -79,7 +79,7 @@ public class ClassUtils {
      * @param clazz
      * @return
      */
-    public List<ValidationInfo> getValidationInfoInfos(Class<?> clazz) {
+    public List<ValidationInfo> getValidationInfos(Class<?> clazz) {
         List<FieldInfo> fieldInfos = getClassFieldInfo(clazz);
         if (CollUtil.isEmpty(fieldInfos)) {
             return new ArrayList<>();

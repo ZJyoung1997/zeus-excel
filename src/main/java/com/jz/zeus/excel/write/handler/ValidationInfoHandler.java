@@ -61,9 +61,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         }
         if (isClass) {
             if (CollUtil.isEmpty(validationInfoList)) {
-                validationInfoList.addAll(ClassUtils.getValidationInfoInfos(writeSheetHolder.getClazz()));
+                validationInfoList.addAll(ClassUtils.getValidationInfos(writeSheetHolder.getClazz()));
             } else {
-                ClassUtils.getValidationInfoInfos(writeSheetHolder.getClazz())
+                ClassUtils.getValidationInfos(writeSheetHolder.getClazz())
                         .forEach(boxInfo -> {
                             if (validationInfoList.stream().noneMatch(info -> Objects.equals(boxInfo, info))) {
                                 validationInfoList.add(boxInfo);
@@ -92,7 +92,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             } else if (rowIndex != null && columnIndex != null) {
                 addValidationData(workbook, sheet, rowIndex, rowIndex, columnIndex, columnIndex, boxInfo);
             } else if (boxInfo.isAsDicSheet()) {
-                addDictionarySheet(workbook, boxInfo);
+                createValidationDataSheet(workbook, boxInfo);
             }
         }
     }
@@ -171,6 +171,12 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
 
     }
 
+    /**
+     * 创建一个sheet，将下拉框的选项内容保存到该sheet中，并对数据区域创建一个名称
+     * @param workbook
+     * @param boxInfo
+     * @return         数据区域的名称
+     */
     private String createValidationDataSheet(Workbook workbook, ValidationInfo boxInfo) {
         int columnIndex = 0;
         int beginRowIndex = 0;
@@ -219,18 +225,6 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         return categoryName.getNameName();
     }
 
-    /**
-     * 将下拉框信息作为字典表，且不会创建下拉框
-     */
-    private void addDictionarySheet(Workbook workbook, ValidationInfo boxInfo) {
-        String sheetName = boxInfo.getSheetName();
-        Sheet sheet = workbook.createSheet(sheetName);
-        List<String> options = boxInfo.getOptions();
-        for (int i = 0; i < options.size(); i++) {
-            sheet.createRow(i).createCell(0).setCellValue(options.get(i));
-        }
-    }
-
     private DataValidation createDataValidation(DataValidationHelper helper, DataValidationConstraint constraint, CellRangeAddressList cellRangeAddressList, ValidationInfo boxInfo) {
         DataValidation dataValidation = helper.createValidation(constraint, cellRangeAddressList);
         if (dataValidation instanceof XSSFDataValidation) {
@@ -245,6 +239,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         return dataValidation;
     }
 
+    /**
+     * 根据 ValidationInfo 获取列索引
+     */
     private Integer getColumnIndex(ValidationInfo boxInfo) {
         Integer columnIndex = boxInfo.getColumnIndex();
         if (columnIndex == null) {
@@ -255,20 +252,6 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             }
         }
         return columnIndex;
-    }
-
-    public void addValidationInfo(ValidationInfo validationInfo) {
-        if (validationInfo == null) {
-            return;
-        }
-        if (CollUtil.isEmpty(validationInfoList)) {
-            validationInfoList = new ArrayList<>();
-        }
-        validationInfoList.add(validationInfo);
-    }
-
-    public void addValidationInfo(Integer[] columnIndexs, String... options) {
-        validationInfoList.addAll(ValidationInfo.buildCommonOption(columnIndexs, options));
     }
 
 }

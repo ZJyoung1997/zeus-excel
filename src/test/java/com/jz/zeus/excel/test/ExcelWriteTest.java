@@ -30,8 +30,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         Console.log("写入Excel前内存：{}M", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024));
@@ -136,7 +136,8 @@ public class ExcelWriteTest {
         return ListUtil.toList(
 //            ValidationInfo.buildColumnByField("id", list).setErrorBox("Error", "请选择正确的ID"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"),
-            ValidationInfo.buildColumnByHead("destPlus（选填）", "是自定义", "不是自定义").asDicSheet("字典表", "说明f辅导费")
+//            ValidationInfo.buildColumnByHead("destPlus（选填）", "是自定义", "不是自定义").asDicSheet("字典表", "说明f辅导费")
+            ValidationInfo.buildDictionaryTable("字典表", "是自定义", "不是自定义").setDicTitle("说明f辅导费")
 //            provinces, city, town
         );
     }
