@@ -87,16 +87,28 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             Integer columnIndex = getColumnIndex(boxInfo);
             if (rowIndex == null && columnIndex != null) {
                 addValidationData(workbook, sheet, headRowNum, headRowNum+boxInfo.getRowNum(), columnIndex, columnIndex, boxInfo);
-            } else if (rowIndex != null && columnIndex == null) {
-                addValidationData(workbook, sheet, rowIndex, rowIndex, 0, boxInfo.getColumnNum(), boxInfo);
-            } else if (rowIndex != null && columnIndex != null) {
-                addValidationData(workbook, sheet, rowIndex, rowIndex, columnIndex, columnIndex, boxInfo);
+            } else if (rowIndex != null) {
+                if (columnIndex == null) {
+                    addValidationData(workbook, sheet, rowIndex, rowIndex, 0, boxInfo.getColumnNum(), boxInfo);
+                } else {
+                    addValidationData(workbook, sheet, rowIndex, rowIndex, columnIndex, columnIndex, boxInfo);
+                }
             } else if (boxInfo.isAsDicSheet()) {
                 createValidationDataSheet(workbook, boxInfo);
             }
         }
     }
 
+    /**
+     * 为单元格生成下拉框
+     * @param workbook     Excel所属workbook
+     * @param sheet        数据所在sheet
+     * @param firstRow     下拉框开始行索引
+     * @param lastRow      下拉框结束行索引
+     * @param firstCol     下拉框开始列索引
+     * @param lastCol      下拉框结束列索引
+     * @param boxInfo      下拉框配置信息
+     */
     private void addValidationData(Workbook workbook, Sheet sheet, int firstRow, int lastRow, int firstCol, int lastCol, ValidationInfo boxInfo) {
         List<String> options = boxInfo.getOptions();
         DataValidationHelper helper = sheet.getDataValidationHelper();
@@ -124,23 +136,16 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         if (workbook.getSheet(parentSheetName) == null) {
             workbook.createSheet(parentSheetName);
         }
-        String childCheetName = boxInfo.getSheetName();
-        Sheet childSheet = Optional.ofNullable(workbook.getSheet(childCheetName))
-                .orElse(workbook.createSheet(childCheetName));
+        String childSheetName = boxInfo.getSheetName();
+        Sheet childSheet = Optional.ofNullable(workbook.getSheet(childSheetName))
+                .orElse(workbook.createSheet(childSheetName));
         int rowIndex = 0;
         StrBuilder strBuilder = StrUtil.strBuilder();
         for (Map.Entry<String, List<String>> entry : boxInfo.getParentChildMap().entrySet()) {
-            List<String> siteList = entry.getValue();
-            String s1 = null, s2 = null;
-            for (int i = 0; i < siteList.size(); i++) {
-                Cell cell = childSheet.createRow(rowIndex++).createCell(0);
-                cell.setCellValue(siteList.get(i));
-                if (i == 0) {
-                    s1 = cell.getAddress().formatAsString();
-                }
-                if (i == siteList.size() - 1) {
-                    s2 = cell.getAddress().formatAsString();
-                }
+            List<String> options = entry.getValue();
+            for (int i = 0; i < options.size(); i++) {
+                childSheet.createRow(rowIndex++).createCell(0)
+                        .setCellValue(options.get(i));
             }
 
             String parent = entry.getKey() + parentSheetName;
@@ -149,11 +154,12 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             }
             Name categoryName = workbook.createName();
             categoryName.setNameName(parent);
-            String refersToFormula = strBuilder.append(childCheetName)
-                    .append("!$").append(StrUtil.filter(s1, Character::isLetter))
-                    .append('$').append(StrUtil.filter(s1, Character::isDigit))
-                    .append(":$").append(StrUtil.filter(s2, Character::isLetter))
-                    .append('$').append(StrUtil.filter(s2, Character::isDigit))
+            String columnStr = ExcelUtils.columnIndexToStr(0);
+            String refersToFormula = strBuilder.append(childSheetName)
+                    .append("!$").append(columnStr)
+                    .append('$').append(rowIndex - options.size() + 1)
+                    .append(":$").append(columnStr)
+                    .append('$').append(rowIndex)
                     .toStringAndReset();
             categoryName.setRefersToFormula(refersToFormula);
         }

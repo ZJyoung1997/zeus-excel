@@ -137,8 +137,8 @@ public class ExcelWriteTest {
 //            ValidationInfo.buildColumnByField("id", list).setErrorBox("Error", "请选择正确的ID"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是自定义", "不是自定义").asDicSheet("字典表", "说明f辅导费")
-            ValidationInfo.buildDictionaryTable("字典表", "是自定义", "不是自定义").setDicTitle("说明f辅导费")
-//            provinces, city, town
+//            ValidationInfo.buildDictionaryTable("字典表", "是自定义", "不是自定义").setDicTitle("说明f辅导费")
+            provinces, city, town
         );
     }
 
