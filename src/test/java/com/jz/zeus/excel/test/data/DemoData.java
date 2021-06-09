@@ -7,6 +7,7 @@ import com.alibaba.excel.annotation.write.style.ContentFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadStyle;
 import com.jz.zeus.excel.annotation.ExtendColumn;
+import com.jz.zeus.excel.annotation.HeadColor;
 import com.jz.zeus.excel.annotation.ValidationData;
 import com.jz.zeus.excel.test.converter.LongConverter;
 import lombok.Data;
@@ -22,6 +23,7 @@ import java.util.Map;
 @Data
 public class DemoData {
 
+    @HeadColor(cellFillForegroundColor = "#8EA9DB")
     @HeadStyle(fillPatternType = FillPatternType.SOLID_FOREGROUND,
             fillForegroundColor = 31,
             borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,

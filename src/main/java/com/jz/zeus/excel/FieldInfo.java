@@ -4,6 +4,7 @@ import com.alibaba.excel.metadata.property.ColumnWidthProperty;
 import com.alibaba.excel.metadata.property.FontProperty;
 import com.alibaba.excel.metadata.property.LoopMergeProperty;
 import com.alibaba.excel.metadata.property.StyleProperty;
+import com.jz.zeus.excel.annotation.HeadColor;
 import com.jz.zeus.excel.annotation.ValidationData;
 import lombok.Data;
 
@@ -49,5 +50,7 @@ public class FieldInfo {
     private ColumnWidthProperty columnWidthProperty;
 
     private LoopMergeProperty loopMergeProperty;
+
+    private HeadColor headColor;
 
 }

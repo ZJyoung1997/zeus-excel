@@ -2,8 +2,13 @@ package com.jz.zeus.excel.test;
 
 import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.lang.Console;
+import cn.hutool.core.util.HexUtil;
 import lombok.SneakyThrows;
+import org.apache.poi.ss.usermodel.IndexedColors;
+import org.apache.poi.xssf.usermodel.DefaultIndexedColorMap;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 
+import java.awt.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -15,9 +20,10 @@ public class Test {
 
     @SneakyThrows
     public static void main(String[] args) {
-        List<String> list = ListUtil.toList("fjkd", null, "8388", null, "福晶科技");
-        list = list.stream().collect(Collectors.toList());
-        Console.log(list);
+        for (IndexedColors value : IndexedColors.values()) {
+            Console.log(value.index);
+        }
+        Console.log(HexUtil.encodeHexStr(new DefaultIndexedColorMap().getRGB(1)));
     }
 
 

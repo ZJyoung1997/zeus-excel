@@ -4,8 +4,6 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.core.lang.Console;
-import cn.hutool.core.lang.Pair;
-import cn.hutool.core.map.MapUtil;
 import com.alibaba.excel.EasyExcel;
 import com.jz.zeus.excel.CellErrorInfo;
 import com.jz.zeus.excel.DynamicHead;
@@ -44,7 +42,7 @@ public class ExcelWriteTest {
         CellStyleProperty styleProperty1 = CellStyleProperty.getDefaultHeadPropertyByHead(0, "自定义1");
         styleProperty1.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
         styleProperty1.setFillForegroundColor(IndexedColors.RED.index);
-        List<CellStyleProperty> styleProperties = ListUtil.toList(styleProperty, styleProperty1);
+        List<CellStyleProperty> styleProperties = ListUtil.toList(styleProperty);
 
         List<DynamicHead> dynamicHeads = new ArrayList<DynamicHead>() {{
             add(DynamicHead.buildAppendInfo("src", "（必填）"));

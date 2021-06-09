@@ -12,6 +12,7 @@ import com.alibaba.excel.metadata.property.StyleProperty;
 import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.ValidationInfo;
 import com.jz.zeus.excel.annotation.ExtendColumn;
+import com.jz.zeus.excel.annotation.HeadColor;
 import com.jz.zeus.excel.annotation.ValidationData;
 import lombok.experimental.UtilityClass;
 import org.hibernate.validator.internal.util.ConcurrentReferenceHashMap;
@@ -68,6 +69,7 @@ public class ClassUtils {
             fieldInfo.setContentStyleProperty(StyleProperty.build(field.getAnnotation(ContentStyle.class)));
             fieldInfo.setColumnWidthProperty(ColumnWidthProperty.build(field.getAnnotation(ColumnWidth.class)));
             fieldInfo.setLoopMergeProperty(LoopMergeProperty.build(field.getAnnotation(ContentLoopMerge.class)));
+            fieldInfo.setHeadColor(field.getAnnotation(HeadColor.class));
             fieldInfos.add(fieldInfo);
         }
         CLASS_FIELD_INFO_CACHE.put(clazz, fieldInfos);

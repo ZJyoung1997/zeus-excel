@@ -1,5 +1,6 @@
 package com.jz.zeus.excel.write.property;
 
+import java.awt.Color;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.property.FontProperty;
 import com.alibaba.excel.metadata.property.StyleProperty;
@@ -7,6 +8,8 @@ import com.jz.zeus.excel.constant.Constants;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
 
 /**
  * @author:JZ
@@ -52,6 +55,14 @@ public class CellStyleProperty extends StyleProperty {
     @Getter
     @Setter
     private FontProperty fontProperty;
+
+    @Setter
+    @Getter
+    private Color cellFillForegroundColor;
+
+    @Setter
+    @Getter
+    private Color cellFillBackgroundColor;
 
     public void setWidth(Integer width) {
         if (width != null && width > Constants.MAX_COLUMN_WIDTH) {
@@ -211,9 +222,14 @@ public class CellStyleProperty extends StyleProperty {
         if (getFillPatternType() != null) {
             cellStyle.setFillPattern(getFillPatternType());
         }
-        if (getFillBackgroundColor() != null && getFillBackgroundColor() != -1) {
+        if (cellFillBackgroundColor != null) {
+            ((XSSFCellStyle) cellStyle).setFillForegroundColor(new XSSFColor(cellFillBackgroundColor));
+        } else if (getFillBackgroundColor() != null && getFillBackgroundColor() != -1) {
             cellStyle.setFillBackgroundColor(getFillBackgroundColor());
         }
+//        if (cellFillForegroundColor != null) {
+//            ((XSSFCellStyle) cellStyle).setFillForegroundColor(new XSSFColor(cellFillForegroundColor));
+//        }
         if (getFillForegroundColor() != null && getFillForegroundColor() != -1) {
             cellStyle.setFillForegroundColor(getFillForegroundColor());
         }

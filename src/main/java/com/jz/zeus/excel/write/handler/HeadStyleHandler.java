@@ -1,8 +1,10 @@
 package com.jz.zeus.excel.write.handler;
 
+import java.awt.Color;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
@@ -10,6 +12,7 @@ import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.alibaba.excel.write.property.ExcelWriteHeadProperty;
 import com.jz.zeus.excel.FieldInfo;
+import com.jz.zeus.excel.annotation.HeadColor;
 import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.ExcelUtils;
@@ -128,6 +131,15 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
                             }
                             if (fieldInfo.getColumnWidthProperty() != null) {
                                 styleProperty.setWidth(fieldInfo.getColumnWidthProperty().getWidth());
+                            }
+                            HeadColor headColor = fieldInfo.getHeadColor();
+                            if (headColor != null) {
+                                if (CharSequenceUtil.isNotBlank(headColor.cellFillForegroundColor())) {
+                                    styleProperty.setCellFillForegroundColor(Color.decode(headColor.cellFillForegroundColor()));
+                                }
+                                if (CharSequenceUtil.isNotBlank(headColor.cellFillBackgroundColor())) {
+                                    styleProperty.setCellFillBackgroundColor(Color.decode(headColor.cellFillBackgroundColor()));
+                                }
                             }
                         });
                 setCellStyle(sheet, cell, styleProperty);
