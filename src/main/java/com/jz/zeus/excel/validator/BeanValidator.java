@@ -49,6 +49,10 @@ public class BeanValidator<T> {
         return verify(precondition, getter, Objects::nonNull, errorMsg);
     }
 
+    public BeanValidator<T> nonNull(Predicate<T> precondition, Getter<T, Object> getter, String errorMsg) {
+        return verify(precondition, getter, Objects::nonNull, errorMsg);
+    }
+
     public BeanValidator<T> isNotBlank(Getter<T, String> getter, String errorMsg) {
         return verify(getter, CharSequenceUtil::isNotBlank, errorMsg);
     }
@@ -57,43 +61,67 @@ public class BeanValidator<T> {
         return verify(precondition, getter, CharSequenceUtil::isNotBlank, errorMsg);
     }
 
+    public BeanValidator<T> isNotBlank(Predicate<T> precondition, Getter<T, String> getter, String errorMsg) {
+        return verify(precondition, getter, CharSequenceUtil::isNotBlank, errorMsg);
+    }
+
     public <R> BeanValidator<T> verify(Getter<T, R> getter, Predicate<R> condition, String errorMsg) {
-        verifyInfos.add(new VerifyInfo(getter, condition, errorMsg));
+        verifyInfos.add(VerifyInfo.build(getter, condition, errorMsg));
         return this;
     }
 
     public <R> BeanValidator<T> verify(boolean precondition, Getter<T, R> getter, Predicate<R> condition, String errorMsg) {
-        verifyInfos.add(new VerifyInfo(precondition, getter, condition, errorMsg));
+        verifyInfos.add(VerifyInfo.build(precondition, getter, condition, errorMsg));
+        return this;
+    }
+
+    public <R> BeanValidator<T> verify(Predicate<T> precondition, Getter<T, R> getter, Predicate<R> condition, String errorMsg) {
+        verifyInfos.add(VerifyInfo.build(precondition, getter, condition, errorMsg));
         return this;
     }
 
     public <R> BeanValidator<T> verifyBean(Getter<T, R> getter, BeanValidator<R> beanValidator) {
-        verifyInfos.add(new VerifyInfo(getter, beanValidator));
+        verifyInfos.add(VerifyInfo.build(getter, beanValidator));
         return this;
     }
 
     public <R> BeanValidator<T> verifyBean(boolean precondition, Getter<T, R> getter, BeanValidator<R> beanValidator) {
-        verifyInfos.add(new VerifyInfo(precondition, getter, beanValidator));
+        verifyInfos.add(VerifyInfo.build(precondition, getter, beanValidator));
+        return this;
+    }
+
+    public <R> BeanValidator<T> verifyBean(Predicate<T> precondition, Getter<T, R> getter, BeanValidator<R> beanValidator) {
+        verifyInfos.add(VerifyInfo.build(precondition, getter, beanValidator));
         return this;
     }
 
     public <R> BeanValidator<T> verifyByAnnotation(Getter<T, R> getter) {
-        verifyInfos.add(new VerifyInfo(getter, true));
+        verifyInfos.add(VerifyInfo.build(getter, true));
         return this;
     }
 
     public <R> BeanValidator<T> verifyByAnnotation(boolean precondition, Getter<T, R> getter) {
-        verifyInfos.add(new VerifyInfo(precondition, getter, true));
+        verifyInfos.add(VerifyInfo.build(precondition, getter, true));
+        return this;
+    }
+
+    public <R> BeanValidator<T> verifyByAnnotation(Predicate<T> precondition, Getter<T, R> getter) {
+        verifyInfos.add(VerifyInfo.build(precondition, getter, true));
         return this;
     }
 
     public <E, R extends Iterable<E>> BeanValidator<T> verifyCollection(Getter<T, R> getter, BeanValidator<E> beanValidator) {
-        verifyInfos.add(new VerifyInfo(getter, beanValidator));
+        verifyInfos.add(VerifyInfo.build(getter, beanValidator));
+        return this;
+    }
+
+    public <E, R extends Iterable<E>> BeanValidator<T> verifyCollection(Predicate<T> precondition, Getter<T, R> getter, BeanValidator<E> beanValidator) {
+        verifyInfos.add(VerifyInfo.build(precondition, getter, beanValidator));
         return this;
     }
 
     public <E, R extends Iterable<E>> BeanValidator<T> verifyCollection(boolean precondition, Getter<T, R> getter, BeanValidator<E> beanValidator) {
-        verifyInfos.add(new VerifyInfo(precondition, getter, beanValidator));
+        verifyInfos.add(VerifyInfo.build(precondition, getter, beanValidator));
         return this;
     }
 
@@ -111,27 +139,28 @@ public class BeanValidator<T> {
         this.enabledFastFail = enabledFastFail;
         verifyResult = new VerifyResult();
         for (VerifyInfo verifyInfo : verifyInfos) {
-            if (Boolean.FALSE.equals(verifyInfo.precondition)) {
+            if (!verifyInfo.verifyPrecondition(bean)) {
                 continue;
             }
-            String fieldName = verifyInfo.getter.getFieldName();
-            Object value = verifyInfo.getter.apply(bean);
-            if (verifyInfo.isAnnoationVerify) {
+            Getter getter = verifyInfo.getGetter();
+            String fieldName = getter.getFieldName();
+            Object value = getter.apply(bean);
+            if (verifyInfo.isAnnoationVerify()) {
                 verifyResult.addVerifyResult(ValidatorUtils.validate(value, enabledFastFail), fieldName, StrUtil.DOT);
                 if (stopVerify()) {
                     return verifyResult;
                 }
             }
-            if (Objects.isNull(verifyInfo.childValidator)) {
-                if (Objects.nonNull(verifyInfo.condition) && !verifyInfo.condition.test(value)) {
-                    verifyResult.addErrorInfo(fieldName, verifyInfo.errorMsg);
+            if (Objects.isNull(verifyInfo.getChildValidator())) {
+                if (Objects.nonNull(verifyInfo.getCondition()) && !verifyInfo.getCondition().test(value)) {
+                    verifyResult.addErrorInfo(fieldName, verifyInfo.getErrorMsg());
                 }
                 if (stopVerify()) {
                     return verifyResult;
                 }
                 continue;
             }
-            BeanValidator childValidator = verifyInfo.childValidator;
+            BeanValidator childValidator = verifyInfo.getChildValidator();
             if (value instanceof Iterable) {
                 int index = 0;
                 Iterator<?> iterator = ((Iterable<?>) value).iterator();
@@ -152,69 +181,6 @@ public class BeanValidator<T> {
 
     private boolean stopVerify() {
         return enabledFastFail && verifyResult.hasError();
-    }
-
-    private class VerifyInfo {
-
-        private boolean isAnnoationVerify;
-
-        private Getter getter;
-
-        private Predicate condition;
-
-        /**
-         * 前置条件
-         */
-        private Boolean precondition;
-
-        private BeanValidator childValidator;
-
-        private String errorMsg;
-
-        private VerifyInfo(Getter getter, boolean isAnnoationVerify) {
-            this.getter = getter;
-            this.isAnnoationVerify = isAnnoationVerify;
-        }
-
-        private VerifyInfo(boolean precondition, Getter getter, boolean isAnnoationVerify) {
-            Assert.notNull(getter, "Getter can not be null");
-            this.precondition = precondition;
-            this.getter = getter;
-            this.isAnnoationVerify = isAnnoationVerify;
-        }
-
-        private VerifyInfo(Getter getter, BeanValidator childValidator) {
-            Assert.notNull(getter, "Getter can not be null");
-            Assert.notNull(childValidator, "BeanValidator can not be null");
-            this.getter = getter;
-            this.childValidator = childValidator;
-        }
-
-        private VerifyInfo(boolean precondition, Getter getter, BeanValidator childValidator) {
-            Assert.notNull(getter, "Getter can not be null");
-            Assert.notNull(childValidator, "BeanValidator can not be null");
-            this.precondition = precondition;
-            this.getter = getter;
-            this.childValidator = childValidator;
-        }
-
-        private VerifyInfo(Getter getter, Predicate condition, String errorMsg) {
-            Assert.notNull(getter, "Getter can not be null");
-            Assert.notNull(condition, "Condition can not be null");
-            this.getter = getter;
-            this.condition = condition;
-            this.errorMsg = errorMsg;
-        }
-
-        private VerifyInfo(boolean precondition, Getter getter, Predicate condition, String errorMsg) {
-            Assert.notNull(getter, "Getter can not be null");
-            Assert.notNull(condition, "Condition can not be null");
-            this.precondition = precondition;
-            this.getter = getter;
-            this.condition = condition;
-            this.errorMsg = errorMsg;
-        }
-
     }
 
 }
