@@ -1,6 +1,5 @@
 package com.jz.zeus.excel.write.handler;
 
-import java.awt.Color;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
@@ -135,10 +134,10 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
                             HeadColor headColor = fieldInfo.getHeadColor();
                             if (headColor != null) {
                                 if (CharSequenceUtil.isNotBlank(headColor.cellFillForegroundColor())) {
-                                    styleProperty.setCellFillForegroundColor(Color.decode(headColor.cellFillForegroundColor()));
+                                    styleProperty.setCellFillForegroundColor(headColor.cellFillForegroundColor());
                                 }
                                 if (CharSequenceUtil.isNotBlank(headColor.cellFillBackgroundColor())) {
-                                    styleProperty.setCellFillBackgroundColor(Color.decode(headColor.cellFillBackgroundColor()));
+                                    styleProperty.setCellFillBackgroundColor(headColor.cellFillBackgroundColor());
                                 }
                             }
                         });

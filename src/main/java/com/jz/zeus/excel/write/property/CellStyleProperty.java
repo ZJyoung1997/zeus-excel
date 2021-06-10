@@ -1,7 +1,5 @@
 package com.jz.zeus.excel.write.property;
 
-import java.awt.Color;
-
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.property.FontProperty;
@@ -10,9 +8,12 @@ import com.jz.zeus.excel.annotation.HeadColor;
 import com.jz.zeus.excel.constant.Constants;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
+
+import java.awt.Color;
 
 /**
  * @author:JZ
@@ -59,11 +60,9 @@ public class CellStyleProperty extends StyleProperty {
     @Setter
     private FontProperty fontProperty;
 
-    @Setter
     @Getter
     private Color cellFillForegroundColor;
 
-    @Setter
     @Getter
     private Color cellFillBackgroundColor;
 
@@ -90,6 +89,30 @@ public class CellStyleProperty extends StyleProperty {
     public CellStyleProperty setLocationByHead(int rowIndex, String headName) {
         this.rowIndex = rowIndex;
         this.headName = headName;
+        return this;
+    }
+
+    public CellStyleProperty setCellFillForegroundColor(String nm) {
+        if (CharSequenceUtil.isNotBlank(nm)) {
+            this.cellFillForegroundColor = Color.decode(nm);
+        }
+        return this;
+    }
+
+    public CellStyleProperty setCellFillForegroundColor(Color color) {
+        this.cellFillForegroundColor = color;
+        return this;
+    }
+
+    public CellStyleProperty setCellFillBackgroundColor(String nm) {
+        if (CharSequenceUtil.isNotBlank(nm)) {
+            this.cellFillBackgroundColor = Color.decode(nm);
+        }
+        return this;
+    }
+
+    public CellStyleProperty setCellFillBackgroundColor(Color color) {
+        this.cellFillBackgroundColor = color;
         return this;
     }
 
