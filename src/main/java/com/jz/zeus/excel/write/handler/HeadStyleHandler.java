@@ -144,12 +144,12 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
                         });
                 setCellStyle(sheet, cell, styleProperty);
             } else {
-                setCellStyle(sheet, cell, headMap.get(i));
+                setCellStyle(sheet, cell, headMap.get(i), headClass);
             }
         }
     }
 
-    private void setCellStyle(Sheet sheet, Cell cell, Head head) {
+    private void setCellStyle(Sheet sheet, Cell cell, Head head, Class headClass) {
         CellStyleProperty cellStyleProperty = CellStyleProperty.getDefaultHeadProperty();
         if (head.getHeadStyleProperty() != null) {
             BeanUtil.copyProperties(head.getHeadStyleProperty(), cellStyleProperty);
@@ -166,6 +166,10 @@ public class HeadStyleHandler extends AbstractRowWriteHandler {
         if (head.getHeadFontProperty() != null) {
             cellStyleProperty.setFontProperty(head.getHeadFontProperty());
         }
+        ClassUtils.getFieldInfoByFieldName(headClass, head.getFieldName())
+                .ifPresent(fieldInfo -> {
+                    cellStyleProperty.setHeadColor(fieldInfo.getHeadColor());
+                });
         setCellStyle(sheet, cell, cellStyleProperty);
     }
 

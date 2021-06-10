@@ -1,9 +1,12 @@
 package com.jz.zeus.excel.write.property;
 
 import java.awt.Color;
+
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.metadata.property.FontProperty;
 import com.alibaba.excel.metadata.property.StyleProperty;
+import com.jz.zeus.excel.annotation.HeadColor;
 import com.jz.zeus.excel.constant.Constants;
 import lombok.Getter;
 import lombok.Setter;
@@ -87,6 +90,19 @@ public class CellStyleProperty extends StyleProperty {
     public CellStyleProperty setLocationByHead(int rowIndex, String headName) {
         this.rowIndex = rowIndex;
         this.headName = headName;
+        return this;
+    }
+
+    public CellStyleProperty setHeadColor(HeadColor headColor) {
+        if (headColor == null) {
+            return this;
+        }
+        if (CharSequenceUtil.isNotBlank(headColor.cellFillForegroundColor())) {
+            this.cellFillForegroundColor = Color.decode(headColor.cellFillForegroundColor());
+        }
+        if (CharSequenceUtil.isNotBlank(headColor.cellFillBackgroundColor())) {
+            this.cellFillBackgroundColor = Color.decode(headColor.cellFillBackgroundColor());
+        }
         return this;
     }
 
@@ -227,10 +243,9 @@ public class CellStyleProperty extends StyleProperty {
         } else if (getFillBackgroundColor() != null && getFillBackgroundColor() != -1) {
             cellStyle.setFillBackgroundColor(getFillBackgroundColor());
         }
-//        if (cellFillForegroundColor != null) {
-//            ((XSSFCellStyle) cellStyle).setFillForegroundColor(new XSSFColor(cellFillForegroundColor));
-//        }
-        if (getFillForegroundColor() != null && getFillForegroundColor() != -1) {
+        if (cellFillForegroundColor != null) {
+            ((XSSFCellStyle) cellStyle).setFillForegroundColor(new XSSFColor(cellFillForegroundColor));
+        } else if (getFillForegroundColor() != null && getFillForegroundColor() != -1) {
             cellStyle.setFillForegroundColor(getFillForegroundColor());
         }
         if (getShrinkToFit() != null) {
