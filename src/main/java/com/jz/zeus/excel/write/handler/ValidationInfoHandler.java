@@ -220,7 +220,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             sheet.createRow(i).createCell(columnIndex)
                     .setCellValue(options.get(i - beginRowIndex));
         }
-        String columnStr = ExcelUtils.columnIndexToStr(0);
+        String columnStr = ExcelUtils.columnIndexToStr(columnIndex);
         Name categoryName = workbook.createName();
         categoryName.setNameName(StrUtil.C_UNDERLINE + RandomUtil.randomString(8));
         String refersToFormula = StrUtil.strBuilder().append(sheetName)
