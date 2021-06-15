@@ -15,6 +15,8 @@ import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.helper.WriteSheetHelper;
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRichTextString;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
@@ -198,35 +200,34 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         } else if (CharSequenceUtil.isNotBlank(boxInfo.getDicTitle())) {
             beginRowIndex = 1;
             Cell dicTitleCell = sheet.createRow(0).createCell(columnIndex);
-            dicTitleCell.setCellValue(boxInfo.getDicTitle());
+            if (dicTitleCell instanceof HSSFCell) {
+                dicTitleCell.setCellValue(new HSSFRichTextString(boxInfo.getDicTitle()));
+            } else {
+                dicTitleCell.setCellValue(boxInfo.getDicTitle());
+            }
             CellStyle cellStyle = workbook.createCellStyle();
             Font font = workbook.createFont();
             font.setBold(true);
             font.setFontName("微软雅黑");
             cellStyle.setFont(font);
             dicTitleCell.setCellStyle(cellStyle);
+            cellStyle.setWrapText(true);
             sheet.setColumnWidth(columnIndex, ExcelUtils.calColumnWidth(boxInfo.getDicTitle(), font.getFontHeightInPoints()));
         }
         List<String> options = boxInfo.getOptions();
-        int endIndex = beginRowIndex + options.size() - 1;
-        String s1 = null, s2 = null;
-        for (int i = beginRowIndex; i <= endIndex; i++) {
-            Cell newCell = sheet.createRow(i).createCell(columnIndex);
-            if (i == beginRowIndex) {
-                s1 = newCell.getAddress().formatAsString();
-            }
-            if (i == endIndex) {
-                s2 = newCell.getAddress().formatAsString();
-            }
-            newCell.setCellValue(options.get(i - beginRowIndex));
+        int endRowIndex = beginRowIndex + options.size() - 1;
+        for (int i = beginRowIndex; i <= endRowIndex; i++) {
+            sheet.createRow(i).createCell(columnIndex)
+                    .setCellValue(options.get(i - beginRowIndex));
         }
+        String columnStr = ExcelUtils.columnIndexToStr(0);
         Name categoryName = workbook.createName();
         categoryName.setNameName(StrUtil.C_UNDERLINE + RandomUtil.randomString(8));
         String refersToFormula = StrUtil.strBuilder().append(sheetName)
-                .append("!$").append(StrUtil.filter(s1, Character::isLetter))
-                .append('$').append(StrUtil.filter(s1, Character::isDigit))
-                .append(":$").append(StrUtil.filter(s2, Character::isLetter))
-                .append('$').append(StrUtil.filter(s2, Character::isDigit)).toString();
+                .append("!$").append(columnStr)
+                .append('$').append(beginRowIndex + 1)
+                .append(":$").append(columnStr)
+                .append('$').append(endRowIndex + 1).toString();
         categoryName.setRefersToFormula(refersToFormula);
         return categoryName.getNameName();
     }

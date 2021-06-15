@@ -35,14 +35,16 @@ public class ExcelWriteTest {
         Console.log("写入Excel前内存：{}M", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024));
         TimeInterval timer = DateUtil.timer();
 
-        CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadProperty(0, "town");
+        CellStyleProperty styleProperty = CellStyleProperty.getDefaultHeadPropertyByHead(0, "图片（必填）\n允许的文件类型*JPG,1080*1920，大小限制150K。素材必须满足腾讯所有规格要求，否则无法通过审核。");
         styleProperty.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
-        styleProperty.setFillForegroundColor(IndexedColors.RED.index);
+        styleProperty.setCellFillForegroundColor("#8EA9DB");
+//        styleProperty.setCellFillForegroundColor("#8EA9DB");
 
-        CellStyleProperty styleProperty1 = CellStyleProperty.getDefaultHeadPropertyByHead(0, "自定义1");
+        CellStyleProperty styleProperty1 = CellStyleProperty.getDefaultHeadPropertyByHead(0, "落地页（必填）");
         styleProperty1.setFillPatternType(FillPatternType.SOLID_FOREGROUND);
-        styleProperty1.setFillForegroundColor(IndexedColors.RED.index);
-        List<CellStyleProperty> styleProperties = ListUtil.toList(styleProperty);
+//        styleProperty1.setFillForegroundColor(IndexedColors.RED.index);
+        styleProperty1.setCellFillForegroundColor("#8EA9DB");
+        List<CellStyleProperty> styleProperties = ListUtil.toList(styleProperty, styleProperty1);
 
         List<DynamicHead> dynamicHeads = new ArrayList<DynamicHead>() {{
             add(DynamicHead.buildAppendInfo("src", "（必填）"));
@@ -57,10 +59,11 @@ public class ExcelWriteTest {
 
         ZeusExcel.write(path)
                 .sheet("模板")
-                .dynamicHeads(dynamicHeads)
+//                .dynamicHeads(dynamicHeads)
                 .headStyles(styleProperties)
                 .validationInfos(getValidationInfo())
-                .errorInfos(errorInfos)
+//                .validationInfos(Collections.emptyList())
+//                .errorInfos(errorInfos)
 //                .doWrite(ListUtil.toList("s"), null);
                 .doWrite(DemoData.class, getDataList("测0_", 10));
 
@@ -135,8 +138,8 @@ public class ExcelWriteTest {
 //            ValidationInfo.buildColumnByField("id", list).setErrorBox("Error", "请选择正确的ID"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是自定义", "不是自定义").asDicSheet("字典表", "说明f辅导费")
-//            ValidationInfo.buildDictionaryTable("字典表", "是自定义", "不是自定义").setDicTitle("说明f辅导费")
-            provinces, city, town
+            ValidationInfo.buildColumnByHead("SRC", "是自定义", "不是自定义").asDicSheet("fffjjj", "说明f辅导费")
+//            provinces, city, town
         );
     }
 
@@ -160,8 +163,9 @@ public class ExcelWriteTest {
             demoData.setPrice(3.94);
 
             Map<String, String> map = new LinkedHashMap<>();
-//            map.put("自定义1", prefix + "12");
-//            map.put("自定义2", prefix + "jfak");
+            map.put("图片（必填）\n允许的文件类型*JPG,1080*1920，大小限制150K。素材必须满足腾讯所有规格要求，否则无法通过审核。", prefix + "12");
+            map.put("落地页（必填）", prefix + "jfak");
+            map.put("第三方异步点击监测URL（2）", prefix + "jfak");
 //            map.put("自定义3", prefix + "集分宝");
             demoData.setExtendColumnMap(map);
             dataList.add(demoData);
