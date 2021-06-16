@@ -5,8 +5,7 @@ import cn.hutool.core.lang.Assert;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.RandomUtil;
-import com.jz.zeus.excel.exception.NoSuchFieldException;
-import com.jz.zeus.excel.util.ClassUtils;
+import com.jz.zeus.excel.interfaces.FieldGetter;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
@@ -108,8 +107,16 @@ public class ValidationInfo {
         return buildCascade(null, fieldName, null, null, parent, parentChildMap);
     }
 
+    public static <T, R> ValidationInfo buildCascadeByField(FieldGetter<T, R> fieldGetter, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
+        return buildCascade(null, fieldGetter.getFieldName(), null, null, parent, parentChildMap);
+    }
+
     public static ValidationInfo buildCascadeByField(String fieldName, Integer rowNum, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
         return buildCascade(null, fieldName, null, rowNum, parent, parentChildMap);
+    }
+
+    public static <T, R> ValidationInfo buildCascadeByField(FieldGetter<T, R> fieldGetter, Integer rowNum, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
+        return buildCascade(null, fieldGetter.getFieldName(), null, rowNum, parent, parentChildMap);
     }
 
     public static ValidationInfo buildCascadeByIndex(int columnIndex, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
@@ -168,8 +175,16 @@ public class ValidationInfo {
         return buildColumn(fieldName, null, null, null, options);
     }
 
+    public static <T, R> ValidationInfo buildColumnByField(FieldGetter<T, R> fieldGetter, String... options) {
+        return buildColumn(fieldGetter.getFieldName(), null, null, null, options);
+    }
+
     public static ValidationInfo buildColumnByField(String fieldName, List<String> options) {
         return buildColumn(fieldName, null, null, null, options);
+    }
+
+    public static <T, R> ValidationInfo buildColumnByField(FieldGetter<T, R> fieldGetter, List<String> options) {
+        return buildColumn(fieldGetter.getFieldName(), null, null, null, options);
     }
 
     public static ValidationInfo buildColumnByField(String fieldName, Integer rowNum, String... options) {
@@ -178,34 +193,6 @@ public class ValidationInfo {
 
     public static ValidationInfo buildColumnByField(String fieldName, Integer rowNum, List<String> options) {
         return buildColumn(fieldName, null, null, rowNum, options);
-    }
-
-    public static ValidationInfo buildColumnByField(Class<?> clazz, String fieldName, String... options) {
-        if (ClassUtils.getFieldInfoByFieldName(clazz, fieldName).isPresent()) {
-            return buildColumn(fieldName, null, null, null, options);
-        }
-        throw new NoSuchFieldException(String.format("field %s is not fond", fieldName));
-    }
-
-    public static ValidationInfo buildColumnByField(Class<?> clazz, String fieldName, List<String> options) {
-        if (ClassUtils.getFieldInfoByFieldName(clazz, fieldName).isPresent()) {
-            return buildColumn(fieldName, null, null, null, options);
-        }
-        throw new NoSuchFieldException(String.format("field %s is not fond", fieldName));
-    }
-
-    public static ValidationInfo buildColumnByField(Class<?> clazz, String fieldName, Integer rowNum, String... options) {
-        if (ClassUtils.getFieldInfoByFieldName(clazz, fieldName).isPresent()) {
-            return buildColumn(fieldName, null, null, rowNum, options);
-        }
-        throw new NoSuchFieldException(String.format("field %s is not fond", fieldName));
-    }
-
-    public static ValidationInfo buildColumnByField(Class<?> clazz, String fieldName, Integer rowNum, List<String> options) {
-        if (ClassUtils.getFieldInfoByFieldName(clazz, fieldName).isPresent()) {
-            return buildColumn(fieldName, null, null, rowNum, options);
-        }
-        throw new NoSuchFieldException(String.format("field %s is not fond", fieldName));
     }
 
     private static ValidationInfo buildColumn(String fieldName, String headName, Integer columnIndex, Integer rowNum, String... options) {

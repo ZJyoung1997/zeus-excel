@@ -2,6 +2,7 @@ package com.jz.zeus.excel;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.StrUtil;
+import com.jz.zeus.excel.interfaces.FieldGetter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -36,6 +37,10 @@ public class DynamicHead {
         return build(fieldName, null, appendInfo);
     }
 
+    public static <T, R> DynamicHead buildAppendInfo(FieldGetter<T, R> fieldGetter, String appendInfo) {
+        return build(fieldGetter.getFieldName(), null, appendInfo);
+    }
+
     public static DynamicHead buildAppendInfo(Integer columnIndex, String appendInfo) {
         return build(columnIndex, null, appendInfo);
     }
@@ -48,12 +53,20 @@ public class DynamicHead {
         return build(fieldName, newName, null);
     }
 
+    public static <T, R> DynamicHead buildNewName(FieldGetter<T, R> fieldGetter, String newName) {
+        return build(fieldGetter.getFieldName(), newName, null);
+    }
+
     public static DynamicHead build(Integer columnIndex, String newName, String appendInfo) {
         return build(DEFAULT_ROW_INDEX, columnIndex, newName, appendInfo);
     }
 
     public static DynamicHead build(String fieldName, String newName, String appendInfo) {
         return build(DEFAULT_ROW_INDEX, fieldName, newName, appendInfo);
+    }
+
+    public static <T, R> DynamicHead build(FieldGetter<T, R> fieldGetter, String newName, String appendInfo) {
+        return build(DEFAULT_ROW_INDEX, fieldGetter.getFieldName(), newName, appendInfo);
     }
 
     public static DynamicHead build(Integer rowIndex, Integer columnIndex, String newName, String appendInfo) {
@@ -69,6 +82,10 @@ public class DynamicHead {
         dynamicHead.setNewName(newName);
         dynamicHead.setAppendInfo(appendInfo);
         return dynamicHead;
+    }
+
+    public static <T, R> DynamicHead build(Integer rowIndex, FieldGetter<T, R> fieldGetter, String newName, String appendInfo) {
+        return build(rowIndex, fieldGetter, newName, appendInfo);
     }
 
     public static DynamicHead build(Integer rowIndex, String fieldName, String newName, String appendInfo) {

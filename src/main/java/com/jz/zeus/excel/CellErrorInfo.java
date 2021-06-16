@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.StrUtil;
+import com.jz.zeus.excel.interfaces.FieldGetter;
 import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.experimental.Accessors;
@@ -43,8 +44,16 @@ public class CellErrorInfo implements Cloneable {
         return build(rowIndex, fieldName, null, null, errorMsgs);
     }
 
+    public static <T, R> CellErrorInfo buildByField(int rowIndex, FieldGetter<T, R> fieldGetter, String... errorMsgs) {
+        return build(rowIndex, fieldGetter.getFieldName(), null, null, errorMsgs);
+    }
+
     public static CellErrorInfo buildByField(int rowIndex, String fieldName,  Collection<String> errorMsgs) {
         return build(rowIndex, fieldName, null, null, errorMsgs);
+    }
+
+    public static <T, R> CellErrorInfo buildByField(int rowIndex, FieldGetter<T, R> fieldGetter,  Collection<String> errorMsgs) {
+        return build(rowIndex, fieldGetter.getFieldName(), null, null, errorMsgs);
     }
 
     public static CellErrorInfo buildByColumnIndex(int rowIndex, int columnIndex, String... errorMsgs) {

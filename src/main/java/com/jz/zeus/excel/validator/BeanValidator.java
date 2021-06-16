@@ -3,7 +3,7 @@ package com.jz.zeus.excel.validator;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.StrUtil;
-import com.jz.zeus.excel.interfaces.Getter;
+import com.jz.zeus.excel.interfaces.FieldGetter;
 import com.jz.zeus.excel.util.ValidatorUtils;
 
 import java.util.ArrayList;
@@ -41,87 +41,87 @@ public class BeanValidator<T> {
         return new BeanValidator<>();
     }
 
-    public BeanValidator<T> nonNull(Getter<T, Object> getter, String errorMsg) {
-        return verify(getter, Objects::nonNull, errorMsg);
+    public BeanValidator<T> nonNull(FieldGetter<T, Object> fieldGetter, String errorMsg) {
+        return verify(fieldGetter, Objects::nonNull, errorMsg);
     }
 
-    public BeanValidator<T> nonNull(boolean precondition, Getter<T, Object> getter, String errorMsg) {
-        return verify(precondition, getter, Objects::nonNull, errorMsg);
+    public BeanValidator<T> nonNull(boolean precondition, FieldGetter<T, Object> fieldGetter, String errorMsg) {
+        return verify(precondition, fieldGetter, Objects::nonNull, errorMsg);
     }
 
-    public BeanValidator<T> nonNull(Predicate<T> precondition, Getter<T, Object> getter, String errorMsg) {
-        return verify(precondition, getter, Objects::nonNull, errorMsg);
+    public BeanValidator<T> nonNull(Predicate<T> precondition, FieldGetter<T, Object> fieldGetter, String errorMsg) {
+        return verify(precondition, fieldGetter, Objects::nonNull, errorMsg);
     }
 
-    public BeanValidator<T> isNotBlank(Getter<T, String> getter, String errorMsg) {
-        return verify(getter, CharSequenceUtil::isNotBlank, errorMsg);
+    public BeanValidator<T> isNotBlank(FieldGetter<T, String> fieldGetter, String errorMsg) {
+        return verify(fieldGetter, CharSequenceUtil::isNotBlank, errorMsg);
     }
 
-    public BeanValidator<T> isNotBlank(boolean precondition, Getter<T, String> getter, String errorMsg) {
-        return verify(precondition, getter, CharSequenceUtil::isNotBlank, errorMsg);
+    public BeanValidator<T> isNotBlank(boolean precondition, FieldGetter<T, String> fieldGetter, String errorMsg) {
+        return verify(precondition, fieldGetter, CharSequenceUtil::isNotBlank, errorMsg);
     }
 
-    public BeanValidator<T> isNotBlank(Predicate<T> precondition, Getter<T, String> getter, String errorMsg) {
-        return verify(precondition, getter, CharSequenceUtil::isNotBlank, errorMsg);
+    public BeanValidator<T> isNotBlank(Predicate<T> precondition, FieldGetter<T, String> fieldGetter, String errorMsg) {
+        return verify(precondition, fieldGetter, CharSequenceUtil::isNotBlank, errorMsg);
     }
 
-    public <R> BeanValidator<T> verify(Getter<T, R> getter, Predicate<R> condition, String errorMsg) {
-        verifyInfos.add(VerifyInfo.build(getter, condition, errorMsg));
+    public <R> BeanValidator<T> verify(FieldGetter<T, R> fieldGetter, Predicate<R> condition, String errorMsg) {
+        verifyInfos.add(VerifyInfo.build(fieldGetter, condition, errorMsg));
         return this;
     }
 
-    public <R> BeanValidator<T> verify(boolean precondition, Getter<T, R> getter, Predicate<R> condition, String errorMsg) {
-        verifyInfos.add(VerifyInfo.build(precondition, getter, condition, errorMsg));
+    public <R> BeanValidator<T> verify(boolean precondition, FieldGetter<T, R> fieldGetter, Predicate<R> condition, String errorMsg) {
+        verifyInfos.add(VerifyInfo.build(precondition, fieldGetter, condition, errorMsg));
         return this;
     }
 
-    public <R> BeanValidator<T> verify(Predicate<T> precondition, Getter<T, R> getter, Predicate<R> condition, String errorMsg) {
-        verifyInfos.add(VerifyInfo.build(precondition, getter, condition, errorMsg));
+    public <R> BeanValidator<T> verify(Predicate<T> precondition, FieldGetter<T, R> fieldGetter, Predicate<R> condition, String errorMsg) {
+        verifyInfos.add(VerifyInfo.build(precondition, fieldGetter, condition, errorMsg));
         return this;
     }
 
-    public <R> BeanValidator<T> verifyBean(Getter<T, R> getter, BeanValidator<R> beanValidator) {
-        verifyInfos.add(VerifyInfo.build(getter, beanValidator));
+    public <R> BeanValidator<T> verifyBean(FieldGetter<T, R> fieldGetter, BeanValidator<R> beanValidator) {
+        verifyInfos.add(VerifyInfo.build(fieldGetter, beanValidator));
         return this;
     }
 
-    public <R> BeanValidator<T> verifyBean(boolean precondition, Getter<T, R> getter, BeanValidator<R> beanValidator) {
-        verifyInfos.add(VerifyInfo.build(precondition, getter, beanValidator));
+    public <R> BeanValidator<T> verifyBean(boolean precondition, FieldGetter<T, R> fieldGetter, BeanValidator<R> beanValidator) {
+        verifyInfos.add(VerifyInfo.build(precondition, fieldGetter, beanValidator));
         return this;
     }
 
-    public <R> BeanValidator<T> verifyBean(Predicate<T> precondition, Getter<T, R> getter, BeanValidator<R> beanValidator) {
-        verifyInfos.add(VerifyInfo.build(precondition, getter, beanValidator));
+    public <R> BeanValidator<T> verifyBean(Predicate<T> precondition, FieldGetter<T, R> fieldGetter, BeanValidator<R> beanValidator) {
+        verifyInfos.add(VerifyInfo.build(precondition, fieldGetter, beanValidator));
         return this;
     }
 
-    public <R> BeanValidator<T> verifyByAnnotation(Getter<T, R> getter) {
-        verifyInfos.add(VerifyInfo.build(getter, true));
+    public <R> BeanValidator<T> verifyByAnnotation(FieldGetter<T, R> fieldGetter) {
+        verifyInfos.add(VerifyInfo.build(fieldGetter, true));
         return this;
     }
 
-    public <R> BeanValidator<T> verifyByAnnotation(boolean precondition, Getter<T, R> getter) {
-        verifyInfos.add(VerifyInfo.build(precondition, getter, true));
+    public <R> BeanValidator<T> verifyByAnnotation(boolean precondition, FieldGetter<T, R> fieldGetter) {
+        verifyInfos.add(VerifyInfo.build(precondition, fieldGetter, true));
         return this;
     }
 
-    public <R> BeanValidator<T> verifyByAnnotation(Predicate<T> precondition, Getter<T, R> getter) {
-        verifyInfos.add(VerifyInfo.build(precondition, getter, true));
+    public <R> BeanValidator<T> verifyByAnnotation(Predicate<T> precondition, FieldGetter<T, R> fieldGetter) {
+        verifyInfos.add(VerifyInfo.build(precondition, fieldGetter, true));
         return this;
     }
 
-    public <E, R extends Iterable<E>> BeanValidator<T> verifyCollection(Getter<T, R> getter, BeanValidator<E> beanValidator) {
-        verifyInfos.add(VerifyInfo.build(getter, beanValidator));
+    public <E, R extends Iterable<E>> BeanValidator<T> verifyCollection(FieldGetter<T, R> fieldGetter, BeanValidator<E> beanValidator) {
+        verifyInfos.add(VerifyInfo.build(fieldGetter, beanValidator));
         return this;
     }
 
-    public <E, R extends Iterable<E>> BeanValidator<T> verifyCollection(Predicate<T> precondition, Getter<T, R> getter, BeanValidator<E> beanValidator) {
-        verifyInfos.add(VerifyInfo.build(precondition, getter, beanValidator));
+    public <E, R extends Iterable<E>> BeanValidator<T> verifyCollection(Predicate<T> precondition, FieldGetter<T, R> fieldGetter, BeanValidator<E> beanValidator) {
+        verifyInfos.add(VerifyInfo.build(precondition, fieldGetter, beanValidator));
         return this;
     }
 
-    public <E, R extends Iterable<E>> BeanValidator<T> verifyCollection(boolean precondition, Getter<T, R> getter, BeanValidator<E> beanValidator) {
-        verifyInfos.add(VerifyInfo.build(precondition, getter, beanValidator));
+    public <E, R extends Iterable<E>> BeanValidator<T> verifyCollection(boolean precondition, FieldGetter<T, R> fieldGetter, BeanValidator<E> beanValidator) {
+        verifyInfos.add(VerifyInfo.build(precondition, fieldGetter, beanValidator));
         return this;
     }
 
@@ -142,9 +142,9 @@ public class BeanValidator<T> {
             if (!verifyInfo.verifyPrecondition(bean)) {
                 continue;
             }
-            Getter getter = verifyInfo.getGetter();
-            String fieldName = getter.getFieldName();
-            Object value = getter.apply(bean);
+            FieldGetter fieldGetter = verifyInfo.getFieldGetter();
+            String fieldName = fieldGetter.getFieldName();
+            Object value = fieldGetter.apply(bean);
             if (verifyInfo.isAnnoationVerify()) {
                 verifyResult.addVerifyResult(ValidatorUtils.validate(value, enabledFastFail), fieldName, StrUtil.DOT);
                 if (stopVerify()) {
