@@ -29,11 +29,6 @@ import java.util.*;
  */
 public class ValidationInfoHandler extends AbstractSheetWriteHandler {
 
-    /**
-     * 下拉框超过该值后将写入到单独sheet中
-     */
-    private static final int MAX_GENERAL_OPTION_NUM = 20;
-
     private ExcelContext excelContext;
 
     private Integer headRowNum;
@@ -116,11 +111,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         DataValidationHelper helper = sheet.getDataValidationHelper();
         DataValidationConstraint constraint;
         if (boxInfo.getParent() == null) {
-            if (!boxInfo.isAsDicSheet() && options.size() <= MAX_GENERAL_OPTION_NUM) {
-                constraint = helper.createExplicitListConstraint(options.toArray(new String[0]));
-            } else {
-                constraint = helper.createFormulaListConstraint(createValidationDataSheet(workbook, boxInfo));
-            }
+            constraint = helper.createFormulaListConstraint(createValidationDataSheet(workbook, boxInfo));
             DataValidation dataValidation = createDataValidation(helper, constraint,
                     new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol), boxInfo);
             sheet.addValidationData(dataValidation);
