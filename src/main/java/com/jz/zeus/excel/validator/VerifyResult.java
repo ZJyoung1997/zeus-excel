@@ -4,6 +4,7 @@ import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.StrUtil;
+import com.jz.zeus.excel.interfaces.FieldGetter;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -30,10 +31,32 @@ public class VerifyResult {
         }
     }
 
+    public <T, R> void addErrorInfo(FieldGetter<T, R> fieldGetter, String errorMsg) {
+        String fieldName = fieldGetter.getFieldName();
+        List<String> errorMsgs = errorInfoMap.get(fieldName);
+        if (Objects.isNull(errorMsgs)) {
+            errorMsgs = new ArrayList<>();
+            errorInfoMap.put(fieldName, errorMsgs);
+        }
+        if (CharSequenceUtil.isNotBlank(errorMsg)) {
+            errorMsgs.add(errorMsg);
+        }
+    }
+
     public void addErrorInfo(String fieldName, List<String> errorMsgs) {
         if (CollUtil.isEmpty(errorMsgs)) {
             return;
         }
+        for (String errorMsg : errorMsgs) {
+            addErrorInfo(fieldName, errorMsg);
+        }
+    }
+
+    public <T, R> void addErrorInfo(FieldGetter<T, R> fieldGetter, List<String> errorMsgs) {
+        if (CollUtil.isEmpty(errorMsgs)) {
+            return;
+        }
+        String fieldName = fieldGetter.getFieldName();
         for (String errorMsg : errorMsgs) {
             addErrorInfo(fieldName, errorMsg);
         }
