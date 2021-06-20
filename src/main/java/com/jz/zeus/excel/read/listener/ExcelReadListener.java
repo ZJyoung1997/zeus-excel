@@ -1,9 +1,8 @@
 package com.jz.zeus.excel.read.listener;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.lang.Pair;
+import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ReflectUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.enums.HeadKindEnum;
 import com.alibaba.excel.exception.ExcelDataConvertException;
@@ -14,124 +13,79 @@ import com.alibaba.excel.metadata.Head;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.read.metadata.holder.ReadRowHolder;
 import com.alibaba.excel.read.metadata.property.ExcelReadHeadProperty;
+import com.alibaba.excel.util.ConverterUtils;
 import com.jz.zeus.excel.CellErrorInfo;
-import com.jz.zeus.excel.DynamicHead;
 import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.exception.DataConvertException;
+import com.jz.zeus.excel.interfaces.FieldGetter;
 import com.jz.zeus.excel.util.ClassUtils;
-import com.jz.zeus.excel.util.ValidatorUtils;
-import com.jz.zeus.excel.validator.VerifyResult;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
-/**
- * @Author JZ
- * @Date 2021/3/22 14:31
- */
+@NoArgsConstructor
 public abstract class ExcelReadListener<T> implements ReadListener<T> {
-
-    /**
-     * 读取Excel完毕后，Excel的真实表头行数
-     */
-    @Getter
-    private Integer readAfterHeadRowNum;
-
-    /**
-     * 开启hibernate注解校验
-     * true 开启、false 关闭
-     */
-    private boolean enabledAnnotationValidation = true;
-
-    /**
-     * 表头是否有误
-     * false 正常、true 表头错误
-     */
-    @Getter
-    private boolean headError = false;
 
     /**
      * 批量处理数据数量
      */
-    @Setter
-    private int batchHandleNum = 2000;
+    private int batchHandleNum = 200;
 
     /**
-     * 表头错误信息
+     * 终止标志，true 终止Excel读取流程、false Excel读取流程正常执行
      */
-    @Setter
-    @Getter
-    private String headErrorMsg;
+    private boolean terminated;
 
     /**
-     * 数据的错误信息（不包含表头错误信息）
-     * key 为行索引，value 为该行中单元格的错误信息
+     * 扩展列起始索引，若没有扩展列则为null
      */
-    @Getter
-    private Map<Integer, List<CellErrorInfo>> errorInfoMap = new HashMap<>();
+    private Integer extendColumnBeginIndex;
 
     /**
-     * 错误数据
-     * key 行索引、value Excel中读取到的该行数据
+     * 扩展列结束索引，若没有扩展列则为null
      */
-    private Map<Integer, T> errorDataMap = new HashMap<>();
+    private Integer extendColumnEndIndex;
 
+    /**
+     * 扩展列的字段信息
+     */
     private Field extendField;
 
     /**
-     * T 中字段名与列索引映射
-     * key T 中字段名、value 列索引
+     * 当前sheet中读取到的表头
      */
-    private Map<String, Integer> fieldColumnIndexMap = new HashMap<>();
+    private Map<Integer, String> currentSheetHeads;
 
     /**
-     * 该字段中保存的是class中未定义的表头，
-     * key 为列索引、value 为表头
+     * 当前sheet表头配置信息
      */
-    private Map<Integer, String> extendColumnIndexMap = new HashMap<>();
-
-    /**
-     * 动态表头
-     */
-    @Getter
-    private List<DynamicHead> dynamicHeads = new ArrayList<>();
-
-    @Getter
-    private List<String> headNames;
+    private Map<Integer, Head> currentSheetHeadConfig;
 
     /**
      * Excel 中读取到的数据
      * key 行索引，value 读取到的数据
      */
-    private Map<Integer, T> dataMap = new HashMap<>();
+    private Map<Integer, T> dataMap;
 
-    public ExcelReadListener() {}
+    /**
+     * 数据的错误信息
+     * key 为行索引，value 为该行中单元格的错误信息
+     */
+    @Getter
+    private Map<Integer, List<CellErrorInfo>> errorInfoMap;
 
-    public ExcelReadListener(Boolean enabledAnnotationValidation) {
-        this(enabledAnnotationValidation, null);
-    }
-
-    public ExcelReadListener(Integer batchHandleNum) {
-        this(null, batchHandleNum);
-    }
-
-    public ExcelReadListener(Boolean enabledAnnotationValidation, Integer batchHandleNum) {
-        if (enabledAnnotationValidation != null) {
-            this.enabledAnnotationValidation = enabledAnnotationValidation;
-        }
-        if (batchHandleNum != null) {
-            this.batchHandleNum = batchHandleNum;
-        }
+    public ExcelReadListener(int batchHandleNum) {
+        this.batchHandleNum = batchHandleNum;
     }
 
     /**
-     * 所有数据处理完毕之后触发的操作，如果想要所有数据校验完毕后在对数据进行操作
-     * 可以对 {@link #dataHandle} 进行一个空的实现
+     * 对sheet表头进行处理
+     * @param headMap
+     * @param analysisContext
      */
-    protected abstract void doAfterAllDataHandle(AnalysisContext analysisContext);
+    protected abstract void headHandle(Map<Integer, String> headMap, AnalysisContext analysisContext);
 
     /**
      * 对读取到的数据进行处理
@@ -141,89 +95,114 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     protected abstract void dataHandle(Map<Integer, T> dataMap, AnalysisContext analysisContext);
 
     /**
-     * 校验读取到的数据
-     * @param dataMap                   key 为行索引，value 为 Excel中该行数据
-     * @param analysisContext
+     * 所有数据处理完毕之后触发的操作，如果想要所有数据校验完毕后在对数据进行操作
+     * 可以对 {@link #dataHandle} 进行一个空的实现
      */
-    protected abstract void verify(Map<Integer, T> dataMap, AnalysisContext analysisContext);
-
-    /**
-     * 校验表头是否正常
-     * 可调用 ConverterUtils.convertToStringMap(headMap, context) 方法将表头转化为对应map
-     * @return 正常 true、异常 false
-     */
-    protected abstract void headCheck(Map<Integer, CellData> headMap, AnalysisContext context);
+    protected abstract void doAfterAllDataHandle(AnalysisContext analysisContext);
 
     @Override
-    public void invoke(T data, AnalysisContext analysisContext) {
-        ReadRowHolder readRowHolder = analysisContext.readRowHolder();
-        annotationValidation(data, readRowHolder);
+    public void invokeHead(Map<Integer, CellData> headMap, AnalysisContext context) {
+        init(headMap, context);
+        headHandle(currentSheetHeads, context);
+    }
+
+    @Override
+    public void invoke(T data, AnalysisContext context) {
+        ReadRowHolder readRowHolder = context.readRowHolder();
         Integer rowIndex = readRowHolder.getRowIndex();
         setExtendColumnData(data, readRowHolder);
         dataMap.put(rowIndex, data);
         if (dataMap.size() >= batchHandleNum) {
-            verify(dataMap, analysisContext);
-            dataHandle(dataMap, analysisContext);
+            dataHandle(dataMap, context);
             dataMap.clear();
         }
     }
 
     @Override
-    public void doAfterAllAnalysed(AnalysisContext analysisContext) {
+    public void doAfterAllAnalysed(AnalysisContext context) {
         if (dataMap.size() > 0) {
-            verify(dataMap, analysisContext);
-            dataHandle(dataMap, analysisContext);
+            dataHandle(dataMap, context);
             dataMap.clear();
         }
-        doAfterAllDataHandle(analysisContext);
+        doAfterAllDataHandle(context);
     }
 
-    @Override
-    public void invokeHead(Map<Integer, CellData> headMap, AnalysisContext analysisContext) {
-        headError = false;
-        headNames = headMap.values().stream().map(CellData::toString).collect(Collectors.toList());
-        headCheck(headMap, analysisContext);
-        if (StrUtil.isNotBlank(this.headErrorMsg)) {
-            headError = true;
-        }
-        initCache(headMap, analysisContext.readSheetHolder().excelReadHeadProperty());
-    }
-
-    /**
-     * 当表头有误时，停止Excel的读取
-     * @param context
-     * @return
-     */
     @Override
     public boolean hasNext(AnalysisContext context) {
-        if (headError) {
-            return false;
-        }
-        return true;
+        return !terminated;
     }
 
     @Override
-    public void onException(Exception e, AnalysisContext analysisContext) {
-        if (e instanceof ExcelDataConvertException) {
+    public void onException(Exception exception, AnalysisContext context) throws Exception {
+        if (exception instanceof ExcelDataConvertException) {
             String errorMsg = "数据类型错误";
-            if (e.getCause() instanceof DataConvertException) {
-                errorMsg = ((DataConvertException) e.getCause()).getErrorMsg();
+            if (exception.getCause() instanceof DataConvertException) {
+                errorMsg = ((DataConvertException) exception.getCause()).getErrorMsg();
             }
-            ExcelDataConvertException dataConvertException = (ExcelDataConvertException) e;
+            ExcelDataConvertException dataConvertException = (ExcelDataConvertException) exception;
             addErrorInfo(dataConvertException.getRowIndex(), dataConvertException.getColumnIndex(), errorMsg);
         } else {
-            throw new RuntimeException(e);
+            throw new RuntimeException(exception);
         }
     }
 
-    @Override
-    public void extra(CellExtra cellExtra, AnalysisContext analysisContext) {}
+    protected void addErrorInfo(int rowIndex, String headName, String... errorMsgs) {
+        List<CellErrorInfo> rowErrorInfoList = errorInfoMap.computeIfAbsent(rowIndex, k -> new ArrayList<>());
+        rowErrorInfoList.add(CellErrorInfo.buildByHead(rowIndex, headName, errorMsgs));
+    }
+
+    protected <T, R> void addErrorInfo(int rowIndex, FieldGetter<T, R> fieldGetter, String... errorMsgs) {
+        List<CellErrorInfo> rowErrorInfoList = errorInfoMap.computeIfAbsent(rowIndex, k -> new ArrayList<>());
+        rowErrorInfoList.add(CellErrorInfo.buildByField(rowIndex, fieldGetter, errorMsgs));
+    }
+
+    protected void addErrorInfo(int rowIndex, int columnIndex, String... errorMsgs) {
+        List<CellErrorInfo> rowErrorInfoList = errorInfoMap.computeIfAbsent(rowIndex, k -> new ArrayList<>());
+        Head head = currentSheetHeadConfig.get(columnIndex);
+        String fieldName = head.getFieldName();
+        if (CharSequenceUtil.isNotBlank(fieldName)) {
+            rowErrorInfoList.add(CellErrorInfo.buildByField(rowIndex, fieldName, errorMsgs));
+        } else {
+            rowErrorInfoList.add(CellErrorInfo.buildByColumnIndex(rowIndex, columnIndex, errorMsgs));
+        }
+    }
+
+    private void init(Map<Integer, CellData> headMap, AnalysisContext context) {
+        terminated = false;
+        extendField = null;
+        extendColumnBeginIndex = null;
+        extendColumnEndIndex = null;
+        errorInfoMap = new HashMap<>();
+        dataMap = new HashMap<>(batchHandleNum);
+        currentSheetHeads = ConverterUtils.convertToStringMap(headMap, context);
+        int maxColumnIndex = currentSheetHeads.keySet().stream()
+                .max(Integer::compareTo).orElse(-1);
+
+        ExcelReadHeadProperty excelHeadPropertyData = context.readSheetHolder().excelReadHeadProperty();
+        HeadKindEnum headKind = excelHeadPropertyData.getHeadKind();
+        currentSheetHeadConfig = excelHeadPropertyData.getHeadMap();
+        if (HeadKindEnum.CLASS == headKind) {
+            ClassUtils.getClassFieldInfo(excelHeadPropertyData.getHeadClazz())
+                    .stream().filter(FieldInfo::isExtendColumn).findFirst()
+                    .ifPresent(fieldInfo -> {
+                        extendField = fieldInfo.getField();
+                        extendColumnBeginIndex = currentSheetHeadConfig.keySet()
+                                .stream().max(Integer::compareTo).orElse(null);
+                        if (extendColumnBeginIndex != null) {
+                            extendColumnBeginIndex++;
+                        }
+                        extendColumnEndIndex = maxColumnIndex;
+                    });
+        }
+    }
 
     /**
-     * 获取动态数据
+     * 将Excel中扩展列的数据存入对象中
+     * @param data
+     * @param readRowHolder
      */
     private void setExtendColumnData(T data, ReadRowHolder readRowHolder) {
-        if (extendField == null || CollUtil.isEmpty(extendColumnIndexMap)) {
+        if (extendColumnBeginIndex == null || extendColumnEndIndex == null) {
             return;
         }
         Map<Integer, Cell> cellDataMap = readRowHolder.getCellMap();
@@ -231,213 +210,22 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
             return;
         }
         Map<String, String> extendData = new LinkedHashMap<>();
-        extendColumnIndexMap.forEach((columnIndex, extendHeadName) -> {
-            Cell cell = cellDataMap.get(columnIndex);
+        for (int i = extendColumnBeginIndex; i <= extendColumnEndIndex; i++) {
+            Cell cell = cellDataMap.get(i);
+            String extendHeadName = currentSheetHeads.get(i);
             if (cell != null) {
                 extendData.put(extendHeadName, cell.toString());
             } else {
                 extendData.put(extendHeadName, null);
             }
-        });
+        }
 
         if (Map.class == extendField.getType()) {
             ReflectUtil.setFieldValue(data, extendField, extendData);
         }
     }
 
-    /**
-     * 记录错误数据
-     * @param rowIndex    行索引
-     * @param data        错误数据
-     */
-    private void addErrorDataRecord(Integer rowIndex, T data) {
-        errorDataMap.put(rowIndex, data);
-    }
-
-    /**
-     * 根据行索引和扩展列表头添加错误信息，目前扩展列添加错误信息需通过该方法添加错误信息
-     * @param rowIndex            行索引
-     * @param extendHeadName      扩展列表头名
-     * @param errorMessages       错误信息
-     */
-    protected void addExtendColumnErrorInfo(Integer rowIndex, String extendHeadName, String... errorMessages) {
-        if (rowIndex == null || StrUtil.isBlank(extendHeadName)) {
-            return;
-        }
-        Integer columnIndex = null;
-        for (Map.Entry<Integer, String> entry : extendColumnIndexMap.entrySet()) {
-            if (Objects.equals(extendHeadName, entry.getValue())) {
-                columnIndex = entry.getKey();
-                break;
-            }
-        }
-        if (columnIndex == null) {
-            return;
-        }
-        addErrorInfo(rowIndex, columnIndex, errorMessages);
-    }
-
-    /**
-     * 根据行索引和属性名称添加错误信息，扩展列不适用于该方法
-     * @param rowIndex             行索引
-     * @param fieldName            class中属性名
-     * @param errorMessages        错误信息
-     */
-    protected void addErrorInfo(Integer rowIndex, String fieldName, String... errorMessages) {
-        Integer columnIndex;
-        if (rowIndex == null || (columnIndex = fieldColumnIndexMap.get(fieldName)) == null) {
-            return;
-        }
-        addErrorInfo(rowIndex, columnIndex, errorMessages);
-    }
-
-    /**
-     * 根据行索引和列索引添加错误信息
-     * @param rowIndex          行索引
-     * @param columnIndex       列索引
-     * @param errorMessage      错误信息
-     */
-    protected void addErrorInfo(Integer rowIndex, Integer columnIndex, String... errorMessage) {
-        if (rowIndex == null || columnIndex == null) {
-            return;
-        }
-        List<CellErrorInfo> rowErrorInfoList = errorInfoMap.get(rowIndex);
-        if (rowErrorInfoList == null) {
-            rowErrorInfoList = new ArrayList<>();
-            this.errorInfoMap.put(rowIndex, rowErrorInfoList);
-        }
-        rowErrorInfoList.add(CellErrorInfo.buildByColumnIndex(rowIndex, columnIndex, errorMessage));
-        addErrorDataRecord(rowIndex, dataMap.get(rowIndex));
-    }
-
-    /**
-     * 判断是否存在表头错误
-     * @return true 存在表头错误、false 不存在表头错误
-     */
-    public boolean hasHeadError() {
-        return this.headError;
-    }
-
-    /**
-     * 判断是否存在数据错误
-     * @return true 存在数据错误、false 不存在数据错误
-     */
-    public boolean hasDataError() {
-        return CollUtil.isNotEmpty(this.errorInfoMap);
-    }
-
-    /**
-     * 判断当前时刻，行索引为 rowIndex 的行是否存在数据错误
-     * @param rowIndex  行索引
-     */
-    public boolean hasDataErrorOnRow(Integer rowIndex) {
-        if (!hasDataError()) {
-            return true;
-        }
-        return CollUtil.isNotEmpty(this.errorInfoMap.get(rowIndex));
-    }
-
-    /**
-     * 获取错误信息
-     */
-    public List<CellErrorInfo> getErrorInfoList() {
-        if (CollUtil.isEmpty(this.errorInfoMap)) {
-            return new ArrayList<>(0);
-        }
-        List<CellErrorInfo> cellErrorInfoList = new ArrayList<>();
-        this.errorInfoMap.values().forEach(errorInfos -> {
-            cellErrorInfoList.addAll(errorInfos);
-        });
-        return cellErrorInfoList;
-    }
-
-    /**
-     * 错误数据及其错误信息，可以将其直接写入新的Excel
-     */
-    public Pair<List<T>, List<CellErrorInfo>> getErrorRecord() {
-        if (CollUtil.isEmpty(errorDataMap)) {
-            return new Pair<>(null, null);
-        }
-        List<T> errorDatas = new ArrayList<>(errorDataMap.size());
-        List<CellErrorInfo> newCellErrorInfos = new ArrayList<>();
-        int rowIndex = readAfterHeadRowNum;
-        for (Map.Entry<Integer, T> entry : errorDataMap.entrySet()) {
-            errorDatas.add(entry.getValue());
-            int finalRowIndex = rowIndex;
-            CollUtil.addAll(newCellErrorInfos, errorInfoMap.get(entry.getKey()).stream()
-                    .map(errorInfo -> errorInfo.clone().setRowIndex(finalRowIndex)).collect(Collectors.toList()));
-            rowIndex++;
-        }
-        return new Pair<>(errorDatas, newCellErrorInfos);
-    }
-
-    /**
-     * 对数据进行 hibernate 注解校验
-     */
-    protected void annotationValidation(T data, ReadRowHolder readRowHolder) {
-        if (!enabledAnnotationValidation) {
-            return;
-        }
-        VerifyResult verifyResult = ValidatorUtils.validate(data);
-        if (Objects.isNull(verifyResult)) {
-            return;
-        }
-        List<CellErrorInfo> errorMesInfoList = new ArrayList<>();
-        verifyResult.getErrorInfoMap().forEach((fieldName, errorMessages) -> {
-            errorMesInfoList.add(CellErrorInfo.buildByColumnIndex(readRowHolder.getRowIndex(), fieldColumnIndexMap.get(fieldName), errorMessages));
-        });
-        errorMesInfoList.stream().collect(Collectors.groupingBy(CellErrorInfo::getRowIndex))
-                .forEach((rowIndex, errorInfos) -> {
-                    List<CellErrorInfo> infos = errorInfoMap.get(rowIndex);
-                    if (infos == null) {
-                        infos = new ArrayList<>(errorInfos.size());
-                        errorInfoMap.put(rowIndex, infos);
-                    }
-                    infos.addAll(errorInfos);
-                    addErrorDataRecord(rowIndex, data);
-                });
-    }
-
-    protected void initCache(Map<Integer, CellData> headMap, ExcelReadHeadProperty excelHeadPropertyData) {
-        fieldColumnIndexMap.clear();
-        extendColumnIndexMap.clear();
-        dynamicHeads.clear();
-        errorDataMap.clear();
-        errorInfoMap.clear();
-        extendField = null;
-
-        readAfterHeadRowNum = excelHeadPropertyData.getHeadRowNumber();
-
-        if (HeadKindEnum.CLASS == excelHeadPropertyData.getHeadKind()) {
-            ClassUtils.getClassFieldInfo(excelHeadPropertyData.getHeadClazz()).stream()
-                    .filter(FieldInfo::isExtendColumn)
-                    .findFirst().ifPresent(fieldInfo -> extendField = fieldInfo.getField());
-        }
-
-        Map<Integer, Head> headMapData = excelHeadPropertyData.getHeadMap();
-        Set<Integer> columnIndexSet = new HashSet<>();
-        if (CollUtil.isNotEmpty(headMapData)) {
-            headMapData.values().forEach(head -> {
-                Integer columnIndex = head.getColumnIndex();
-                columnIndexSet.add(columnIndex);
-                if (StrUtil.isNotBlank(head.getFieldName())) {
-                    fieldColumnIndexMap.put(head.getFieldName(), columnIndex);
-                    String realHeadName = headMap.get(columnIndex).toString();
-                    if (head.getHeadNameList().stream().noneMatch(headName -> headName.equals(realHeadName))) {
-                        dynamicHeads.add(DynamicHead.buildNewName(head.getFieldName(), realHeadName));
-                    }
-                }
-            });
-        }
-
-        if (CollUtil.isNotEmpty(headMap)) {
-            headMap.forEach((columnIndex, cellData) -> {
-                String headName = cellData.toString();
-                if (!columnIndexSet.contains(columnIndex)) {
-                    extendColumnIndexMap.put(columnIndex, headName);
-                }
-            });
-        }
-    }
+    @Override
+    public void extra(CellExtra extra, AnalysisContext context) {}
 
 }
