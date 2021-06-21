@@ -19,8 +19,10 @@ import com.jz.zeus.excel.FieldInfo;
 import com.jz.zeus.excel.exception.DataConvertException;
 import com.jz.zeus.excel.interfaces.FieldGetter;
 import com.jz.zeus.excel.util.ClassUtils;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.lang.reflect.Field;
 import java.util.*;
@@ -36,6 +38,7 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     /**
      * 终止标志，true 终止Excel读取流程、false Excel读取流程正常执行
      */
+    @Setter(AccessLevel.PROTECTED)
     private boolean terminated;
 
     /**
