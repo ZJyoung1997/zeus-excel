@@ -1,66 +1,42 @@
 # ZeusExcel
 
-## 一、前言
+**ZeusExcel** 基于开源的 **EasyExcel**，通过二次封装使之更适合于业务，可实现对表头和数据的校验、非常方便的在Excel中生成错误信息、创建带下拉框（包含级联下拉）的Excel模板、支持扩展表头、动态表头、自定义表头样式等。
 
-#### EasyExcel
+`EasyExcel` 文档地址：https://www.yuque.com/easyexcel/doc/easyexcel
 
-EasyExcel是一个基于Java的简单、省内存的读写Excel的开源项目。在尽可能节约内存的情况下支持读写百M的Excel。
+# 快速开始
 
-64M内存1分钟内读取75M(46W行25列)的Excel
+## 1.注解
 
-![](https://cdn.nlark.com/yuque/0/2020/png/553000/1584449315232-b7852eec-dd8d-49ee-8880-5fd52eafed30.png)
+`ZeusExcel` 在支持 `EasyExcel` 原生注解的同时扩展了一些注解，以支持扩展的功能。
 
-文档地址：https://www.yuque.com/easyexcel/doc/easyexcel
+### @ExtendColumn
 
-## 二、ZeusExcel作用
+`@ExtendColumn` 注解用于扩展表头，该注解应与 `@ExcelIgnore` 注解同时使用。
 
-**ZeusExcel** 基于开源的 **EasyExcel**，通过二次封装使之更适合于业务，可实现对表头和数据的校验、非常方便的在Excel中生成错误信息、创建带下拉框的Excel模板、支持Hibernate注解校验、支持自定义表头、自定义表头样式等。
+### @HeadColor
 
-### 1.读Excel
+该注解用于解决 `EasyExcel` 在使用注解定义单元格颜色时只能使用 `IndexedColors` 的 `index` 选择背景色，无法使用 `RGB` 来生成想要的背景色的问题。
 
-读取Excel的核心便是 `ExcelReadListener<T>` ，该类为抽象类，实现了 **EasyExcel** 的 `ReadListener<T>`接口，**非线程安全**。
+| 属性                    | 类型   | 默认值 | 描述                               |
+| ----------------------- | ------ | ------ | ---------------------------------- |
+| cellFillForegroundColor | String | ""     | 前景色RGB十六进制，例如："#8EA9DB" |
+| cellFillBackgroundColor | String | ""     | 背景色RGB十六进制，例如："#8EA9DB" |
 
-`ExcelReadListener` 有四个抽象方法：
+### @ValidationData
 
-* **headCheck**：校验表头信息
-* **verify**：校验从Excel中读取到的数据
-* **dataHandle**：处理从Excel中读取到的数据
-* **doAfterAllDataHandle**：该方法在所有数据处理完成后执行
+| 属性              | 类型     | 默认值 | 描述                                                   |
+| ----------------- | -------- | ------ | ------------------------------------------------------ |
+| asDicSheet        | boolean  | false  | 是否将下拉框数据作为字典表，作为字典表后将不再隐藏     |
+| sheetName         | String   | ""     | 下拉框数据所在sheet的名称                              |
+| dicTitle          | String   | ""     | 下拉框数据作为字典表时，表头的提示信息，为默认值时无   |
+| options           | String[] |        | 下拉框中的选项                                         |
+| rowNum            | int      | 10000  | 需要填充下拉框的行数                                   |
+| checkDatavalidity | boolean  | true   | 是否校验单元格中数据的数据属于下拉框中的数据，默认校验 |
+| errorTitle        | String   | ""     | 自定义错误box的标题                                    |
+| errorMsg          | String   | ""     | 自定义错误box的错误提示信息                            |
 
-`ExcelReadListener` 有如下属性：
+## 2.示例
 
-* **dataList**：从Excel读取到的数据会存入该属性中；
-* **batchHandleNum**：一次处理的数据数量，默认值500。EasyExcel加载数据是逐行加载的，每加载一行就会保存到 `dataList` 中，当达到该属性值时，将会执行 `verify` 和 `dataHandle` 方法；
-* **errorInfoList**：记录单元格中数据的错误信息，数据全部读取完毕后可通过该list将错误信息写回到Excel中；
+### 定义Excel模板
 
-* **enabledAnnotationValidation**：是否开启hibernate注解校验，true 开启、false 关闭，默认开启，当开启时每从Excel加载一行数据就会对其进行校验，并将错误信息保存到 `errorInfoList` 中；
-* **lastHandleData**：默认值false，若为true`batchHandleNum` 属性将失效，只会在将Excel中的全部数据都加载到 `dataList` 后，才会执行 `verify` 和 `dataHandle` 方法；
-* **headErrorMsg**：表头错误信息，当调用 `headCheck` 方法校验表头失败时，应将错误信息写入该属性中。若该属性不为空或空串时，将不再对数据进行解析，流程将会中断。
-
-`AbstractExcelReadListener<T>` 抽象类对 `ExcelReadListener<T>` 的 `headCheck`、`verify` 和 `doAfterAllDataHandle` 三个抽象方法进行了空实现，在只需读取数据处理无其他需求的情况下可直接实现该类即可。
-
-### 2.写Excel
-
-#### 下拉框处理器 DropDownBoxSheetHandler
-
-只需将下拉框的位置和需显示的内容通过构造函数传入或 `addDropDownBoxInfo` 方法添加到 `validationInfoList` 属性中即可。
-
-该属性中的数据类型为 `DropDownBoxInfo`
-
-#### 错误信息处理器 ErrorInfoCommentHandler
-
-该处理器会将错误信息以批注的形式写入Excel，并将其前景色设置为红色。
-
-#### 表头样式处理器 HeadStyleHandler
-
-该处理器修改表头的样式，默认为黑体、18号字、无边框、垂直和水平居中、支持自适应列宽。
-
-自适应列宽可关闭。
-
-该类中的 `multiRowHeadCellStyles` 属性用来保存表头的样式，该属性的类型为 `List<List<CellStyleProperty>>` ，外层list下标对应行索引，内层下标对应列索引。
-
-### 三、快速开始
-
-可通过 `ExcelUtils` 工具类进行快速操作。
-
-实例代码请参考 `ExcelTest`
