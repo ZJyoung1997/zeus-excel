@@ -1,6 +1,8 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.text.StrBuilder;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
@@ -12,6 +14,7 @@ import lombok.Setter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,13 +64,18 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
             return;
         }
         Sheet sheet = writeSheetHolder.getCachedSheet();
-        for (CellErrorInfo errorInfo : currentRowErrorInfos) {
-            Integer columnIndex = getColumnIndex(errorInfo);
-            if (columnIndex != null) {
-                ExcelUtils.setCommentErrorInfo(sheet, rowIndex, columnIndex, commentRowPrefix, commentRowSuffix,
-                        errorInfo.getErrorMsgs().toArray(new String[0]));
-            }
-        }
+        currentRowErrorInfos.stream()
+                .collect(Collectors.groupingBy(e -> getColumnIndex(e)))
+                .forEach((columnIndex, errorInfos) -> {
+                    if (columnIndex == -1) {
+                        return;
+                    }
+                    List<String> errorMsgs = errorInfos.stream()
+                            .flatMap(e -> e.getErrorMsgs().stream())
+                            .collect(Collectors.toList());
+                    ExcelUtils.setCommentErrorInfo(sheet, rowIndex, columnIndex, commentRowPrefix, commentRowSuffix,
+                            errorMsgs.toArray(new String[0]));
+                });
         currentRowErrorInfos.clear();
     }
 
@@ -77,11 +85,10 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
             return;
         }
         writeSheetHelper = new WriteSheetHelper(excelContext, writeSheetHolder, headRowNum);
-
     }
 
     private Integer getColumnIndex(CellErrorInfo errorInfo) {
-        Integer columnIndex = null;
+        Integer columnIndex;
         if ((columnIndex = errorInfo.getColumnIndex()) != null) {
             return columnIndex;
         } else if ((columnIndex = writeSheetHelper.getFieldColumnIndex(errorInfo.getFieldName())) != null) {
@@ -89,7 +96,7 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
         } else if ((columnIndex = writeSheetHelper.getHeadColumnIndex(errorInfo.getHeadName())) != null) {
             return columnIndex;
         }
-        return columnIndex;
+        return -1;
     }
 
 }
