@@ -23,6 +23,7 @@ import java.util.Map;
 
 /**
  * 当存在动态表头时，该 handler应该最先被注册，已保证将动态表头添加到配置中
+ *
  * @Author JZ
  * @Date 2021/4/12 15:23
  */
@@ -33,11 +34,6 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler {
     private boolean isNotClassHead;
 
     private Map<String, Integer> extendHeadIndexMap = new HashMap<>();
-
-    /**
-     * 表头行数
-     */
-    private int headRowNum;
 
     /**
      * 待写入Excel数据
@@ -54,6 +50,11 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler {
      */
     private Field extendColumnField;
 
+    /**
+     * 写入数据的起始行索引
+     */
+    private Integer writeDataBeginRowIndex;
+
     public ExtendColumnHandler(ExcelContext excelContext) {
         Assert.notNull(excelContext, "ExcelContext must not be null");
         this.excelContext = excelContext;
@@ -68,11 +69,14 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler {
             writeExtendHead(writeSheetHolder, row);
             return;
         }
+        if (writeDataBeginRowIndex == null) {
+            writeDataBeginRowIndex = row.getRowNum();
+        }
         writeExtendData(writeSheetHolder, row);
     }
 
     private void writeExtendData(WriteSheetHolder writeSheetHolder, Row row) {
-        Object rawData = dataList.get(row.getRowNum()-headRowNum);
+        Object rawData = dataList.get(row.getRowNum() - writeDataBeginRowIndex);
         if (rawData == null) {
             return;
         }
@@ -108,7 +112,6 @@ public class ExtendColumnHandler extends AbstractRowWriteHandler {
         }
 
         dataList = excelContext.getSheetData();
-        headRowNum = excelWriteHeadProperty.getHeadRowNumber();
 
         extendColumnField = null;
         List<FieldInfo> fieldInfos = ClassUtils.getClassFieldInfo(writeSheetHolder.getClazz());
