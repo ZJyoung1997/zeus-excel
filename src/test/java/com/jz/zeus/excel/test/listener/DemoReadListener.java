@@ -11,6 +11,7 @@ public class DemoReadListener extends ExcelReadListener<DemoData> {
 
     @Override
     protected void headHandle(Map<Integer, String> headMap, AnalysisContext analysisContext) {
+//        setTerminated(true);
         Console.log("sheet表头：{}", headMap.values());
     }
 

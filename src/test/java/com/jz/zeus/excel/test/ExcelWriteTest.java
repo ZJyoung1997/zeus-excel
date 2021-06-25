@@ -15,11 +15,11 @@ import com.jz.zeus.excel.write.handler.ErrorInfoHandler;
 import com.jz.zeus.excel.write.property.CellStyleProperty;
 import lombok.SneakyThrows;
 import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.IndexedColors;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -28,8 +28,8 @@ import java.util.*;
  */
 public class ExcelWriteTest {
 
-    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-//    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+//    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
 
     public static void main(String[] args) throws IOException {
         Console.log("写入Excel前内存：{}M", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024));
@@ -50,20 +50,22 @@ public class ExcelWriteTest {
             add(DynamicHead.buildAppendInfo("src", "（必填）"));
             add(DynamicHead.build("dest", "destPlus", "（选填）"));
         }};
-        List<CellErrorInfo> errorInfos = new ArrayList<CellErrorInfo>() {{
-            add(CellErrorInfo.buildByField(5, "id", "不合法id"));
-            add(CellErrorInfo.buildByColumnIndex(7, 6, "金额有误"));
-            add(CellErrorInfo.buildByHead(7, "destPlus（选填）", "动态表头数据有误"));
-            add(CellErrorInfo.buildByHead(3, "自定义1", "自定义表头数据有误"));
-        }};
+        List<CellErrorInfo> errorInfos = ListUtil.toList(
+            CellErrorInfo.buildByField(5, "id", "不合法id"),
+            CellErrorInfo.buildByField(5, DemoData::getSrc, "44884"),
+            CellErrorInfo.buildByColumnIndex(7, 1, "金额有误"),
+            CellErrorInfo.buildByHead(7, "destPlus（选填）", "动态表头数据有误"),
+            CellErrorInfo.buildByHead(3, "自定义1", "自定义表头数据有误")
+        );
 
-        ZeusExcel.write(path)
+        ZeusExcel.write("C:\\Users\\User\\Desktop\\123.xlsx")
+                .withTemplate(path)
                 .sheet("模板")
 //                .dynamicHeads(dynamicHeads)
                 .headStyles(styleProperties)
                 .validationInfos(getValidationInfo())
-//                .validationInfos(Collections.emptyList())
-//                .errorInfos(errorInfos)
+                .errorInfos(errorInfos)
+                .needHead(false)
 //                .doWrite(ListUtil.toList("s"), null);
                 .doWrite(DemoData.class, getDataList("测0_", 10));
 
@@ -143,15 +145,6 @@ public class ExcelWriteTest {
         );
     }
 
-    public static List<CellErrorInfo>   getCellErrorInfo() {
-        List<CellErrorInfo> cellErrorInfoList = new ArrayList<>();
-        cellErrorInfoList.add(CellErrorInfo.buildByColumnIndex(1, 1, "格式错误"));
-        cellErrorInfoList.add(CellErrorInfo.buildByField(4, "price", "关系错误"));
-        cellErrorInfoList.add(CellErrorInfo.buildByHead(2, "FUNC", "格式错误")
-                .addErrorMsg("数值放假看电视了积分卡积分错误"));
-        return cellErrorInfoList;
-    }
-
     private static List<DemoData> getDataList(String prefix, int num) {
         List<DemoData> dataList = new ArrayList<>();
         for (int i = 0; i < num; i++) {
@@ -160,7 +153,7 @@ public class ExcelWriteTest {
             demoData.setDest(prefix + "dest" + i);
             demoData.setSrc(prefix + "src" + i);
             demoData.setFunc(prefix + "func" + i);
-            demoData.setPrice(3.94);
+            demoData.setPrice(BigDecimal.valueOf(3.94));
 
             Map<String, String> map = new LinkedHashMap<>();
             map.put("图片（必填）\n允许的文件类型*JPG,1080*1920，大小限制150K。素材必须满足腾讯所有规格要求，否则无法通过审核。", prefix + "12");

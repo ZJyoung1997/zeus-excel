@@ -1,8 +1,6 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
-import cn.hutool.core.text.StrBuilder;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteTableHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
@@ -14,7 +12,6 @@ import lombok.Setter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -37,6 +34,11 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
     @Setter
     private String commentRowSuffix = "";
 
+    /**
+     * 下一个需要处理的行索引
+     */
+    private int nextRowIndex;
+
     private Map<Integer, List<CellErrorInfo>> rowErrorInfoMap;
 
     public ErrorInfoHandler(ExcelContext excelContext, List<CellErrorInfo> errorInfoList) {
@@ -58,25 +60,31 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
 
     @Override
     public void afterRowDispose(WriteSheetHolder writeSheetHolder, WriteTableHolder writeTableHolder, Row row, Integer relativeRowIndex, Boolean isHead) {
-        int rowIndex = row.getRowNum();
-        List<CellErrorInfo> currentRowErrorInfos = rowErrorInfoMap.get(rowIndex);
-        if (writeSheetHelper == null || CollUtil.isEmpty(currentRowErrorInfos)) {
+        if (writeSheetHelper == null) {
             return;
         }
+        int currentRowIndex = row.getRowNum();
         Sheet sheet = writeSheetHolder.getCachedSheet();
-        currentRowErrorInfos.stream()
-                .collect(Collectors.groupingBy(e -> getColumnIndex(e)))
-                .forEach((columnIndex, errorInfos) -> {
-                    if (columnIndex == -1) {
-                        return;
-                    }
-                    List<String> errorMsgs = errorInfos.stream()
-                            .flatMap(e -> e.getErrorMsgs().stream())
-                            .collect(Collectors.toList());
-                    ExcelUtils.setCommentErrorInfo(sheet, rowIndex, columnIndex, commentRowPrefix, commentRowSuffix,
-                            errorMsgs.toArray(new String[0]));
-                });
-        currentRowErrorInfos.clear();
+        for (int i = nextRowIndex; i <= currentRowIndex; i++) {
+            List<CellErrorInfo> rowErrorInfos = rowErrorInfoMap.get(i);
+            if (CollUtil.isEmpty(rowErrorInfos)) {
+                continue;
+            }
+            int finalI = i;
+            rowErrorInfos.stream()
+                    .collect(Collectors.groupingBy(e -> getColumnIndex(e)))
+                    .forEach((columnIndex, errorInfos) -> {
+                        if (columnIndex == -1) {
+                            return;
+                        }
+                        List<String> errorMsgs = errorInfos.stream()
+                                .flatMap(e -> e.getErrorMsgs().stream())
+                                .collect(Collectors.toList());
+                        ExcelUtils.setCommentErrorInfo(sheet, finalI, columnIndex, commentRowPrefix, commentRowSuffix,
+                                errorMsgs.toArray(new String[0]));
+                    });
+        }
+        nextRowIndex = currentRowIndex + 1;
     }
 
     @Override

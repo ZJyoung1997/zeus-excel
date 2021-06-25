@@ -14,6 +14,7 @@ import lombok.Data;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -32,14 +33,16 @@ public class DemoData {
     @ExcelProperty(index = 0, value = "订单ID\n（不可修改）", converter = LongConverter.class)
     private Long id;
 
+//    @ExcelProperty(index = 1, value = {"SRC"}, converter = LongConverter.class)
     @ExcelProperty(index = 1, value = {"SRC"})
     private String src;
 
     @NumberFormat("#.#")
     @ExcelProperty(index = 2, value = "金额")
-    private Double price;
+    private BigDecimal price;
 
     @ContentFontStyle(fontName = "微软雅黑", fontHeightInPoints = 14)
+//    @ExcelProperty(index = 3, value = "DEST", converter = LongConverter.class)
     @ExcelProperty(index = 3, value = "DEST")
     private String dest;
 

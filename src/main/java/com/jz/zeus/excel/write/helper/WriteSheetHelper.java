@@ -81,7 +81,17 @@ public class WriteSheetHelper {
         }
         initHeadRowNum();
 
-        if (lastRowNum > 0) {
+        if (CollUtil.isNotEmpty(headMap)) {
+            headMap.values().forEach(head -> {
+                Integer columnIndex = head.getColumnIndex();
+                head.getHeadNameList().forEach(headName -> {
+                    headNameIndexMap.put(headName, columnIndex);
+                });
+                if (StrUtil.isNotBlank(head.getFieldName())) {
+                    fieldNameIndexMap.put(head.getFieldName(), columnIndex);
+                }
+            });
+        } else if (lastRowNum > 0) {
             Sheet sheet = writeSheetHolder.getCachedSheet();
             for (int i = 0; i < headRowNum; i++) {
                 Row headRow = sheet.getRow(i);
@@ -97,16 +107,6 @@ public class WriteSheetHelper {
                     }
                 }
             }
-        } else if (CollUtil.isNotEmpty(headMap)) {
-            headMap.values().forEach(head -> {
-                Integer columnIndex = head.getColumnIndex();
-                head.getHeadNameList().forEach(headName -> {
-                    headNameIndexMap.put(headName, columnIndex);
-                });
-                if (StrUtil.isNotBlank(head.getFieldName())) {
-                    fieldNameIndexMap.put(head.getFieldName(), columnIndex);
-                }
-            });
         }
 
         if (CollUtil.isNotEmpty(excelContext.getExtendHead())) {

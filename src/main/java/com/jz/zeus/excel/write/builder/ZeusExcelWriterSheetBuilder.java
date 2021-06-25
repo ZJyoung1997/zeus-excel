@@ -31,6 +31,8 @@ public class ZeusExcelWriterSheetBuilder {
 
     private String sheetName;
 
+    private Boolean needHead;
+
     private List<DynamicHead> dynamicHeads;
 
     private List<ValidationInfo> validationInfos;
@@ -85,6 +87,11 @@ public class ZeusExcelWriterSheetBuilder {
         return this;
     }
 
+    public ZeusExcelWriterSheetBuilder needHead(Boolean needHead) {
+        this.needHead = needHead;
+        return this;
+    }
+
     public ZeusWriteSheet build(List<List<String>> headNames) {
         ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
         sheetBuilder.head(headNames);
@@ -97,6 +104,7 @@ public class ZeusExcelWriterSheetBuilder {
         } else {
             sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyle));
         }
+        sheetBuilder.needHead(needHead);
         ZeusWriteSheet zeusWriteSheet = new ZeusWriteSheet(excelContext);
         BeanUtil.copyProperties(sheetBuilder.build(), zeusWriteSheet);
         return zeusWriteSheet;
@@ -121,6 +129,7 @@ public class ZeusExcelWriterSheetBuilder {
         if (CollUtil.isNotEmpty(errorInfos)) {
             sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
         }
+        sheetBuilder.needHead(needHead);
         ZeusWriteSheet zeusWriteSheet = new ZeusWriteSheet(excelContext);
         BeanUtil.copyProperties(sheetBuilder.build(), zeusWriteSheet);
         return zeusWriteSheet;
