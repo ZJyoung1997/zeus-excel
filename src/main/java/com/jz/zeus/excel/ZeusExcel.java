@@ -1,7 +1,6 @@
 package com.jz.zeus.excel;
 
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.read.builder.ExcelReaderBuilder;
+import com.jz.zeus.excel.read.builder.ZeusExcelReaderBuilder;
 import com.jz.zeus.excel.write.builder.ZeusExcelWriterBuilder;
 import com.jz.zeus.excel.write.builder.ZeusExcelWriterSheetBuilder;
 import lombok.SneakyThrows;
@@ -18,16 +17,22 @@ import java.net.URLEncoder;
  */
 public class ZeusExcel {
 
-    public static ExcelReaderBuilder read(String excelPath) {
-        return EasyExcel.read(excelPath);
+    public static ZeusExcelReaderBuilder read(String excelPath) {
+        ZeusExcelReaderBuilder excelReaderBuilder = new ZeusExcelReaderBuilder();
+        excelReaderBuilder.file(excelPath);
+        return excelReaderBuilder;
     }
 
-    public static ExcelReaderBuilder read(File excelFile) {
-        return EasyExcel.read(excelFile);
+    public static ZeusExcelReaderBuilder read(File excelFile) {
+        ZeusExcelReaderBuilder excelReaderBuilder = new ZeusExcelReaderBuilder();
+        excelReaderBuilder.file(excelFile);
+        return excelReaderBuilder;
     }
 
-    public static ExcelReaderBuilder read(InputStream excelInputStream) {
-        return EasyExcel.read(excelInputStream);
+    public static ZeusExcelReaderBuilder read(InputStream excelInputStream) {
+        ZeusExcelReaderBuilder excelReaderBuilder = new ZeusExcelReaderBuilder();
+        excelReaderBuilder.file(excelInputStream);
+        return excelReaderBuilder;
     }
 
     public static ZeusExcelWriterBuilder write() {

@@ -5,7 +5,6 @@ import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.util.ReflectUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.enums.HeadKindEnum;
-import com.alibaba.excel.exception.ExcelDataConvertException;
 import com.alibaba.excel.metadata.Cell;
 import com.alibaba.excel.metadata.CellData;
 import com.alibaba.excel.metadata.CellExtra;
@@ -26,6 +25,7 @@ import lombok.Setter;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor
 public abstract class ExcelReadListener<T> implements ReadListener<T> {
@@ -136,14 +136,12 @@ public abstract class ExcelReadListener<T> implements ReadListener<T> {
     }
 
     @Override
-    public void onException(Exception exception, AnalysisContext context) throws Exception {
-        if (exception instanceof ExcelDataConvertException) {
-            String errorMsg = "数据类型错误";
-            if (exception.getCause() instanceof DataConvertException) {
-                errorMsg = ((DataConvertException) exception.getCause()).getErrorMsg();
+    public void onException(Exception exception, AnalysisContext context) {
+        if (exception instanceof DataConvertException) {
+            List<CellErrorInfo> errorInfos = ((DataConvertException) exception).getCellErrorInfos();
+            if (CollUtil.isNotEmpty(errorInfos)) {
+                errorInfoMap.putAll(errorInfos.stream().collect(Collectors.groupingBy(CellErrorInfo::getRowIndex)));
             }
-            ExcelDataConvertException dataConvertException = (ExcelDataConvertException) exception;
-            addErrorInfo(dataConvertException.getRowIndex(), dataConvertException.getColumnIndex(), errorMsg);
         } else {
             throw new RuntimeException(exception);
         }

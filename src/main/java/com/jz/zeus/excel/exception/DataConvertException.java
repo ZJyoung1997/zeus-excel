@@ -1,6 +1,9 @@
 package com.jz.zeus.excel.exception;
 
+import com.jz.zeus.excel.CellErrorInfo;
 import lombok.Getter;
+
+import java.util.List;
 
 /**
  * 数据转换异常，用于在 {@link com.alibaba.excel.converters.Converter} 中抛出信息
@@ -10,15 +13,18 @@ import lombok.Getter;
 public class DataConvertException extends RuntimeException {
 
     @Getter
-    private String errorMsg;
+    private List<CellErrorInfo> cellErrorInfos;
+
+    public DataConvertException(List<CellErrorInfo> cellErrorInfos) {
+        this.cellErrorInfos = cellErrorInfos;
+    }
 
     public DataConvertException(String errorMsg) {
-        this.errorMsg = errorMsg;
+        super(errorMsg);
     }
 
     public DataConvertException(String errorMsg, Throwable cause) {
-        super(cause);
-        this.errorMsg = errorMsg;
+        super(errorMsg, cause);
     }
 
 }

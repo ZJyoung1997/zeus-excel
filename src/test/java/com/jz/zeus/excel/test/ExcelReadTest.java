@@ -4,6 +4,7 @@ import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.date.TimeInterval;
 import cn.hutool.core.lang.Console;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.ReadListener;
 import com.alibaba.excel.util.IoUtils;
 import com.jz.zeus.excel.CellErrorInfo;
@@ -50,6 +51,7 @@ public class ExcelReadTest {
                 .withTemplate(new ByteArrayInputStream(bytes))
                 .sheet(0)
                 .errorInfos(errorInfos)
+                .needHead(false)
                 .doWrite(DemoData.class, Collections.emptyList());
 
 
