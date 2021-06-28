@@ -11,9 +11,12 @@ import com.jz.zeus.excel.write.helper.WriteSheetHelper;
 import lombok.Setter;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -41,6 +44,8 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
 
     private Map<Integer, List<CellErrorInfo>> rowErrorInfoMap;
 
+    private Sheet currentSheet;
+
     public ErrorInfoHandler(ExcelContext excelContext, List<CellErrorInfo> errorInfoList) {
         this(excelContext, null, errorInfoList);
     }
@@ -63,8 +68,40 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
         if (writeSheetHelper == null) {
             return;
         }
-        int currentRowIndex = row.getRowNum();
-        Sheet sheet = writeSheetHolder.getCachedSheet();
+        createComment(currentSheet, row.getRowNum());
+    }
+
+    @Override
+    public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+        if (CollUtil.isEmpty(rowErrorInfoMap)) {
+            return;
+        }
+        currentSheet = getSheet(writeWorkbookHolder, writeSheetHolder);
+        writeSheetHelper = new WriteSheetHelper(excelContext, writeSheetHolder, headRowNum);
+        Boolean needHead = writeSheetHolder.getNeedHead();
+        if (Boolean.FALSE.equals(needHead) && CollUtil.isEmpty(excelContext.getSheetData())) {
+            Integer maxRowIndex = rowErrorInfoMap.keySet().stream().filter(Objects::nonNull).max(Integer::compare)
+                    .orElse(-1);
+            createComment(currentSheet, maxRowIndex);
+        }
+    }
+
+    private Sheet getSheet(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+        Workbook workbook = writeWorkbookHolder.getWorkbook();
+        Sheet sheet;
+        if (workbook instanceof SXSSFWorkbook) {
+            if (writeSheetHolder.getSheetNo() != null) {
+                sheet = ((SXSSFWorkbook) workbook).getXSSFWorkbook().getSheetAt(writeSheetHolder.getSheetNo());
+            } else {
+                sheet = ((SXSSFWorkbook) workbook).getXSSFWorkbook().getSheet(writeSheetHolder.getSheetName());
+            }
+        } else {
+            sheet = writeSheetHolder.getSheet();
+        }
+        return sheet;
+    }
+
+    private void createComment(Sheet sheet, Integer currentRowIndex) {
         for (int i = nextRowIndex; i <= currentRowIndex; i++) {
             List<CellErrorInfo> rowErrorInfos = rowErrorInfoMap.get(i);
             if (CollUtil.isEmpty(rowErrorInfos)) {
@@ -85,14 +122,6 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
                     });
         }
         nextRowIndex = currentRowIndex + 1;
-    }
-
-    @Override
-    public void afterSheetCreate(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        if (CollUtil.isEmpty(rowErrorInfoMap)) {
-            return;
-        }
-        writeSheetHelper = new WriteSheetHelper(excelContext, writeSheetHolder, headRowNum);
     }
 
     private Integer getColumnIndex(CellErrorInfo errorInfo) {

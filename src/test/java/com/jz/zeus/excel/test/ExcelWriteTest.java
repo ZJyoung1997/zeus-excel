@@ -58,16 +58,16 @@ public class ExcelWriteTest {
             CellErrorInfo.buildByHead(3, "自定义1", "自定义表头数据有误")
         );
 
-        ZeusExcel.write(path)
-//                .withTemplate(path)
+        ZeusExcel.write("C:\\Users\\User\\Desktop\\123.xlsx")
+                .withTemplate(path)
                 .sheet("模板")
 //                .dynamicHeads(dynamicHeads)
                 .headStyles(styleProperties)
                 .validationInfos(getValidationInfo())
-//                .errorInfos(errorInfos)
-//                .needHead(false)
+                .errorInfos(errorInfos)
+                .needHead(false)
 //                .doWrite(ListUtil.toList("s"), null);
-                .doWrite(DemoData.class, getDataList("测0_", 10));
+                .doWrite(DemoData.class, getDataList("测0_", 1));
 
 //        ZeusExcelWriter excelWriter = ZeusExcel.write(path).build();
 //
