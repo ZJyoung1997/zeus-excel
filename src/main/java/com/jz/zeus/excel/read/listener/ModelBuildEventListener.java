@@ -156,7 +156,7 @@ public class ModelBuildEventListener extends AbstractIgnoreExceptionReadListener
     private CellErrorInfo createCellErrorInfo(Head head, Integer rowIndex, Integer columnIndex, ExcelDataConvertException e) {
         String errorMsg = e.getMessage();
         if (e.getCause() instanceof DataConvertException) {
-            errorMsg = e.getMessage();
+            errorMsg = e.getCause().getMessage();
         }
         if (head != null && CharSequenceUtil.isNotBlank(head.getFieldName())) {
             return CellErrorInfo.buildByField(rowIndex, head.getFieldName(), errorMsg);

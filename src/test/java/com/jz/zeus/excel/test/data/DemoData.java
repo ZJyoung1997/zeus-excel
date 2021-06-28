@@ -33,17 +33,17 @@ public class DemoData {
     @ExcelProperty(index = 0, value = "订单ID\n（不可修改）", converter = LongConverter.class)
     private Long id;
 
-//    @ExcelProperty(index = 1, value = {"SRC"}, converter = LongConverter.class)
-    @ExcelProperty(index = 1, value = {"SRC"})
+    @ExcelProperty(index = 1, value = {"SRC"}, converter = LongConverter.class)
+//    @ExcelProperty(index = 1, value = {"SRC"})
     private String src;
 
     @NumberFormat("#.#")
     @ExcelProperty(index = 2, value = "金额")
     private BigDecimal price;
 
-    @ContentFontStyle(fontName = "微软雅黑", fontHeightInPoints = 14)
-//    @ExcelProperty(index = 3, value = "DEST", converter = LongConverter.class)
-    @ExcelProperty(index = 3, value = "DEST")
+//    @ContentFontStyle(fontName = "微软雅黑", fontHeightInPoints = 14)
+    @ExcelProperty(index = 3, value = "DEST", converter = LongConverter.class)
+//    @ExcelProperty(index = 3, value = "DEST")
     private String dest;
 
     @ValidationData(options = {"aa", "bb", "cc"}, errorTitle = "FUNC错误", errorMsg = "非法值")
