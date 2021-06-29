@@ -19,7 +19,6 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.math.BigDecimal;
 import java.util.*;
 
 /**
@@ -30,6 +29,8 @@ public class ExcelWriteTest {
 
 //    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
     private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+
+    private static String templatePath = "C:\\Users\\User\\Desktop\\import_PD_order_template.xlsx";
 
     public static void main(String[] args) throws IOException {
         Console.log("写入Excel前内存：{}M", (Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory())/(1024*1024));
@@ -51,23 +52,21 @@ public class ExcelWriteTest {
             add(DynamicHead.build("dest", "destPlus", "（选填）"));
         }};
         List<CellErrorInfo> errorInfos = ListUtil.toList(
-            CellErrorInfo.buildByField(5, "id", "不合法id"),
-            CellErrorInfo.buildByField(5, DemoData::getSrc, "44884"),
-            CellErrorInfo.buildByColumnIndex(7, 1, "金额有误"),
-            CellErrorInfo.buildByHead(7, "destPlus（选填）", "动态表头数据有误"),
-            CellErrorInfo.buildByHead(3, "自定义1", "自定义表头数据有误")
+            CellErrorInfo.buildByField(1, DemoData::getId, "不合法id"),
+            CellErrorInfo.buildByField(1, DemoData::getSrc, "44884")
         );
 
         ZeusExcel.write(path)
-//                .withTemplate(path)
+                .withTemplate(templatePath)
                 .sheet("模板")
 //                .dynamicHeads(dynamicHeads)
                 .headStyles(styleProperties)
                 .validationInfos(getValidationInfo())
                 .errorInfos(errorInfos)
-                .needHead(true)
+                .needHead(false)
+//                .needHead(true)
 //                .doWrite(ListUtil.toList("s"), null);
-                .doWrite(DemoData.class, getDataList("测0_", 10));
+                .doWrite(DemoData.class, getDataList("测0_", 0));
 
 //        ZeusExcelWriter excelWriter = ZeusExcel.write(path).build();
 //
@@ -153,7 +152,8 @@ public class ExcelWriteTest {
             demoData.setDest(prefix + "dest" + i);
             demoData.setSrc(prefix + "src" + i);
             demoData.setFunc(prefix + "func" + i);
-            demoData.setPrice(BigDecimal.valueOf(3.94));
+//            demoData.setPrice(BigDecimal.valueOf(3.94));
+            demoData.setPrice(null);
 
             Map<String, String> map = new LinkedHashMap<>();
             map.put("图片（必填）\n允许的文件类型*JPG,1080*1920，大小限制150K。素材必须满足腾讯所有规格要求，否则无法通过审核。", prefix + "12");

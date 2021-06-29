@@ -85,7 +85,7 @@ public class ExcelUtils {
         }
         Cell cell = row.getCell(columnIndex);
         if (cell == null) {
-            return;
+            cell = row.createCell(columnIndex);
         }
         CellStyle cellStyle = sheet.getWorkbook().createCellStyle();
         cellStyle.cloneStyleFrom(cell.getCellStyle());
