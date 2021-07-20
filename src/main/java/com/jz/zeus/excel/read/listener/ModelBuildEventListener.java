@@ -154,7 +154,7 @@ public class ModelBuildEventListener extends AbstractIgnoreExceptionReadListener
     }
 
     private CellErrorInfo createCellErrorInfo(Head head, Integer rowIndex, Integer columnIndex, ExcelDataConvertException e) {
-        String errorMsg = e.getMessage();
+        String errorMsg = "数据格式错误";
         if (e.getCause() instanceof DataConvertException) {
             errorMsg = e.getCause().getMessage();
         }
