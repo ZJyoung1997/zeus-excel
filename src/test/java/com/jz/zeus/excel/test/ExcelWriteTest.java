@@ -57,13 +57,13 @@ public class ExcelWriteTest {
         );
 
         ZeusExcel.write(path)
-//                .withTemplate(templatePath)
+                .withTemplate(templatePath)
                 .sheet("模板")
 //                .dynamicHeads(dynamicHeads)
 //                .headStyles(styleProperties)
 //                .validationInfos(getValidationInfo())
                 .errorInfos(errorInfos)
-//                .needHead(false)
+                .needHead(false)
 //                .needHead(true)
 //                .doWrite(ListUtil.toList("s"), null);
                 .doWrite(DemoData.class, getDataList("测0_", 10));
