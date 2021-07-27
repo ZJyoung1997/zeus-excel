@@ -2,9 +2,12 @@ package com.jz.zeus.excel.util;
 
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.util.ArrayUtil;
+import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
+import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.jz.zeus.excel.constant.Constants;
 import lombok.experimental.UtilityClass;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
@@ -14,6 +17,27 @@ import org.apache.poi.xssf.usermodel.XSSFRichTextString;
  */
 @UtilityClass
 public class ExcelUtils {
+
+    public Sheet getSheet(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
+        Workbook workbook = writeWorkbookHolder.getWorkbook();
+        Sheet sheet;
+        Integer sheetIndex = writeSheetHolder.getSheetNo();
+        String sheetName = writeSheetHolder.getSheetName();
+        if (workbook instanceof SXSSFWorkbook) {
+            if (sheetIndex != null) {
+                sheet = ((SXSSFWorkbook) workbook).getXSSFWorkbook().getSheetAt(sheetIndex);
+            } else {
+                sheet = ((SXSSFWorkbook) workbook).getXSSFWorkbook().getSheet(sheetName);
+            }
+        } else {
+            if (writeSheetHolder.getSheetNo() != null) {
+                sheet = writeWorkbookHolder.getWorkbook().getSheetAt(sheetIndex);
+            } else {
+                sheet = writeWorkbookHolder.getWorkbook().getSheet(sheetName);
+            }
+        }
+        return sheet;
+    }
 
     /**
      * 根据字符长度和字号计算列宽

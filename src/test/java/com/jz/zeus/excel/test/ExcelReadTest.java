@@ -27,7 +27,7 @@ import java.util.stream.Stream;
 public class ExcelReadTest {
 
 //    private static String path = "C:\\Users\\Administrator\\Desktop\\254.xlsx";
-    private static String path = "C:\\Users\\User\\Desktop\\254.xlsx";
+    private static String path = "C:\\Users\\User\\Desktop\\123.xlsx";
 
 //    private static String path = "C:\\Users\\User\\Desktop\\2545.xlsx";
 //    private static String path = "C:\\Users\\Administrator\\Desktop\\2545.xlsx";
@@ -46,13 +46,13 @@ public class ExcelReadTest {
 
         List<CellErrorInfo> errorInfos = readListener.getErrorInfoMap().values()
                 .stream().flatMap(e -> e.stream()).collect(Collectors.toList());
-        byte[] bytes = IoUtils.toByteArray(new FileInputStream(path));
-        ZeusExcel.write(path)
-                .withTemplate(new ByteArrayInputStream(bytes))
-                .sheet(0)
-                .errorInfos(errorInfos)
-                .needHead(false)
-                .doWrite(DemoData.class, Collections.emptyList());
+//        byte[] bytes = IoUtils.toByteArray(new FileInputStream(path));
+//        ZeusExcel.write(path)
+//                .withTemplate(new ByteArrayInputStream(bytes))
+//                .sheet(0)
+//                .errorInfos(errorInfos)
+//                .needHead(false)
+//                .doWrite(DemoData.class, Collections.emptyList());
 
 
         Console.log("读取耗时：{}s", timer.intervalSecond());

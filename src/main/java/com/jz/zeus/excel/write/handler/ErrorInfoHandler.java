@@ -9,10 +9,9 @@ import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ExcelUtils;
 import com.jz.zeus.excel.write.helper.WriteSheetHelper;
 import lombok.Setter;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 import java.util.List;
 import java.util.Map;
@@ -42,21 +41,33 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
      */
     private int nextRowIndex;
 
+    /**
+     * 是否删除原有批注
+     */
+    private Boolean removeOldErrorInfo;
+
     private Map<Integer, List<CellErrorInfo>> rowErrorInfoMap;
 
-    private Sheet currentSheet;
-
     public ErrorInfoHandler(ExcelContext excelContext, List<CellErrorInfo> errorInfoList) {
-        this(excelContext, null, errorInfoList);
+        this(excelContext, null, true, errorInfoList);
+    }
+
+    public ErrorInfoHandler(ExcelContext excelContext, Boolean removeOldErrorInfo, List<CellErrorInfo> errorInfoList) {
+        this(excelContext, null, removeOldErrorInfo, errorInfoList);
     }
 
     /**
      * @param headRowNum     仅对用表头名作为列坐标时有影响，有误会导致加载不到对应表头，导致对应单元格无法添加错误信息
      * @param errorInfoList
      */
-    public ErrorInfoHandler(ExcelContext excelContext, Integer headRowNum, List<CellErrorInfo> errorInfoList) {
+    public ErrorInfoHandler(ExcelContext excelContext, Integer headRowNum, Boolean removeOldErrorInfo, List<CellErrorInfo> errorInfoList) {
         this.excelContext = excelContext;
         this.headRowNum = headRowNum;
+        if (removeOldErrorInfo == null) {
+            this.removeOldErrorInfo = true;
+        } else {
+            this.removeOldErrorInfo = removeOldErrorInfo;
+        }
         if (CollUtil.isNotEmpty(errorInfoList)) {
             rowErrorInfoMap = errorInfoList.stream()
                     .collect(Collectors.groupingBy(CellErrorInfo::getRowIndex));
@@ -68,7 +79,7 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
         if (writeSheetHelper == null) {
             return;
         }
-        createComment(currentSheet, row.getRowNum());
+        createComment(writeSheetHolder.getSheet(), row.getRowNum());
     }
 
     @Override
@@ -76,29 +87,17 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
         if (CollUtil.isEmpty(rowErrorInfoMap)) {
             return;
         }
-        currentSheet = getSheet(writeWorkbookHolder, writeSheetHolder);
+        Sheet currentSheet = ExcelUtils.getSheet(writeWorkbookHolder, writeSheetHolder);
         writeSheetHelper = new WriteSheetHelper(excelContext, writeSheetHolder, headRowNum);
         Boolean needHead = writeSheetHolder.getNeedHead();
-        if (Boolean.FALSE.equals(needHead) && CollUtil.isEmpty(excelContext.getSheetData())) {
+        if (writeWorkbookHolder.getTempTemplateInputStream() != null) {
             Integer maxRowIndex = rowErrorInfoMap.keySet().stream().filter(Objects::nonNull).max(Integer::compare)
                     .orElse(-1);
+            if (removeOldErrorInfo) {
+                removeErrorInfo(currentSheet, maxRowIndex);
+            }
             createComment(currentSheet, maxRowIndex);
         }
-    }
-
-    private Sheet getSheet(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
-        Workbook workbook = writeWorkbookHolder.getWorkbook();
-        Sheet sheet;
-        if (workbook instanceof SXSSFWorkbook) {
-            if (writeSheetHolder.getSheetNo() != null) {
-                sheet = ((SXSSFWorkbook) workbook).getXSSFWorkbook().getSheetAt(writeSheetHolder.getSheetNo());
-            } else {
-                sheet = ((SXSSFWorkbook) workbook).getXSSFWorkbook().getSheet(writeSheetHolder.getSheetName());
-            }
-        } else {
-            sheet = writeSheetHolder.getSheet();
-        }
-        return sheet;
     }
 
     private void createComment(Sheet sheet, Integer currentRowIndex) {
@@ -114,11 +113,10 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
                         if (columnIndex == -1) {
                             return;
                         }
-                        List<String> errorMsgs = errorInfos.stream()
-                                .flatMap(e -> e.getErrorMsgs().stream())
-                                .collect(Collectors.toList());
+                        String[] errorMsgs = errorInfos.stream()
+                                .flatMap(e -> e.getErrorMsgs().stream()).toArray(String[]::new);
                         ExcelUtils.setCommentErrorInfo(sheet, finalI, columnIndex, commentRowPrefix, commentRowSuffix,
-                                errorMsgs.toArray(new String[0]));
+                                errorMsgs);
                     });
         }
         nextRowIndex = currentRowIndex + 1;
@@ -134,6 +132,26 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
             return columnIndex;
         }
         return -1;
+    }
+
+    private void removeErrorInfo(Sheet sheet, int endRowIndex) {
+        for (int rowIndex = 0; rowIndex <= endRowIndex; rowIndex++) {
+            Row row = sheet.getRow(rowIndex);
+            if (row == null) {
+                continue;
+            }
+            int columnCount = row.getLastCellNum();
+            for (int i = 0; i < columnCount; i++) {
+                Cell cell = row.getCell(i);
+                if (cell == null) {
+                    continue;
+                }
+                if (cell.getCellComment() != null) {
+                    cell.removeCellComment();
+                    cell.setCellStyle(row.getRowStyle());
+                }
+            }
+        }
     }
 
 }

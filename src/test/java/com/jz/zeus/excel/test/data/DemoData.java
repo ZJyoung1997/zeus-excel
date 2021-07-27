@@ -6,6 +6,7 @@ import com.alibaba.excel.annotation.format.NumberFormat;
 import com.alibaba.excel.annotation.write.style.ContentFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadFontStyle;
 import com.alibaba.excel.annotation.write.style.HeadStyle;
+import com.alibaba.excel.converters.longconverter.LongNumberConverter;
 import com.jz.zeus.excel.annotation.ExtendColumn;
 import com.jz.zeus.excel.annotation.HeadColor;
 import com.jz.zeus.excel.annotation.ValidationData;
@@ -30,14 +31,13 @@ public class DemoData {
             borderRight = BorderStyle.NONE, borderLeft = BorderStyle.NONE,
             borderBottom = BorderStyle.NONE, borderTop = BorderStyle.NONE)
     @HeadFontStyle(fontName = "微软雅黑", color = 10, bold = false)
-    @ExcelProperty(index = 0, value = "订单ID\n（不可修改）", converter = LongConverter.class)
+    @ExcelProperty(index = 0, value = "订单ID\n（不可修改）", converter = LongNumberConverter.class)
     private Long id;
 
 //    @ExcelProperty(index = 1, value = {"SRC"}, converter = LongConverter.class)
     @ExcelProperty(index = 1, value = {"SRC"})
     private String src;
 
-    @NumberFormat("#.#")
     @ExcelProperty(index = 2, value = "金额")
     private BigDecimal price;
 

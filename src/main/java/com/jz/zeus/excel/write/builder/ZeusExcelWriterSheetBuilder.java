@@ -33,6 +33,8 @@ public class ZeusExcelWriterSheetBuilder {
 
     private Boolean needHead;
 
+    private Boolean removeOldErrorInfo;
+
     private List<DynamicHead> dynamicHeads;
 
     private List<ValidationInfo> validationInfos;
@@ -92,13 +94,16 @@ public class ZeusExcelWriterSheetBuilder {
         return this;
     }
 
+    public ZeusExcelWriterSheetBuilder removeOldErrorInfo(Boolean removeOldErrorInfo) {
+        this.removeOldErrorInfo = removeOldErrorInfo;
+        return this;
+    }
+
     public ZeusWriteSheet build(List<List<String>> headNames) {
         ExcelWriterSheetBuilder sheetBuilder = EasyExcel.writerSheet(sheetIndex, sheetName);
         sheetBuilder.head(headNames);
         sheetBuilder.registerWriteHandler(new ValidationInfoHandler(excelContext, validationInfos));
-        if (CollUtil.isNotEmpty(errorInfos)) {
-            sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
-        }
+        sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, removeOldErrorInfo, errorInfos));
         if (CollUtil.isNotEmpty(headStyles)) {
             sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyles));
         } else {
@@ -126,9 +131,7 @@ public class ZeusExcelWriterSheetBuilder {
             sheetBuilder.registerWriteHandler(new HeadStyleHandler(excelContext, headStyle));
         }
         sheetBuilder.registerWriteHandler(new ValidationInfoHandler(excelContext, validationInfos));
-        if (CollUtil.isNotEmpty(errorInfos)) {
-            sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, errorInfos));
-        }
+        sheetBuilder.registerWriteHandler(new ErrorInfoHandler(excelContext, removeOldErrorInfo, errorInfos));
         sheetBuilder.needHead(needHead);
         ZeusWriteSheet zeusWriteSheet = new ZeusWriteSheet(excelContext);
         BeanUtil.copyProperties(sheetBuilder.build(), zeusWriteSheet);
