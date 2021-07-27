@@ -90,12 +90,12 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
         Sheet currentSheet = ExcelUtils.getSheet(writeWorkbookHolder, writeSheetHolder);
         writeSheetHelper = new WriteSheetHelper(excelContext, writeSheetHolder, headRowNum);
         if (writeWorkbookHolder.getTempTemplateInputStream() != null) {
-            Integer maxRowIndex = rowErrorInfoMap.keySet().stream().filter(Objects::nonNull).max(Integer::compare)
+            if (removeOldErrorInfo) {
+                removeErrorInfo(currentSheet, currentSheet.getLastRowNum());
+            }
+            int maxRowIndex = rowErrorInfoMap.keySet().stream().filter(Objects::nonNull).max(Integer::compare)
                     .orElse(-1);
             maxRowIndex = Math.min(maxRowIndex, currentSheet.getLastRowNum());
-            if (removeOldErrorInfo) {
-                removeErrorInfo(currentSheet, maxRowIndex);
-            }
             createComment(currentSheet, maxRowIndex);
         }
     }
