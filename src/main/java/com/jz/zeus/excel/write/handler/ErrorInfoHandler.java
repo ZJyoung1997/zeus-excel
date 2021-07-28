@@ -91,7 +91,7 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
         writeSheetHelper = new WriteSheetHelper(excelContext, writeSheetHolder, headRowNum);
         if (writeWorkbookHolder.getTempTemplateInputStream() != null) {
             if (removeOldErrorInfo) {
-                removeErrorInfo(currentSheet, currentSheet.getLastRowNum());
+                removeErrorInfo(currentSheet);
             }
             int maxRowIndex = rowErrorInfoMap.keySet().stream().filter(Objects::nonNull).max(Integer::compare)
                     .orElse(-1);
@@ -108,7 +108,7 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
             }
             int finalI = i;
             rowErrorInfos.stream()
-                    .collect(Collectors.groupingBy(e -> getColumnIndex(e)))
+                    .collect(Collectors.groupingBy(this::getColumnIndex))
                     .forEach((columnIndex, errorInfos) -> {
                         if (columnIndex == -1) {
                             return;
@@ -134,24 +134,16 @@ public class ErrorInfoHandler extends AbstractRowWriteHandler {
         return -1;
     }
 
-    private void removeErrorInfo(Sheet sheet, int endRowIndex) {
-        for (int rowIndex = 0; rowIndex <= endRowIndex; rowIndex++) {
-            Row row = sheet.getRow(rowIndex);
-            if (row == null) {
-                continue;
-            }
-            int columnCount = row.getLastCellNum();
-            for (int i = 0; i < columnCount; i++) {
-                Cell cell = row.getCell(i);
-                if (cell == null) {
-                    continue;
-                }
-                if (cell.getCellComment() != null) {
-                    cell.removeCellComment();
-                    cell.setCellStyle(row.getRowStyle());
-                }
-            }
+    private void removeErrorInfo(Sheet sheet) {
+        if (CollUtil.isEmpty(sheet.getCellComments())) {
+            return;
         }
+        sheet.getCellComments().keySet().forEach(address -> {
+            Row row = sheet.getRow(address.getRow());
+            Cell cell = row.getCell(address.getColumn());
+            cell.removeCellComment();
+            cell.setCellStyle(row.getRowStyle());
+        });
     }
 
 }
