@@ -114,36 +114,6 @@ public class ExcelWriteTest {
         return list;
     }
 
-    public static List<ValidationInfo> getValidationInfo() {
-        List<String> list = new ArrayList<>();
-        for (int i = 0; i < 600; i++) {
-            list.add("jjj" + i);
-        }
-        ValidationInfo provinces = ValidationInfo.buildColumnByField("provinces", "上海市", "河南省", "北京市")
-                .asDicSheet("省").setDicTitle("中国的省");
-
-        Map<String, List<String>> cityMap = new HashMap<>();
-        cityMap.put("上海市", ListUtil.toList("上海市"));
-        cityMap.put("河南省", ListUtil.toList("郑州市", "南阳市", "信阳市"));
-        cityMap.put("北京市", ListUtil.toList("北京市"));
-        ValidationInfo city = ValidationInfo.buildCascadeByField("city", provinces, cityMap).setSheetName("市");
-
-        Map<String, List<String>> townMap = new HashMap<>();
-        townMap.put("上海市", ListUtil.toList("静安区", "黄浦区", "徐汇区"));
-        townMap.put("北京市", ListUtil.toList("通州区", "朝阳区", "顺义区"));
-        townMap.put("郑州市", ListUtil.toList("二七区", "新郑市"));
-        townMap.put("南阳市", ListUtil.toList("邓州市", "宛城区"));
-        townMap.put("信阳市", ListUtil.toList("城区"));
-        ValidationInfo town = ValidationInfo.buildCascadeByField("town", city, townMap).setSheetName("区");
-        return ListUtil.toList(
-//            ValidationInfo.buildColumnByField("id", list).setErrorBox("Error", "请选择正确的ID"),
-//            ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"),
-//            ValidationInfo.buildColumnByHead("destPlus（选填）", "是自定义", "不是自定义").asDicSheet("字典表", "说明f辅导费")
-            ValidationInfo.buildColumnByField(DemoData::getSrc, "是自定\\,义", "不是自定义")
-//            provinces, city, town
-        );
-    }
-
     private static List<DemoData> getDataList(String prefix, int num) {
         List<DemoData> dataList = new ArrayList<>();
         for (int i = 0; i < num; i++) {
