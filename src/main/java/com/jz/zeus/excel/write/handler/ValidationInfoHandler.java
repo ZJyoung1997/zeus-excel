@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.IdUtil;
@@ -136,6 +137,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         StrBuilder strBuilder = StrUtil.strBuilder();
         for (Map.Entry<String, List<String>> entry : boxInfo.getParentChildMap().entrySet()) {
             List<String> options = entry.getValue();
+            if (CollectionUtil.isEmpty(options)) {
+                continue;
+            }
             for (int i = 0; i < options.size(); i++) {
                 childSheet.createRow(rowIndex++).createCell(0)
                         .setCellValue(options.get(i));

@@ -36,15 +36,15 @@ public class CascadeWriteTest {
     cityMap.put("上海市", ListUtil.toList("上海市"));
     cityMap.put("河南省", ListUtil.toList("郑州市", "南阳市", "信阳市"));
     cityMap.put("北京市", ListUtil.toList("北京市"));
-    ValidationInfo city = ValidationInfo.buildCascadeByField(DemoData::getCity, provinces, cityMap).setSheetName("市");
+    ValidationInfo city = ValidationInfo.buildCascadeByField(DemoData::getCity, provinces, cityMap).asDicSheet("市");
 
     Map<String, List<String>> townMap = new HashMap<>();
-    townMap.put("上海市", ListUtil.toList("静安区", "黄浦区", "徐汇区"));
+    townMap.put("上海市", Collections.emptyList());
     townMap.put("北京市", ListUtil.toList("通州区", "朝阳区", "顺义区"));
     townMap.put("郑州市", ListUtil.toList("二七区", "新郑市"));
     townMap.put("南阳市", ListUtil.toList("邓州市", "宛城区"));
     townMap.put("信阳市", ListUtil.toList("城区"));
-    ValidationInfo town = ValidationInfo.buildCascadeByField(DemoData::getTown, city, townMap).setSheetName("区");
+    ValidationInfo town = ValidationInfo.buildCascadeByField(DemoData::getTown, city, townMap).asDicSheet("区");
     return ListUtil.toList(
 //            ValidationInfo.buildColumnByField("id", list).setErrorBox("Error", "请选择正确的ID"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"),
@@ -52,7 +52,7 @@ public class CascadeWriteTest {
           ValidationInfo.buildColumnByField(DemoData::getSrc, "是自定义", "不是自定义"),
           provinces,
           city
-//          , town
+          , town
     );
   }
 
