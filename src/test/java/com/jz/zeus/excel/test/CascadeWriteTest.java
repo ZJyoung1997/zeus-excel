@@ -29,26 +29,31 @@ public class CascadeWriteTest {
 
 
   private static List<ValidationInfo> getValidationInfo() {
-    ValidationInfo provinces = ValidationInfo.buildColumnByField(DemoData::getProvinces, "上海市", "河南省", "北京市")
+    ValidationInfo provinces = ValidationInfo.buildColumnByField(DemoData::getProvinces, "上海市", "河南-省", "北京市")
           .asDicSheet("省").setDicTitle("中国的省");
 
     Map<String, List<String>> cityMap = new HashMap<>();
     cityMap.put("上海市", ListUtil.toList("上海市"));
-    cityMap.put("河南省", ListUtil.toList("郑州市", "南阳市", "信阳市"));
+    cityMap.put("河南-省", ListUtil.toList("郑州市", "南阳市", "信阳市"));
     cityMap.put("北京市", ListUtil.toList("北京市"));
     ValidationInfo city = ValidationInfo.buildCascadeByField(DemoData::getCity, provinces, cityMap).asDicSheet("市");
 
     Map<String, List<String>> townMap = new HashMap<>();
     townMap.put("上海市", ListUtil.toList("静安区", "黄浦区", "徐汇区"));
     townMap.put("北京市", ListUtil.toList("通州区", "朝阳区", "顺义区"));
-    townMap.put("河南省", ListUtil.toList("二七区", "新郑市"));
-    ValidationInfo town = ValidationInfo.buildCascadeByField(DemoData::getTown, provinces, townMap).asDicSheet("区");
+    townMap.put("郑州市", ListUtil.toList("二七区", "新郑市"));
+    townMap.put("南阳市", ListUtil.toList("邓州市", "市区"));
+    ValidationInfo town = ValidationInfo.buildCascadeByField(DemoData::getTown, city, townMap).asDicSheet("区");
+
+    ValidationInfo municipality = ValidationInfo.buildCascadeByField(DemoData::getMunicipality, provinces, new HashMap<String, List<String>>() {{
+      put("河南-省", ListUtil.toList("郑州直辖市"));
+    }}).asDicSheet("直辖市");
     return ListUtil.toList(
 //            ValidationInfo.buildColumnByField("id", list).setErrorBox("Error", "请选择正确的ID"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是", "否"),
 //            ValidationInfo.buildColumnByHead("destPlus（选填）", "是自定义", "不是自定义").asDicSheet("字典表", "说明f辅导费")
           ValidationInfo.buildColumnByField(DemoData::getSrc, "是自定义", "不是自定义"),
-          provinces, city
+          provinces, city, municipality
           , town
     );
   }

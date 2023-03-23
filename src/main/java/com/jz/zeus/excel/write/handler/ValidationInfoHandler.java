@@ -152,7 +152,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                 childSheet.createRow(rowIndex++).createCell(0)
                         .setCellValue(options.get(i));
             }
-            // 拼接 name 格式：选项_父级sheet名_子集sheet名
+            // 拼接 name 格式：选项.父级sheet名.子集sheet名
             strBuilder.append(entry.getKey()).append(StrUtil.C_DOT)
                   .append(parentSheetName).append(StrUtil.C_DOT)
                   .append(childSheetName);
@@ -179,6 +179,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                   .append(StrUtil.C_DOT).append(childSheetName);
             String concatenate = String.format("ENCODEURL(CONCATENATE($%s$%d,\"%s\"))", columnStr, i+1, strBuilder.toStringAndReset());
             String substitute = "SUBSTITUTE(" + concatenate + ",\"%\",\"_\")";
+            substitute = String.format("SUBSTITUTE(%s,\"-\",\"_2D\")", substitute);
             String formula = String.format("INDIRECT(%s)", substitute);
             DataValidationConstraint constraint = helper.createFormulaListConstraint(formula);
             CellRangeAddressList rangeAddressList = new CellRangeAddressList(i, i, firstCol, lastCol);

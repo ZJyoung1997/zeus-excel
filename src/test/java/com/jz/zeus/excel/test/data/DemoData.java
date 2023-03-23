@@ -59,6 +59,9 @@ public class DemoData {
     @ExcelProperty(index = 7, value = "镇")
     private String town;
 
+    @ExcelProperty(index = 8, value = "直辖市")
+    private String municipality;
+
     @ExcelIgnore
     @ExtendColumn
 //    @HeadFontStyle(fontName = "微软雅黑", bold = false)
