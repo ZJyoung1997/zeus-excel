@@ -2,6 +2,7 @@ package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.net.URLEncoder;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.IdUtil;
@@ -22,6 +23,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -29,6 +31,13 @@ import java.util.*;
  * @Date 2021/3/26 17:01
  */
 public class ValidationInfoHandler extends AbstractSheetWriteHandler {
+
+    private static final URLEncoder URL_ENCODER = new URLEncoder();
+
+    static {
+        URL_ENCODER.addSafeCharacter('.');
+        URL_ENCODER.addSafeCharacter('_');
+    }
 
     private ExcelContext excelContext;
 
@@ -108,7 +117,6 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
      * @param boxInfo      下拉框配置信息
      */
     private void addValidationData(Workbook workbook, Sheet sheet, int firstRow, int lastRow, int firstCol, int lastCol, ValidationInfo boxInfo) {
-        List<String> options = boxInfo.getOptions();
         DataValidationHelper helper = sheet.getDataValidationHelper();
         DataValidationConstraint constraint;
         if (boxInfo.getParent() == null) {
@@ -145,7 +153,8 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                         .setCellValue(options.get(i));
             }
 
-            String parent = entry.getKey() + parentSheetName;
+            String parent = URL_ENCODER.encode(entry.getKey() + parentSheetName, Charset.defaultCharset())
+                  .replaceAll("%", "_");
             if (workbook.getName(parent) != null) {
                 continue;
             }
@@ -161,12 +170,12 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             categoryName.setRefersToFormula(refersToFormula);
         }
 
-        StrBuilder formulaBuild = StrUtil.strBuilder();
         String columnStr = ExcelUtils.columnIndexToStr(getColumnIndex(parentBoxInfo));
         for (int i = writeSheetHelper.getHeadRowNum(); i < boxInfo.getRowNum(); i++) {
-            formulaBuild.append("INDIRECT(CONCATENATE($").append(columnStr).append('$').append(i + 1)
-                    .append(",\"").append(parentSheetName).append("\"))");
-            DataValidationConstraint constraint = helper.createFormulaListConstraint(formulaBuild.toStringAndReset());
+            String concatenate = String.format("ENCODEURL(CONCATENATE($%s$%d,\"%s\"))", columnStr, i+1, parentSheetName);
+            String substitute = "SUBSTITUTE(" + concatenate + ",\"%\",\"_\")";
+            String formula = String.format("INDIRECT(%s)", substitute);
+            DataValidationConstraint constraint = helper.createFormulaListConstraint(formula);
             CellRangeAddressList rangeAddressList = new CellRangeAddressList(i, i, firstCol, lastCol);
             DataValidation validation = createDataValidation(helper, constraint, rangeAddressList, boxInfo);
             sheet.addValidationData(validation);
