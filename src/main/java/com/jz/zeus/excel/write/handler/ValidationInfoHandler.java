@@ -152,14 +152,17 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                 childSheet.createRow(rowIndex++).createCell(0)
                         .setCellValue(options.get(i));
             }
-
-            String parent = URL_ENCODER.encode(entry.getKey() + parentSheetName, Charset.defaultCharset())
+            // 拼接 name 格式：选项_父级sheet名_子集sheet名
+            strBuilder.append(entry.getKey()).append(StrUtil.C_DOT)
+                  .append(parentSheetName).append(StrUtil.C_DOT)
+                  .append(childSheetName);
+            String nameName = URL_ENCODER.encode(strBuilder.toStringAndReset(), Charset.defaultCharset())
                   .replaceAll("%", "_");
-            if (workbook.getName(parent) != null) {
+            if (workbook.getName(nameName) != null) {
                 continue;
             }
             Name categoryName = workbook.createName();
-            categoryName.setNameName(parent);
+            categoryName.setNameName(nameName);
             String columnStr = ExcelUtils.columnIndexToStr(0);
             String refersToFormula = strBuilder.append(childSheetName)
                     .append("!$").append(columnStr)
@@ -172,7 +175,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
 
         String columnStr = ExcelUtils.columnIndexToStr(getColumnIndex(parentBoxInfo));
         for (int i = writeSheetHelper.getHeadRowNum(); i < boxInfo.getRowNum(); i++) {
-            String concatenate = String.format("ENCODEURL(CONCATENATE($%s$%d,\"%s\"))", columnStr, i+1, parentSheetName);
+            strBuilder.append(StrUtil.C_DOT).append(parentSheetName)
+                  .append(StrUtil.C_DOT).append(childSheetName);
+            String concatenate = String.format("ENCODEURL(CONCATENATE($%s$%d,\"%s\"))", columnStr, i+1, strBuilder.toStringAndReset());
             String substitute = "SUBSTITUTE(" + concatenate + ",\"%\",\"_\")";
             String formula = String.format("INDIRECT(%s)", substitute);
             DataValidationConstraint constraint = helper.createFormulaListConstraint(formula);
