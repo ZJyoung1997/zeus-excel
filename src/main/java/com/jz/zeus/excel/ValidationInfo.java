@@ -11,10 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @Author JZ
@@ -77,7 +74,7 @@ public class ValidationInfo {
     private boolean asDicSheet;
 
     /**
-     * 字典表标题
+     * 字典表标题，只有在 {@link asDicSheet} 为 true 时才生效
      */
     private String dicTitle;
 
@@ -95,6 +92,49 @@ public class ValidationInfo {
 
     private ValidationInfo() {}
 
+    /**
+     * 添加及联下拉框信息
+     * @param parentKey    父级下拉框的值
+     * @param childValue   父级下拉框值在当前下拉框中需要显示的值
+     */
+    public ValidationInfo addCascadeInfo(String parentKey, String childValue) {
+        if (Objects.isNull(parentChildMap)) {
+            parentChildMap = new HashMap<>();
+        }
+        if (Objects.isNull(childValue)) {
+            return this;
+        }
+        parentChildMap.computeIfAbsent(parentKey, k -> new ArrayList<>())
+              .add(childValue);
+        return this;
+    }
+
+    /**
+     * 添加及联下拉框信息
+     * @param parentKey    父级下拉框的值
+     * @param childValues  父级下拉框值在当前下拉框中需要显示的值
+     */
+    public ValidationInfo addCascadeInfo(String parentKey, List<String> childValues) {
+        if (parentChildMap == null) {
+            parentChildMap = new HashMap<>();
+        }
+        if (Objects.isNull(childValues)) {
+            return this;
+        }
+        parentChildMap.put(parentKey, childValues);
+        return this;
+    }
+
+    /**
+     * 根据表头创建一个及联下拉框
+     * @param headName       需要创建及联下拉框的表头
+     * @param parent         当前下拉框的父级下拉框
+     * @return               一个能够及联选择的下拉框，但值的及联关系仍需添加
+     */
+    public static ValidationInfo buildCascadeByHead(String headName, ValidationInfo parent) {
+        return buildCascadeByHead(headName, parent, null);
+    }
+
     public static ValidationInfo buildCascadeByHead(String headName, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
         return buildCascade(null, null, headName, null, parent, parentChildMap);
     }
@@ -103,8 +143,28 @@ public class ValidationInfo {
         return buildCascade(null, null, headName, rowNum, parent, parentChildMap);
     }
 
+    /**
+     * 根据字段名创建一个及联下拉框
+     * @param fieldName     需要创建及联下拉框的字段名
+     * @param parent        父级下拉框
+     * @return              一个能够及联选择的下拉框，但值的及联关系仍需添加
+     */
+    public static ValidationInfo buildCascadeByField(String fieldName, ValidationInfo parent) {
+        return buildCascadeByField(fieldName, parent, null);
+    }
+
     public static ValidationInfo buildCascadeByField(String fieldName, ValidationInfo parent, Map<String, List<String>> parentChildMap) {
         return buildCascade(null, fieldName, null, null, parent, parentChildMap);
+    }
+
+    /**
+     * 根据字段的get方法创建一个及联下拉框
+     * @param fieldGetter     需要创建及联下拉框的字段的get方法
+     * @param parent          父级下拉框
+     * @return                一个能够及联选择的下拉框，但值的及联关系仍需添加
+     */
+    public static <T, R> ValidationInfo buildCascadeByField(FieldGetter<T, R> fieldGetter, ValidationInfo parent) {
+        return buildCascadeByField(fieldGetter, parent, null);
     }
 
     public static <T, R> ValidationInfo buildCascadeByField(FieldGetter<T, R> fieldGetter, ValidationInfo parent, Map<String, List<String>> parentChildMap) {

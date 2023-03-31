@@ -2,7 +2,6 @@ package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
-import cn.hutool.core.net.URLEncoder;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.IdUtil;
@@ -23,7 +22,6 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
 
-import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -31,13 +29,6 @@ import java.util.*;
  * @Date 2021/3/26 17:01
  */
 public class ValidationInfoHandler extends AbstractSheetWriteHandler {
-
-    private static final URLEncoder URL_ENCODER = new URLEncoder();
-
-    static {
-        URL_ENCODER.addSafeCharacter('.');
-        URL_ENCODER.addSafeCharacter('_');
-    }
 
     private ExcelContext excelContext;
 
@@ -136,6 +127,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         ValidationInfo parentBoxInfo = boxInfo.getParent();
         String parentSheetName = parentBoxInfo.getSheetName();
         if (workbook.getSheet(parentSheetName) == null) {
+//            if (parentBoxInfo.isAsDicSheet()) {
+//                createValidationDataSheet()
+//            }
             workbook.createSheet(parentSheetName);
         }
         String childSheetName = boxInfo.getSheetName();
@@ -156,21 +150,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             strBuilder.append(entry.getKey()).append(StrUtil.C_DOT)
                   .append(parentSheetName).append(StrUtil.C_DOT)
                   .append(childSheetName);
-            String nameName = URL_ENCODER.encode(strBuilder.toStringAndReset(), Charset.defaultCharset())
-                  .replaceAll("%", "_");
-            if (workbook.getName(nameName) != null) {
-                continue;
-            }
-            Name categoryName = workbook.createName();
-            categoryName.setNameName(nameName);
-            String columnStr = ExcelUtils.columnIndexToStr(0);
-            String refersToFormula = strBuilder.append(childSheetName)
-                    .append("!$").append(columnStr)
-                    .append('$').append(rowIndex - options.size() + 1)
-                    .append(":$").append(columnStr)
-                    .append('$').append(rowIndex)
-                    .toStringAndReset();
-            categoryName.setRefersToFormula(refersToFormula);
+            // 创建一个 name
+            ExcelUtils.createName(workbook, childSheetName, strBuilder.toStringAndReset(),
+                  rowIndex - options.size() + 1, rowIndex, 0, 0);
         }
 
         String columnStr = ExcelUtils.columnIndexToStr(getColumnIndex(parentBoxInfo));
@@ -179,7 +161,7 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
                   .append(StrUtil.C_DOT).append(childSheetName);
             String concatenate = String.format("ENCODEURL(CONCATENATE($%s$%d,\"%s\"))", columnStr, i+1, strBuilder.toStringAndReset());
             String substitute = "SUBSTITUTE(" + concatenate + ",\"%\",\"_\")";
-            substitute = String.format("SUBSTITUTE(%s,\"-\",\"_2D\")", substitute);
+            substitute = String.format("SUBSTITUTE(%s,\"-\",\"_2D\")", substitute);   // excel 中的 url encode 不对 '-' 进行处理，但 name 的名称不能包含 '-'，这里进行转换
             String formula = String.format("INDIRECT(%s)", substitute);
             DataValidationConstraint constraint = helper.createFormulaListConstraint(formula);
             CellRangeAddressList rangeAddressList = new CellRangeAddressList(i, i, firstCol, lastCol);
@@ -202,12 +184,14 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         Sheet sheet = Optional.ofNullable(workbook.getSheet(sheetName))
                 .orElse(workbook.createSheet(sheetName));
         if (!boxInfo.isAsDicSheet()) {
+            // 不作为字典表时将其设置到随机的位置
             columnIndex = RandomUtil.randomInt(200);
             beginRowIndex = RandomUtil.randomInt(1000);
-            sheet.setColumnHidden(columnIndex, true);
-            sheet.protectSheet(IdUtil.fastSimpleUUID());
+            sheet.setColumnHidden(columnIndex, true);    // 将列进行隐藏
+            sheet.protectSheet(IdUtil.fastSimpleUUID());   // 设置随机密码进行保护
             workbook.setSheetHidden(workbook.getSheetIndex(sheet), true);
         } else if (CharSequenceUtil.isNotBlank(boxInfo.getDicTitle())) {
+            // 只有在作为字典表时，才能设置表头
             beginRowIndex = 1;
             Cell dicTitleCell = sheet.createRow(0).createCell(columnIndex);
             if (dicTitleCell instanceof HSSFCell) {
@@ -230,16 +214,9 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             sheet.createRow(i).createCell(columnIndex)
                     .setCellValue(options.get(i - beginRowIndex));
         }
-        String columnStr = ExcelUtils.columnIndexToStr(columnIndex);
-        Name categoryName = workbook.createName();
-        categoryName.setNameName(StrUtil.C_UNDERLINE + RandomUtil.randomString(8));
-        String refersToFormula = StrUtil.strBuilder().append(sheetName)
-                .append("!$").append(columnStr)
-                .append('$').append(beginRowIndex + 1)
-                .append(":$").append(columnStr)
-                .append('$').append(endRowIndex + 1).toString();
-        categoryName.setRefersToFormula(refersToFormula);
-        return categoryName.getNameName();
+        return ExcelUtils.createName(workbook, sheetName, StrUtil.C_UNDERLINE + RandomUtil.randomString(8),
+              beginRowIndex + 1, endRowIndex + 1, columnIndex, columnIndex)
+              .getNameName();
     }
 
     private DataValidation createDataValidation(DataValidationHelper helper, DataValidationConstraint constraint, CellRangeAddressList cellRangeAddressList, ValidationInfo boxInfo) {

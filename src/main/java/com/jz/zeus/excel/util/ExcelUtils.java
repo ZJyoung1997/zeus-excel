@@ -1,6 +1,7 @@
 package com.jz.zeus.excel.util;
 
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.net.URLEncoder;
 import cn.hutool.core.util.ArrayUtil;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
@@ -11,12 +12,64 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
 import org.apache.poi.xssf.usermodel.XSSFRichTextString;
 
+import java.nio.charset.Charset;
+
 /**
  * @Author JZ
  * @Date 2021/3/26 11:52
  */
 @UtilityClass
 public class ExcelUtils {
+
+    private static final URLEncoder URL_ENCODER = new URLEncoder();
+
+    static {
+        URL_ENCODER.addSafeCharacter('.');
+        URL_ENCODER.addSafeCharacter('_');
+    }
+
+    /**
+     * 在 WorkBook 中创建一个 Name，当 Name 已存在则返回原有 Name
+     * @param workbook            引用数据所在 workbook
+     * @param sheetName           引用数据所在 sheet 的 名称
+     * @param nameName            待创建 Name 的名称
+     * @param startRowIndex       Name 引用区域的行开始索引
+     * @param endRowIndex         Name 引用区域的行结束索引
+     * @param startColIndex       Name 引用区域的列开始索引
+     * @param endColIndex         Name 引用区域的行结束索引
+     * @return                    当 Name 已存在则返回原有 Name，若不存在则新建
+     */
+    public Name createName(Workbook workbook, String sheetName, String nameName, int startRowIndex, int endRowIndex, int startColIndex, int endColIndex) {
+        String encodeName = encodeString(nameName);
+        Name name;
+        if ((name = workbook.getName(encodeName)) != null) {
+            return name;
+        }
+        name = workbook.createName();
+        name.setNameName(encodeName);
+        String startColStr = columnIndexToStr(startColIndex);
+        String endColStr = columnIndexToStr(endColIndex);
+        String refersToFormula = sheetName +
+              "!$" + startColStr +
+              '$' + startRowIndex +
+              ":$" + endColStr +
+              '$' + endRowIndex;
+        name.setRefersToFormula(refersToFormula);
+        return name;
+    }
+
+    /**
+     * 对字符串进行 url encode
+     * @param str  需要 url encode 的字符串
+     * @return     encode 后的字符串
+     */
+    public String encodeString(String str) {
+        if (str == null) {
+            return null;
+        }
+        return URL_ENCODER.encode(str, Charset.defaultCharset())
+              .replaceAll("%", "_");
+    }
 
     public Sheet getSheet(WriteWorkbookHolder writeWorkbookHolder, WriteSheetHolder writeSheetHolder) {
         Workbook workbook = writeWorkbookHolder.getWorkbook();
