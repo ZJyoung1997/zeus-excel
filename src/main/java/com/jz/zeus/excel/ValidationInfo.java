@@ -48,6 +48,11 @@ public class ValidationInfo {
     private List<String> options;
 
     /**
+     * 下拉框类型
+     */
+    private ValidationInfoType type;
+
+    /**
      * 是否校验数据是否为下拉框内容，若为false {@link #errorTitle} 和 {@link #errorMsg} 将无效
      */
     private boolean checkDatavalidity = true;
@@ -197,6 +202,7 @@ public class ValidationInfo {
         validationInfo.rowNum = (rowNum == null ? DEFAULT_ROW_NUM : rowNum);
         validationInfo.parent = parent;
         validationInfo.parentChildMap = parentChildMap;
+        validationInfo.type = ValidationInfoType.CASCADE;
         return validationInfo;
     }
 
@@ -270,6 +276,7 @@ public class ValidationInfo {
         validationInfo.headName = headName;
         validationInfo.rowNum = (rowNum == null ? DEFAULT_ROW_NUM : rowNum);
         validationInfo.options = options;
+        validationInfo.type = ValidationInfoType.ORDINARY;
         return validationInfo;
     }
 
@@ -332,6 +339,7 @@ public class ValidationInfo {
         info.rowIndex = rowIndex;
         info.columnNum = (columnNum == null ? DEFAULT_COLUMN_NUM : columnNum);
         info.options = ListUtil.toList(options);
+        info.type = ValidationInfoType.ORDINARY;
         return info;
     }
 
@@ -346,6 +354,7 @@ public class ValidationInfo {
         info.rowIndex = rowIndex;
         info.columnIndex = columnIndex;
         info.options = ListUtil.toList(options);
+        info.type = ValidationInfoType.ORDINARY;
         return info;
     }
 
@@ -359,6 +368,7 @@ public class ValidationInfo {
         info.rowIndex = rowIndex;
         info.headName = headName;
         info.options = ListUtil.toList(options);
+        info.type = ValidationInfoType.ORDINARY;
         return info;
     }
 
@@ -378,6 +388,7 @@ public class ValidationInfo {
         info.sheetName = sheetName;
         info.dicTitle = dicTitle;
         info.options = options;
+        info.type = ValidationInfoType.ORDINARY;
         return info;
     }
 
@@ -389,6 +400,7 @@ public class ValidationInfo {
         info.asDicSheet = true;
         info.sheetName = sheetName;
         info.options = ListUtil.toList(options);
+        info.type = ValidationInfoType.ORDINARY;
         return info;
     }
 

@@ -29,15 +29,15 @@ public class CascadeWriteTest {
 
 
   private static List<ValidationInfo> getValidationInfo() {
-    ValidationInfo provinces = ValidationInfo.buildColumnByField(DemoData::getProvinces, "上海市", "河南-省", "北京市")
+    ValidationInfo provinces = ValidationInfo.buildColumnByField(DemoData::getProvinces, "上海市", "河南-%*省", "北京市")
           .asDicSheet("省")
           .setDicTitle("中国的省");
 
     ValidationInfo city = ValidationInfo.buildCascadeByField(DemoData::getCity, provinces)
           .addCascadeInfo("上海市", ListUtil.toList("上海市"))
-          .addCascadeInfo("河南-省", ListUtil.toList("郑州市", "南阳市", "信阳市"))
+          .addCascadeInfo("河南-%*省", ListUtil.toList("郑州市", "南阳市", "信阳市"))
           .addCascadeInfo("北京市", ListUtil.toList("北京市"))
-//          .asDicSheet("市")
+          .asDicSheet("市")
           ;
 
     ValidationInfo town = ValidationInfo.buildCascadeByField(DemoData::getTown, city)
@@ -48,7 +48,7 @@ public class CascadeWriteTest {
           .asDicSheet("区");
 
     ValidationInfo municipality = ValidationInfo.buildCascadeByField(DemoData::getMunicipality, provinces)
-          .addCascadeInfo("河南-省", ListUtil.toList("郑州直辖市"))
+          .addCascadeInfo("河南-%*省", ListUtil.toList("郑州直辖市"))
           .asDicSheet("直辖市");
 
     return ListUtil.toList(

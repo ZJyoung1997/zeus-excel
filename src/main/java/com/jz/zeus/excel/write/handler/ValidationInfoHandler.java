@@ -2,6 +2,7 @@ package com.jz.zeus.excel.write.handler;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.collection.ListUtil;
 import cn.hutool.core.text.CharSequenceUtil;
 import cn.hutool.core.text.StrBuilder;
 import cn.hutool.core.util.IdUtil;
@@ -12,6 +13,7 @@ import com.alibaba.excel.write.handler.AbstractSheetWriteHandler;
 import com.alibaba.excel.write.metadata.holder.WriteSheetHolder;
 import com.alibaba.excel.write.metadata.holder.WriteWorkbookHolder;
 import com.jz.zeus.excel.ValidationInfo;
+import com.jz.zeus.excel.ValidationInfoType;
 import com.jz.zeus.excel.context.ExcelContext;
 import com.jz.zeus.excel.util.ClassUtils;
 import com.jz.zeus.excel.util.ExcelUtils;
@@ -110,13 +112,14 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
     private void addValidationData(Workbook workbook, Sheet sheet, int firstRow, int lastRow, int firstCol, int lastCol, ValidationInfo boxInfo) {
         DataValidationHelper helper = sheet.getDataValidationHelper();
         DataValidationConstraint constraint;
-        if (boxInfo.getParent() == null) {
-            constraint = helper.createFormulaListConstraint(createValidationDataSheet(workbook, boxInfo));
+        if (boxInfo.getType() == ValidationInfoType.CASCADE) {
+            addCascadeValidationData(workbook, sheet, helper, boxInfo, firstCol, lastCol);
+        } else {
+            // 默认认为是非及联下拉框
+            constraint = helper.createFormulaListConstraint(createValidationDataSheet(workbook, boxInfo).get(0).getNameName());
             DataValidation dataValidation = createDataValidation(helper, constraint,
                     new CellRangeAddressList(firstRow, lastRow, firstCol, lastCol), boxInfo);
             sheet.addValidationData(dataValidation);
-        } else {
-            addCascadeValidationData(workbook, sheet, helper, boxInfo, firstCol, lastCol);
         }
     }
 
@@ -127,34 +130,13 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
         ValidationInfo parentBoxInfo = boxInfo.getParent();
         String parentSheetName = parentBoxInfo.getSheetName();
         if (workbook.getSheet(parentSheetName) == null) {
-//            if (parentBoxInfo.isAsDicSheet()) {
-//                createValidationDataSheet()
-//            }
             workbook.createSheet(parentSheetName);
         }
-        String childSheetName = boxInfo.getSheetName();
-        Sheet childSheet = Optional.ofNullable(workbook.getSheet(childSheetName))
-                .orElse(workbook.createSheet(childSheetName));
-        int rowIndex = 0;
-        StrBuilder strBuilder = StrUtil.strBuilder();
-        for (Map.Entry<String, List<String>> entry : boxInfo.getParentChildMap().entrySet()) {
-            List<String> options = entry.getValue();
-            if (CollectionUtil.isEmpty(options)) {
-                continue;
-            }
-            for (int i = 0; i < options.size(); i++) {
-                childSheet.createRow(rowIndex++).createCell(0)
-                        .setCellValue(options.get(i));
-            }
-            // 拼接 name 格式：选项.父级sheet名.子集sheet名
-            strBuilder.append(entry.getKey()).append(StrUtil.C_DOT)
-                  .append(parentSheetName).append(StrUtil.C_DOT)
-                  .append(childSheetName);
-            // 创建一个 name
-            ExcelUtils.createName(workbook, childSheetName, strBuilder.toStringAndReset(),
-                  rowIndex - options.size() + 1, rowIndex, 0, 0);
-        }
+        // 创建当前被及联的下拉框的sheet
+        createValidationDataSheet(workbook, boxInfo);
 
+        StrBuilder strBuilder = StrUtil.strBuilder();
+        String childSheetName = boxInfo.getSheetName();
         String columnStr = ExcelUtils.columnIndexToStr(getColumnIndex(parentBoxInfo));
         for (int i = writeSheetHelper.getHeadRowNum(); i < boxInfo.getRowNum(); i++) {
             strBuilder.append(StrUtil.C_DOT).append(parentSheetName)
@@ -172,12 +154,12 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
     }
 
     /**
-     * 创建一个sheet，将下拉框的选项内容保存到该sheet中，并对数据区域创建一个名称
-     * @param workbook
-     * @param boxInfo
-     * @return         数据区域的名称
+     * 创建一个sheet，将下拉框的选项内容保存到该sheet中，并对数据区域创建一个 Name
+     * @param workbook 数据区所在 workbook
+     * @param boxInfo  下拉框配置
+     * @return         所有创建的Name
      */
-    private String createValidationDataSheet(Workbook workbook, ValidationInfo boxInfo) {
+    private List<Name> createValidationDataSheet(Workbook workbook, ValidationInfo boxInfo) {
         int columnIndex = 0;
         int beginRowIndex = 0;
         String sheetName = boxInfo.getSheetName();
@@ -208,15 +190,40 @@ public class ValidationInfoHandler extends AbstractSheetWriteHandler {
             cellStyle.setWrapText(true);
             sheet.setColumnWidth(columnIndex, ExcelUtils.calColumnWidth(boxInfo.getDicTitle(), font.getFontHeightInPoints()));
         }
+        // 及联下拉框
+        if (boxInfo.getType() == ValidationInfoType.CASCADE) {
+            List<Name> result = new ArrayList<>(boxInfo.getParentChildMap().size());
+            String parentSheetName = boxInfo.getParent().getSheetName();
+            int rowIndex = 0;
+            StrBuilder strBuilder = StrUtil.strBuilder();
+            for (Map.Entry<String, List<String>> entry : boxInfo.getParentChildMap().entrySet()) {
+                List<String> options = entry.getValue();
+                if (CollectionUtil.isEmpty(options)) {
+                    continue;
+                }
+                for (int i = 0; i < options.size(); i++) {
+                    sheet.createRow(rowIndex++).createCell(0)
+                          .setCellValue(options.get(i));
+                }
+                // 拼接 name 格式：选项.父级sheet名.子集sheet名
+                strBuilder.append(entry.getKey()).append(StrUtil.C_DOT)
+                      .append(parentSheetName).append(StrUtil.C_DOT)
+                      .append(sheetName);
+                // 创建一个 name
+                result.add(ExcelUtils.createName(workbook, sheetName, strBuilder.toStringAndReset(),
+                      rowIndex - options.size() + 1, rowIndex, 0, 0));
+            }
+            return result;
+        }
+        // 普通下拉框
         List<String> options = boxInfo.getOptions();
         int endRowIndex = beginRowIndex + options.size() - 1;
         for (int i = beginRowIndex; i <= endRowIndex; i++) {
             sheet.createRow(i).createCell(columnIndex)
-                    .setCellValue(options.get(i - beginRowIndex));
+                  .setCellValue(options.get(i - beginRowIndex));
         }
-        return ExcelUtils.createName(workbook, sheetName, StrUtil.C_UNDERLINE + RandomUtil.randomString(8),
-              beginRowIndex + 1, endRowIndex + 1, columnIndex, columnIndex)
-              .getNameName();
+        return ListUtil.toList(ExcelUtils.createName(workbook, sheetName, StrUtil.C_UNDERLINE + RandomUtil.randomString(8),
+              beginRowIndex + 1, endRowIndex + 1, columnIndex, columnIndex));
     }
 
     private DataValidation createDataValidation(DataValidationHelper helper, DataValidationConstraint constraint, CellRangeAddressList cellRangeAddressList, ValidationInfo boxInfo) {
