@@ -6,7 +6,7 @@
 
     <groupId>com.jz</groupId>
     <artifactId>zeus-excel</artifactId>
-    <version>1.2.6-SNAPSHOT</version>
+    <version>1.2.7-SNAPSHOT</version>
 
     <properties>
         <easyexcel.version>2.2.8</easyexcel.version>
